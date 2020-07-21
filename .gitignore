@@ -1,0 +1,16 @@
+# VSCode settings
+.vscode
+
+# Python extra files
+__pycache__
+
+# Datasets
+cifar10
+mnist
+datasets
+
+# Trained Models
+trained_models
+
+# DSE results
+*.csv
