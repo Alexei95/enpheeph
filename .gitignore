@@ -14,3 +14,4 @@ trained_models
 
 # DSE results
 *.csv
+results
