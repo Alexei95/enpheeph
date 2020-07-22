@@ -6,13 +6,13 @@ __pycache__
 *.pyc
 
 # Datasets
-./cifar10
-./mnist
-./datasets
+/cifar10
+/mnist
+/datasets
 
 # Trained Models
-./trained_models
+/trained_models
 
 # DSE results
-./*.csv
-./results
+/*.csv
+/results
