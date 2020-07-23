@@ -8,7 +8,9 @@
 ## Requirements
 
 * PyTorch 1.3.1+
+* torchvision 0.4.2+
 * pandas 1.0.1+
 * plotly (optional, for graphs)
+* jupyter (optional, for interactive notebooks)
 
-A complete list of requirements can be found in ```conda_env_GPU.yml``` and ```conda_env_CPU.yml```, for GPU and CPU respectively.
+A complete list of requirements can be found in ```conda_env_pytorch_1_5_GPU.yml``` using PyTorch 1.3 and ```conda_env_pytorch_1_5_GPU.yml``` using PyTorch 1.5. Both should be compatible also with CPU-only installations, as long as CUDA is not installable on the system.
