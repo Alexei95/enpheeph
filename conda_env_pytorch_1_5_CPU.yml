@@ -1,0 +1,10 @@
+name: CustomFaultInjectionFrameworkPyTorch1_5_CPU
+channels:
+  - defaults
+dependencies:
+  - pytorch=1.5
+  - plotly
+  - python
+  - jupyter
+  - pandas
+
