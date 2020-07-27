@@ -1,6 +1,7 @@
 # TODOs for Fault Injection Framework
 
 * Integrate samplers
+* Have models with different configurations depending on dataset
 * Implement logging
 * Implement pruning (structured + unstructured)
 * Implement compression of saved models using algorithms
