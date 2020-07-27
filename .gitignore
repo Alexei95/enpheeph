@@ -11,6 +11,7 @@ __pycache__
 /datasets
 
 # Trained Models
+/models
 /trained_models
 
 # DSE results
