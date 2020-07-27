@@ -22,20 +22,19 @@ class LeNet5(torch.nn.Module):
     def __init__(self, in_channels=DEFAULT_LENET5_IN_CHANNELS):
         super().__init__()
 
-        # the kernels are supposed to be 5x5 with one skipping connection but
-        # it's difficult to implement
+        # this implementation is from the paper
         self.convnet = torch.nn.Sequential(collections.OrderedDict([
-            ('c1', torch.nn.Conv2d(in_channels, 6, kernel_size=(4, 4))),
+            ('c1', torch.nn.Conv2d(in_channels, 6, kernel_size=(3, 3))),
             ('relu1', torch.nn.ReLU()),
             ('s2', torch.nn.MaxPool2d(kernel_size=(2, 2), stride=2)),
-            ('c3', torch.nn.Conv2d(6, 16, kernel_size=(4, 4))),
+            ('c3', torch.nn.Conv2d(6, 16, kernel_size=(3, 3))),
             ('relu3', torch.nn.ReLU()),
             ('s4', torch.nn.MaxPool2d(kernel_size=(2, 2), stride=2)),
-            ('c5', torch.nn.Conv2d(16, 120, kernel_size=(4, 4))),
-            ('relu5', torch.nn.ReLU())
         ]))
 
         self.fc = torch.nn.Sequential(collections.OrderedDict([
+            ('c5', torch.nn.Linear(16 * 5 * 5, 120)),
+            ('relu5', torch.nn.ReLU()),
             ('f6', torch.nn.Linear(120, 84)),
             ('relu6', torch.nn.ReLU()),
             ('f7', torch.nn.Linear(84, 10)),

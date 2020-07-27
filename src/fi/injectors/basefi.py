@@ -1,7 +1,13 @@
+import collections
 import math
 
+import torch
+
 class BaseFI(object):
-    def __init__(self, coverage=1.0, n_elements=None, enableFI=True, *args, **kwargs):
+    # FIX: this is a __init__ function, but the issue is when there is multiple
+    # inheritance regarding the arguments to be passed, so it was renamed as
+    # init must be called before executing the FI (ideally in __init__)
+    def init(self, coverage=1.0, n_elements=None, enableFI=True, *args, **kwargs):
         super().__init__()
         self._enableFI = enableFI
         if (coverage is None and n_elements is None) or (coverage is not None and n_elements is not None):
@@ -38,4 +44,3 @@ class BaseFI(object):
         return torch.nn.Sequential(collections.OrderedDict([
                         ('original', module),
                         ('fi', fi_obj)]))
-

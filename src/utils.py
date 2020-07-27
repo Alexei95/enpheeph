@@ -2,14 +2,15 @@ import os
 import pathlib
 import sys
 
-PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent
-if str(PROJECT_DIR) not in sys.path:
-    sys.path.append(str(PROJECT_DIR))
+# PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent
+# if str(PROJECT_DIR) not in sys.path:
+#     sys.path.append(str(PROJECT_DIR))
 
+PRNG_SEED = 42
 
 # this function sets up the seed for PyTorch / numpy
 # if cuda is available it also enables cuDNN deterministic flags
-def enable_determinism(seed=42):
+def enable_determinism(seed=PRNG_SEED):
     # seed the Python hash generator
     os.environ['PYTHONHASHSEED'] = str(seed)
 
@@ -37,4 +38,3 @@ def enable_determinism(seed=42):
         torch.cuda.manual_seed_all(seed)
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
-

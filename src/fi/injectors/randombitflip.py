@@ -3,18 +3,22 @@ import sys
 
 import torch
 
-PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent
-if str(PROJECT_DIR) not in sys.path:
-    sys.path.append(str(PROJECT_DIR))
+# PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent
+# if str(PROJECT_DIR) not in sys.path:
+#     sys.path.append(str(PROJECT_DIR))
 
-import src.fi.injectors.basefi
-import src.fi.injectors.utils
+from . import basefi
+from . import utils
 
-class RandomBitFlipFI(torch.nn.Module, src.fi.injectors.basefi.BaseFI):
+class RandomBitFlipFI(torch.nn.Module, basefi.BaseFI):
     # only the arguments different from the base classes are listed,
     # the others are in args, kwargs
     def __init__(self, n_bit_flips: int, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__()
+
+        # call init from BaseFI
+        self.init(*args, **kwargs)
+
         self._n_bit_flips = n_bit_flips
 
     def forward(self, x):
@@ -29,7 +33,7 @@ class RandomBitFlipFI(torch.nn.Module, src.fi.injectors.basefi.BaseFI):
             perm = torch.randperm(r.numel())  # we could use cuda but loop is in Python
             # FIXME: samplers must go in a different class
             for i in range(self.n_elements_to_inject(r.numel())):
-                r[perm[i]] = fi.injections.utils.bit_flip(r[perm[i]], self._n_bit_flips)
+                r[perm[i]] = utils.bit_flip(r[perm[i]], self._n_bit_flips)
             r = r.reshape(x.size())
         else:
             r = x
