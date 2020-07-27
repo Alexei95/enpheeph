@@ -46,3 +46,5 @@ class LeNet5(torch.nn.Module):
         output = output.view(x.size(0), -1)
         output = self.fc(output)
         return output
+
+MODEL = {LeNet5.__name__: LeNet5}

@@ -74,7 +74,18 @@ def make_vgg(*args, **kwargs):
     return VGG(make_layers_vgg(*args, **kwargs))
 
 
-vgg11 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['11'])
-vgg13 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['13'])
-vgg16 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['16'])
-vgg19 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['19'])
+VGG11 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['11'])
+# __name__ required for using the same format as other models
+VGG11.__name__ = 'VGG11'
+VGG13 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['13'])
+VGG13.__name__ = 'VGG13'
+VGG16 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['16'])
+VGG16.__name__ = 'VGG16'
+VGG19 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['19'])
+VGG19.__name__ = 'VGG19'
+
+MODEL = {VGG11.__name__: VGG11,
+         VGG13.__name__: VGG13,
+         VGG16.__name__: VGG16,
+         VGG19.__name__: VGG19,
+         }

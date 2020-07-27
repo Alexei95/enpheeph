@@ -21,11 +21,11 @@ TEST_TRANSFORM = torchvision.transforms.Compose([
                                     torchvision.transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010]),
                                     ])
 
-def cifar10(train_batch_size, test_batch_size, path=None, num_workers=1):
+def CIFAR10(train_batch_size, test_batch_size, path=None, num_workers=1):
     training = utils.train_loader(torchvision.datasets.CIFAR10, train_batch_size, path=path, num_workers=num_workers, transform=TRAIN_TRANSFORM)
 
     testing = utils.test_loader(torchvision.datasets.CIFAR10, test_batch_size, path=path, num_workers=num_workers, transform=TEST_TRANSFORM)
 
     return training, testing
 
-DATASET = {'cifar10': cifar10}
+DATASET = {CIFAR10.__name__: CIFAR10}

@@ -19,11 +19,11 @@ TEST_TRANSFORM = torchvision.transforms.Compose([
                     torchvision.transforms.Normalize((0.1307,), (0.3081,))
                 ])
 
-def mnist(train_batch_size, test_batch_size, path=None, num_workers=1):
+def MNIST(train_batch_size, test_batch_size, path=None, num_workers=1):
     training = utils.train_loader(torchvision.datasets.MNIST, train_batch_size, path=path, num_workers=num_workers, transform=TRAIN_TRANSFORM)
 
     testing = utils.test_loader(torchvision.datasets.MNIST, test_batch_size, path=path, num_workers=num_workers, transform=TEST_TRANSFORM)
 
     return training, testing
 
-DATASET = {'mnist': mnist}
+DATASET = {MNIST.__name__: MNIST}

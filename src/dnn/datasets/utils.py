@@ -3,9 +3,7 @@ import pathlib
 import torchvision.datasets
 import torch.utils.data
 
-PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent.parent
-
-DEFAULT_DATASET_PATH = PROJECT_DIR / 'datasets'
+from ...common import PROJECT_DIR, DEFAULT_DATASET_PATH
 
 def train_loader(dataset, batch_size, path=None, shuffle=True, num_workers=1, download=True, transform=None):
     
