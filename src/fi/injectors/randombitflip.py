@@ -10,14 +10,11 @@ import torch
 from . import basefi
 from . import utils
 
-class RandomBitFlipFI(torch.nn.Module, basefi.BaseFI):
+class RandomBitFlipFI(basefi.BaseFI):
     # only the arguments different from the base classes are listed,
     # the others are in args, kwargs
     def __init__(self, n_bit_flips: int, *args, **kwargs):
-        super().__init__()
-
-        # call init from BaseFI
-        self.init(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._n_bit_flips = n_bit_flips
 

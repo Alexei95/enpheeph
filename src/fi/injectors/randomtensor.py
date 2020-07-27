@@ -9,13 +9,11 @@ import torch
 
 from . import basefi
 
-# using this fault injector for changing all the
-class RandomTensorFI(torch.nn.Module, basefi.BaseFI):
+# using this fault injector for changing all the elements in a tensor with
+# random numbers
+class RandomTensorFI(basefi.BaseFI):
     def __init__(self, *args, **kwargs):
-        super().__init__()
-
-        # call init from BaseFI
-        self.init(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def forward(self, x):
         if self.fi_enabled:

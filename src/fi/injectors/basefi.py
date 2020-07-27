@@ -1,13 +1,15 @@
+import abc
 import collections
 import math
 
 import torch
 
-class BaseFI(object):
+class BaseFI(torch.nn.Module):
     # FIX: this is a __init__ function, but the issue is when there is multiple
     # inheritance regarding the arguments to be passed, so it was renamed as
     # init must be called before executing the FI (ideally in __init__)
-    def init(self, coverage=1.0, n_elements=None, enableFI=True, *args, **kwargs):
+    # FIX2: since now BaseFI inherits from Module we can call this __init__
+    def __init__(self, coverage=1.0, n_elements=None, enableFI=True, *args, **kwargs):
         super().__init__()
         self._enableFI = enableFI
         if (coverage is None and n_elements is None) or (coverage is not None and n_elements is not None):
@@ -15,6 +17,11 @@ class BaseFI(object):
             raise Exception('Only one of coverage and n_elements must be different from None')
         self._coverage = coverage
         self._n_elements = n_elements
+
+    # forward must be implemented, in any case this is just a bypass
+    @abc.abstractmethod
+    def forward(self, x):
+        return x
 
     def turn_on_fi(self):
         self._enableFI = True

@@ -10,12 +10,9 @@ import torch
 
 from .import basefi
 
-class RandomElementFI(torch.nn.Module, basefi.BaseFI):
+class RandomElementFI(basefi.BaseFI):
     def __init__(self, *args, **kwargs):
-        super().__init__()
-
-        # call init from BaseFI
-        self.init(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def forward(self, x):
         if self.fi_enabled:
