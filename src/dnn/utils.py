@@ -4,11 +4,10 @@ import pathlib
 import torch
 
 from . import train
+from ..common import USE_CUDA
 
-CUDA_IS_AVAILABLE = torch.cuda.is_available()
-USE_CUDA = True and CUDA_IS_AVAILABLE
-
-def init_model(model, *, use_saved_model=True, model_save_path=None, cuda=USE_CUDA, train_dataset=None, optimizer_class=None, optimizer_args=None, loss=None, n_epochs=None):
+def init_model(model_class, model_args, *, use_saved_model=True, model_save_path=None, cuda=USE_CUDA, train_dataset=None, optimizer_class=None, optimizer_args=None, loss=None, n_epochs=None):
+    model = model_class(**model_args)
     if use_saved_model and model_save_path is not None:
         try:
             new_model = load_model(model, model_save_path, cuda=cuda)
