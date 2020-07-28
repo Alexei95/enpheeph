@@ -4,6 +4,7 @@ import torch
 
 DEFAULT_LENET5_IN_CHANNELS = 1
 
+
 class LeNet5(torch.nn.Module):
     """
     Input - 1x32x32
