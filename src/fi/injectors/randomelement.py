@@ -23,10 +23,8 @@ class RandomElementFI(basefi.BaseFI):
             # for i in index:
             #     r[i] = torch.randn(size=(1, ))
             r = torch.clone(x).detach().flatten()  # add requires_grad_(True) for grad
-            perm = torch.randperm(r.numel())  # we could use cuda but loop is in Python
-            # FIXME: samplers must go in a different class
-            for i in range(self.n_elements_to_inject(r.numel())):
-                r[perm[i]] = torch.randn(size=(1, ), device=x.device)
+            for i in self.index_to_inject(r.numel()):
+                r[i] = self.element_sampler.torch_sample(low=0, high=1, size=(1, ), dtype=x.dtype, device=x.device)
             r = r.reshape(x.size())
         else:
             r = x

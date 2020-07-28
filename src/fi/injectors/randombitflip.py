@@ -30,11 +30,15 @@ class RandomBitFlipFI(basefi.BaseFI):
             perm = torch.randperm(r.numel())  # we could use cuda but loop is in Python
             # FIXME: samplers must go in a different class
             for i in range(self.n_elements_to_inject(r.numel())):
-                r[perm[i]] = utils.bit_flip(r[perm[i]], self._n_bit_flips)
+                r[perm[i]] = utils.bit_flip(r[perm[i]], self._n_bit_flips, sampler=self.element_sampler)
             r = r.reshape(x.size())
         else:
             r = x
         return r
+
+    @property
+    def n_bit_flips(self):
+        return self._n_bit_flips
 
 
 FAULT_INJECTOR = {RandomBitFlipFI.__name__: RandomBitFlipFI}
