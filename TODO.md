@@ -1,6 +1,5 @@
 # TODOs for Fault Injection Framework
 
-* Integrate samplers
 * Have models with different configurations depending on dataset
 * Implement logging
 * Implement pruning (structured + unstructured)
@@ -10,7 +9,7 @@
   * Support different memory mapping for low-level fault injection
   * Implement sparse operations (natively supported by PyTorch)
 
-# DONE TODOs
+## DONE TODOs
 
 * Split the files and give a proper structure
 * Check about imports (whether to use src)
@@ -19,3 +18,4 @@
   * Put models and datasets under dnn, together with pruning and training/testing
 * Use a plugin-like system, with different fault injectors / samplers which can be selected
   * Implement a global structure containing the injectors, samplers, models (e.g. in __init__)
+* Integrate samplers
