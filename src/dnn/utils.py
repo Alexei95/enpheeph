@@ -8,6 +8,7 @@ from ..common import USE_CUDA
 
 def init_model(model_class, model_args, *, use_saved_model=True, model_save_path=None, cuda=USE_CUDA, train_dataset=None, optimizer_class=None, optimizer_args=None, loss=None, n_epochs=None):
     model = model_class(**model_args)
+    new_model = None
     if use_saved_model and model_save_path is not None:
         try:
             new_model = load_model(model, model_save_path, cuda=cuda)
@@ -15,7 +16,7 @@ def init_model(model_class, model_args, *, use_saved_model=True, model_save_path
             new_model = None
         else:
             # FIXME: improve this dict return
-            new_model = {'model': model, 'accuracy': float('nan'), 'loss': float('nan')}
+            new_model = {'model': new_model, 'accuracy': float('nan'), 'loss': float('nan'), 'trained': False, 'loaded': True}
             return new_model
 
     if new_model is None or not use_saved_model and train_dataset is not None and optimizer_class is not None and loss is not None and n_epochs is not None:
@@ -29,9 +30,10 @@ def load_model(base_model, path, *, cuda=USE_CUDA):
     if not pathlib.Path(path).exists():
         raise Exception('path must exist to be loaded')
 
+    dev = cuda if isinstance(cuda, torch.device) else (torch.device('cuda') if cuda else torch.device('cpu'))
+
     model = copy.deepcopy(base_model)
 
-    dev = cuda if isinstance(cuda, torch.device) else (torch.device('cuda') if cuda else torch.device('cpu'))
     model.load_state_dict(torch.load(str(path), map_location=dev))
     model = model.to(dev)
 
