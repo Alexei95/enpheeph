@@ -24,21 +24,27 @@ import src.dnn.models
 import src.dnn.utils
 import src.dnn.test
 import src.fi.injectors
+import src.fi.samplers
 import src.fi.setup
 import src.utils
 
 
-SEED = 1000
-USE_CUDA = True and torch.cuda.is_available()
+SEED = src.common.DEFAULT_PRNG_SEED
+USE_CUDA = True and src.common.USE_CUDA
 TRAIN_BATCH_SIZE = 128
 TEST_BATCH_SIZE = 128
 
 # fault injection configuration
+COVERAGE_SAMPLER = src.fi.samplers.SAMPLERS['UniformSampler'](seed=SEED)
+ELEMENT_SAMPLER = src.fi.samplers.SAMPLERS['UniformSampler'](seed=SEED)
 FI_CLASS = src.fi.injectors.FAULT_INJECTORS['RandomBitFlipFI']
-FI_ARGS = {'coverage': 0.001, 'n_bit_flips': 10}
+FI_ARGS = {'coverage': 0.001,
+           'n_bit_flips': 10,
+           'coverage_sampler': COVERAGE_SAMPLER,
+           'element_sampler': ELEMENT_SAMPLER}
 TARGET_LAYER = 'c1'
 
-TRAINING_EPOCHS = 1
+TRAINING_EPOCHS = 30
 MODEL_CLASS = src.dnn.models.MODELS['LeNet5']
 MODEL_ARGS = {}
 LOSS = torch.nn.CrossEntropyLoss()
@@ -60,29 +66,35 @@ def main():
 
     train_dataset, test_dataset = DATASET_INIT(train_batch_size=TRAIN_BATCH_SIZE, test_batch_size=TEST_BATCH_SIZE, path=DATASET_PATH)
 
-    training_res = src.dnn.utils.init_model(MODEL_CLASS, MODEL_ARGS, use_saved_model=USE_SAVED_MODEL,
+    model_init = src.dnn.utils.init_model(MODEL_CLASS, MODEL_ARGS, use_saved_model=USE_SAVED_MODEL,
                                         model_save_path=MODEL_SAVE_FILE, cuda=USE_CUDA,
                                         train_dataset=train_dataset, optimizer_class=OPTIMIZER_CLASS,
                                         optimizer_args=OPTIMIZER_ARGS, loss=LOSS, n_epochs=TRAINING_EPOCHS)
 
     # FIXME: improve logging
-    logging.info('Training loss: {}'.format(training_res['loss']))
-    logging.info('Training accuracy: {}'.format(training_res['accuracy']))
+    if model_init['loaded'] and not model_init['trained']:
+        logging.info('Model loaded correctly')
+    elif not model_init['loaded'] and model_init['trained']:
+        logging.info('Training loss: {}'.format(model_init['loss']))
+        logging.info('Training accuracy: {}'.format(model_init['accuracy']))
+    else:
+        logging.error('Error')
+        raise Exception()
 
     # FIXME: saving and loading can be implemented with custom functions
     MODEL_SAVE_FILE.parent.mkdir(exist_ok=True, parents=True)
-    torch.save(training_res['model'].state_dict(), str(MODEL_SAVE_FILE))
+    torch.save(model_init['model'].state_dict(), str(MODEL_SAVE_FILE))
 
-    golden_testing_res = src.dnn.test.test(training_res['model'], test_dataset, LOSS, cuda=USE_CUDA)
+    golden_testing_res = src.dnn.test.test(model_init['model'], test_dataset, LOSS, cuda=USE_CUDA)
 
     # FIXME: improve logging
     logging.info('Testing loss: {}'.format(golden_testing_res['loss']))
     logging.info('Testing accuracy: {}'.format(golden_testing_res['accuracy']))
 
     # fault-injection
-    new_model = src.fi.setup.setup_fi(training_res['model'], module_name=TARGET_LAYER, fi_class=FI_CLASS, fi_args=FI_ARGS)
+    fi_model = src.fi.setup.setup_fi(model_init['model'], module_name=TARGET_LAYER, fi_class=FI_CLASS, fi_args=FI_ARGS)
 
-    fi_testing_res = src.dnn.test.test(new_model, test_dataset, LOSS, cuda=USE_CUDA)
+    fi_testing_res = src.dnn.test.test(fi_model, test_dataset, LOSS, cuda=USE_CUDA)
 
     # FIXME: improve logging
     logging.info('FI Testing loss: {}'.format(fi_testing_res['loss']))
