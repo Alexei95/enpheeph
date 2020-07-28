@@ -26,7 +26,11 @@ def train(model, train_dataset, optimizer_class, loss, n_epochs, cuda=USE_CUDA, 
             avg_loss += res['loss']
             n_elements += res['n_elements']
 
-    return {'accuracy': acc / n_elements, 'loss': avg_loss / n_elements, 'model': model}
+    # this is required as if a model is saved on training mode it gives bad
+    # results when being loaded back
+    model.eval()
+
+    return {'accuracy': acc / n_elements, 'loss': avg_loss / n_elements, 'model': model, 'trained': True, 'loaded': False}
 
 
 def train_step(model, batch, optimizer, loss, cuda=USE_CUDA):
@@ -50,5 +54,9 @@ def train_step(model, batch, optimizer, loss, cuda=USE_CUDA):
     computed_loss.backward()
 
     optimizer.step()
+
+    # this is required as if a model is saved on training mode it gives bad
+    # results when being loaded back
+    model.eval()
 
     return {'accuracy': accuracy.item(), 'loss': computed_loss.item(), 'n_elements': n_elements}
