@@ -5,9 +5,13 @@
 * Implement pruning (structured + unstructured)
 * Implement compression of saved models using algorithms
 * Use global configuration (INI / yaml + command line arguments)
+* Implement torch.jit.script with torch.jit.fork/wait for CPU parallelism (PyTorch 1.6)
 * Support for weight injection
   * Support different memory mapping for low-level fault injection
   * Implement sparse operations (natively supported by PyTorch)
+* Check out PyProf for profiling (not working with PyTorch 1.6)
+* Check out PyTorch 1.6
+* Convert everything to PyTorch Lightning
 
 ## DONE TODOs
 
