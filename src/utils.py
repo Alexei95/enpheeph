@@ -12,6 +12,8 @@ from .common import DEFAULT_PRNG_SEED
 
 # this function sets up the seed for PyTorch / numpy
 # if cuda is available it also enables cuDNN deterministic flags
+# this function is similar to pytorch_lightning.seed_everything, but they
+# don't set CUDA and cuDNN for determinism
 def enable_determinism(seed=DEFAULT_PRNG_SEED):
     # seed the Python hash generator
     os.environ['PYTHONHASHSEED'] = str(seed)
@@ -45,7 +47,7 @@ def enable_determinism(seed=DEFAULT_PRNG_SEED):
         torch.backends.cudnn.benchmark = False
 
 # this function gather objects from different files in the same directory
-# these objects are squashed together with the update_function, starting from a 
+# these objects are squashed together with the update_function, starting from a
 # copy of the default_obj
 def gather_objects(*, path, filter_, package_name, obj_name, default_obj, update_function, glob='*.py'):
     res = copy.deepcopy(default_obj)
