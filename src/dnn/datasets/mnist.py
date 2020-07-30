@@ -6,8 +6,8 @@ import torch.utils.data
 import torchvision.datasets
 import torchvision.transforms
 
+from . import basedatamodule
 
-from . import utils
 
 MNIST_TRAIN_TRANSFORM = torchvision.transforms.Compose([
                     torchvision.transforms.ToTensor(),
@@ -29,7 +29,8 @@ MNIST_TEST_PERCENTAGE = 1.0
 MNIST_DATASET = torchvision.datasets.MNIST
 MNIST_NAME = MNIST_DATASET.__name__
 
-class MNISTDataModule(pl.LightningDataModule):
+
+class MNISTDataModule(basedatamodule.BaseDataModule):
     def __init__(self, name=MNIST_NAME,
 
                        dataset_class=MNIST_DATASET,
@@ -37,10 +38,10 @@ class MNISTDataModule(pl.LightningDataModule):
                        train_transform=MNIST_TRAIN_TRANSFORM,
                        train_percentage=MNIST_TRAIN_PERCENTAGE,
 
-                       val_transform=DEFAULT_VALIDATION_TRANSFORM,
+                       val_transform=MNIST_VALIDATION_TRANSFORM,
                        val_percentage=MNIST_VALIDATION_PERCENTAGE,
 
-                       test_transform=DEFAULT_TEST_TRANSFORM,
+                       test_transform=MNIST_TEST_TRANSFORM,
                        test_percentage=MNIST_TEST_PERCENTAGE,
                        
                        *args,
@@ -83,7 +84,7 @@ class MNISTDataModule(pl.LightningDataModule):
         mnist_test = self._dataset_class(self._path, train=False, download=False, transform=self._test_transform)
 
         self._train_dataset = torch.utils.data.Subset(mnist_train, self._train_indices)
-        self._val_dataset = torch.utils.data.Subset(mnist_train, self._val_indices)
+        self._val_dataset = torch.utils.data.Subset(mnist_val, self._val_indices)
         self._test_dataset = mnist_test
 
 DATASET = {MNIST_NAME: MNISTDataModule}
