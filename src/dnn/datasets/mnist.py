@@ -2,58 +2,88 @@ import pathlib
 import sys
 
 import pytorch_lightning as pl
+import torch.utils.data
 import torchvision.datasets
 import torchvision.transforms
 
 
 from . import utils
 
-TRAIN_TRANSFORM = torchvision.transforms.Compose([
+MNIST_TRAIN_TRANSFORM = torchvision.transforms.Compose([
                     torchvision.transforms.ToTensor(),
                     torchvision.transforms.Normalize((0.1307,), (0.3081,))
                 ])
-TRAIN_TRANSFORM = torchvision.transforms.Compose([
+MNIST_VALIDATION_TRANSFORM = torchvision.transforms.Compose([
                     torchvision.transforms.ToTensor(),
                     torchvision.transforms.Normalize((0.1307,), (0.3081,))
                 ])
-TEST_TRANSFORM = torchvision.transforms.Compose([
+MNIST_TEST_TRANSFORM = torchvision.transforms.Compose([
                     torchvision.transforms.ToTensor(),
                     torchvision.transforms.Normalize((0.1307,), (0.3081,))
                 ])
-MNIST_NAME = torchvision.datasets.MNIST.__name__
-MNIST_NORMALIZE = True
+MNIST_TRAIN_VAL_LENGTH = 60000
+MNIST_TEST_LENGTH = 10000
+MNIST_TRAIN_PERCENTAGE = 0.9
 MNIST_VALIDATION_PERCENTAGE = 0.1
+MNIST_TEST_PERCENTAGE = 1.0
+MNIST_DATASET = torchvision.datasets.MNIST
+MNIST_NAME = MNIST_DATASET.__name__
 
 class MNISTDataModule(pl.LightningDataModule):
-    def __init__(self, path=DEFAULT_DATASET_PATH,
+    def __init__(self, name=MNIST_NAME,
+
+                       dataset_class=MNIST_DATASET,
+
+                       train_transform=MNIST_TRAIN_TRANSFORM,
+                       train_percentage=MNIST_TRAIN_PERCENTAGE,
+
+                       val_transform=DEFAULT_VALIDATION_TRANSFORM,
                        val_percentage=MNIST_VALIDATION_PERCENTAGE,
-                       transform=None,
-                       normalize=MNIST_NORMALIZE):
-        self._path = str(pathlib.Path(path).resolve())
+
+                       test_transform=DEFAULT_TEST_TRANSFORM,
+                       test_percentage=MNIST_TEST_PERCENTAGE,
+                       
+                       *args,
+                       **kwargs):
+        kwargs.update({'path': path,
+                       'name': name,
+                       'dataset_class': dataset_class,
+                       'train_transform': train_transform,
+                       'train_percentage': train_percentage,
+                       'val_transform': val_transform,
+                       'val_percentage': val_percentage,
+                       'test_transform': test_transform,
+                       'test_percentage': test_percentage,})
+        super().__init__(*args, **kwargs)
+
+        self._train_val_length = MNIST_TRAIN_VAL_LENGTH
+        self._test_val_length = MNIST_TEST_LENGTH
+
+        self._train_indices = None
+        self._val_indices = None
 
     def prepare_data(self):
         # download
-        torch.datasets.MNIST(, train=True, download=True, transform=None)
-        torch.datasets.MNIST(, train=False, download=True, transform=None)
+        self._dataset_class(self._path, train=True, download=True, transform=None)
+        self._dataset_class(self._path, train=False, download=True, transform=None)
+
+    def reset_indices(self):
+        train_n_indices = math.floor(self._train_percentage * self._train_val_length)
+        val_n_indices = math.ceil(self._val_percentage * self._train_val_length)
+        train_val_indices = randperm(mnist_train_n_indices + mnist_val_n_indices).tolist()
+        self._train_indices = train_val_indices[0:train_n_indices]
+        self._val_indices = train_val_indices[train_n_indices:(train_n_indices + val_n_indices)]
+
 
     def setup(self, stage):
-        mnist_train = MNIST(, train=True, download=False, transform=transforms.ToTensor())
-        mnist_test = MNIST(, train=False, download=False, transform=transforms.ToTensor())
-        # train/val split
-        mnist_train, mnist_val = torch.utils.data.random_split(mnist_train, [55000, 5000])
+        if self._mnist_train_indices is None or self._mnist_val_indices is None:
+            self.reset_indices()
+        mnist_train = self._dataset_class(self._path, train=True, download=False, transform=self._train_transform)
+        mnist_val = self._dataset_class(self._path, train=True, download=False, transform=self._val_transform)
+        mnist_test = self._dataset_class(self._path, train=False, download=False, transform=self._test_transform)
 
-        # assign to use in dataloaders
-        self.train_dataset = mnist_train
-        self.val_dataset = mnist_val
-        self.test_dataset = mnist_test
+        self._train_dataset = torch.utils.data.Subset(mnist_train, self._train_indices)
+        self._val_dataset = torch.utils.data.Subset(mnist_train, self._val_indices)
+        self._test_dataset = mnist_test
 
-    def train_dataloader(self):
-        return torch.utils.data.DataLoader(self.train_dataset, batch_size=64)
-
-    def val_dataloader(self):
-        return torch.utils.data.DataLoader(self.val_dataset, batch_size=64)
-
-    def test_dataloader(self):
-        return torch.utils.data.DataLoader(self.test_dataset, batch_size=64)
-
-DATASET = {MNIST.__name__: MNIST}
+DATASET = {MNIST_NAME: MNISTDataModule}
