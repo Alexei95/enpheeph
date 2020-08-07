@@ -9,16 +9,22 @@ import pytorch_lightning as pl
 
 # FIXME: add loggers (TensorBoard) and Python logging
 
-class BaseModule(pl.LightningModule):
+# loss and accuracy functions are functions accepting predictions and targets
+# in this order
 
-    def __init__(self, loss, optimizer_class, optimizer_args, *args, **kwargs):
-        '''Here we save all the useful settings, like a loss which must be a
-        function, accepting predictions and targets in this order.'''
+class BaseModule(pl.LightningModule):
+    def __init__(self, loss, accuracy_fnc, optimizer_class, optimizer_args, input_dims=None, output_dims=None, *args, **kwargs):
+        '''Here we save all the useful settings, like a loss and an accuracy
+        functions, accepting predictions and targets in this order.'''
         super().__init__(*args, **kwargs)
 
         self._loss = loss
+        self._accuracy_fnc = accuracy_fnc
         self._optimizer_class = optimizer_class
         self._optimizer_args = optimizer_args
+
+        self._input_dims = input_dims
+        self._output_dims = output_dims
 
         self.save_hyperparameters()
 
@@ -33,20 +39,40 @@ class BaseModule(pl.LightningModule):
         x, y = train_batch
         predictions = self.forward(x)
         loss = self._loss(predictions, y)
+        accuracy = self._accuracy_fnc(predictions, y)
 
-        return loss
+        result = pl.TrainResult(minimize=loss, checkpoint_on=loss, early_stop_on=loss)
+        result.log_dict({'train_loss': loss, 'train_accuracy': accuracy},
+                        prog_bar=True, logger=True, on_epoch=True,
+                        reduce_fx=torch.mean)
+
+        return result
 
     def test_step(self, test_batch, batch_idx):
         x, y = test_batch
         predictions = self.forward(x)
         loss = self._loss(predictions, y)
-        return loss
+        accuracy = self._accuracy_fnc(predictions, y)
+
+        result = pl.EvalResult(checkpoint_on=loss, early_stop_on=loss)
+        result.log_dict({'test_loss': loss, 'test_accuracy': accuracy},
+                        prog_bar=True, logger=True, on_epoch=True,
+                        reduce_fx=torch.mean)
+
+        return result
 
     def validation_step(self, val_batch, batch_idx):
         x, y = val_batch
         predictions = self.forward(x)
         loss = self._loss(predictions, y)
-        return loss
+        accuracy = self._accuracy_fnc(predictions, y)
+
+        result = pl.EvalResult(checkpoint_on=loss, early_stop_on=loss)
+        result.log_dict({'validation_loss': loss, 'validation_accuracy': accuracy},
+                        prog_bar=True, logger=True, on_epoch=True,
+                        reduce_fx=torch.mean)
+
+        return result
 
     def configure_optimizers(self):
         optimizer = self._optimizer_class(self.parameters(), **self._optimizer_args)
