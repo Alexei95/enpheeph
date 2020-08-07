@@ -3,6 +3,8 @@ import functools
 
 import torch
 
+from . import basemodule
+
 # standard VGG configs, 11, 13, 16, 19, number is the output channel size
 # for conv, M is max pooling
 DEFAULT_VGG_CONFIGS = {
@@ -17,12 +19,12 @@ DEFAULT_VGG_CONFIGS = {
 # default input channels, 3 for RGB images (CIFAR10, ImageNet)
 DEFAULT_VGG_IN_CHANNELS = 3
 
-class VGG(torch.nn.Module):
+class VGG(basemodule.BaseModule):
     '''
     VGG model
     '''
-    def __init__(self, features):
-        super(VGG, self).__init__()
+    def __init__(self, features, *args, **kwargs):
+        super().__init__()
         self.features = features
         self.classifier = torch.nn.Sequential(collections.OrderedDict([
             ('classifier_dropout0', torch.nn.Dropout()),
@@ -43,7 +45,7 @@ class VGG(torch.nn.Module):
         #         m.weight.data.normal_(0, math.sqrt(2. / n))
         #         m.bias.data.zero_()
 
-    def forward(self, x):
+    def forward(self, x, *args, **kwargs):
         x = self.features(x)
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
@@ -54,6 +56,8 @@ class VGG(torch.nn.Module):
 # batch_norm is for batch normalization
 # in_channels represents the number of input channels
 def make_layers_vgg(cfg, batch_norm=False, in_channels=DEFAULT_VGG_IN_CHANNELS):
+    # FIXME: make the first layer customizable to accept also different
+    # datasets, depending on the input dimension
     layers = []
     for i, v in enumerate(cfg):
         if v == 'M':

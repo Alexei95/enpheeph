@@ -2,28 +2,18 @@ import collections
 
 import torch
 
+from . import basemodule
+
 DEFAULT_LENET5_IN_CHANNELS = 1
 
 
-class LeNet5(torch.nn.Module):
-    """
-    Input - 1x32x32
-    C1 - 6@28x28 (5x5 kernel)
-    tanh
-    S2 - 6@14x14 (2x2 kernel, stride 2) Subsampling
-    C3 - 16@10x10 (5x5 kernel, complicated shit)
-    tanh
-    S4 - 16@5x5 (2x2 kernel, stride 2) Subsampling
-    C5 - 120@1x1 (5x5 kernel)
-    F6 - 84
-    tanh
-    F7 - 10 (Output)
-    """
+class LeNet5(basemodule.BaseModule):
+    def __init__(self, in_channels=DEFAULT_LENET5_IN_CHANNELS, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def __init__(self, in_channels=DEFAULT_LENET5_IN_CHANNELS):
-        super().__init__()
-
-        # this implementation is from the paper
+        # this implementation is from the PyTorch implementation in the tutorial
+        # FIXME: make the first layer customizable to accept also different
+        # datasets, depending on the input dimension
         self.convnet = torch.nn.Sequential(collections.OrderedDict([
             ('c1', torch.nn.Conv2d(in_channels, 6, kernel_size=(3, 3))),
             ('relu1', torch.nn.ReLU()),
@@ -42,7 +32,7 @@ class LeNet5(torch.nn.Module):
             ('sig7', torch.nn.LogSoftmax(dim=-1))
         ]))
 
-    def forward(self, x):
+    def forward(self, x, *args, **kwargs):
         output = self.convnet(x)
         output = output.view(x.size(0), -1)
         output = self.fc(output)
