@@ -11,7 +11,7 @@ from ...common import DEFAULT_DATASET_PATH
 from .common import *
 
 
-class BaseDataModule(pl.LightningDataModule):
+class BaseDataModule(pl.DataModule):
     def __init__(self, path=DEFAULT_DATASET_PATH,
 
                        name=None,
