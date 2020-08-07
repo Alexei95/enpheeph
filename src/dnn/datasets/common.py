@@ -1,6 +1,8 @@
 import torch
 import torchvision.transforms
 
+DEFAULT_NORMALIZE = True
+
 DEFAULT_TRANSFORM = torchvision.transforms.Compose([
                         torchvision.transforms.ToTensor(),
                     ])
