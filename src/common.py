@@ -13,6 +13,7 @@ DEFAULT_TORCH_DTYPE = torch.float32
 # default settings for numpy prng
 DEFAULT_PRNG_SEED = 42
 DEFAULT_PRNG = numpy.random.PCG64
+DEFAULT_DETERMINISM = True
 
 # default directory settings
 # main project dir
