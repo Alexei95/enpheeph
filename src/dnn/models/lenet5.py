@@ -1,6 +1,7 @@
 import collections
 
 import torch
+import pytorch_lightning as pl
 
 from . import basemodule
 
@@ -32,6 +33,10 @@ class LeNet5(basemodule.BaseModule):
             ('sig7', torch.nn.LogSoftmax(dim=-1))
         ]))
 
+    # the decorator is to automatically move all the inputs and outputs to the
+    # correct device, it has no effect if no LightningModule or not to
+    # __call__ or forward
+    @pl.core.decorators.auto_move_data
     def forward(self, x, *args, **kwargs):
         output = self.convnet(x)
         output = output.view(x.size(0), -1)

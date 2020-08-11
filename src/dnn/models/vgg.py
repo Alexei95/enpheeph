@@ -2,6 +2,7 @@ import collections
 import functools
 
 import torch
+import pytorch_lightning as pl
 
 from . import basemodule
 
@@ -35,7 +36,7 @@ class VGG(basemodule.BaseModule):
             ('classifier_act1', torch.nn.ReLU(True)),
             ('classifier_fc2', torch.nn.Linear(512, 10)),
         ]))
-        
+
         # FIXME: check out weight initialization, here is gaussian for weights
         # and zeros for bias, find a way of generalizing
         # Initialize weights
@@ -45,13 +46,17 @@ class VGG(basemodule.BaseModule):
         #         m.weight.data.normal_(0, math.sqrt(2. / n))
         #         m.bias.data.zero_()
 
+    # the decorator is to automatically move all the inputs and outputs to the
+    # correct device, it has no effect if no LightningModule or not to
+    # __call__ or forward
+    @pl.core.decorators.auto_move_data
     def forward(self, x, *args, **kwargs):
         x = self.features(x)
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
 
-# cfg is a list of layer dimensions for convolution, compare it with the 
+# cfg is a list of layer dimensions for convolution, compare it with the
 # variable named DEFAULT_CONFIGS
 # batch_norm is for batch normalization
 # in_channels represents the number of input channels
