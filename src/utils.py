@@ -14,6 +14,7 @@ from .common import DEFAULT_PRNG_SEED
 # if cuda is available it also enables cuDNN deterministic flags
 # this function is similar to pytorch_lightning.seed_everything, but they
 # don't set CUDA and cuDNN for determinism
+# CUDA and cuDNN determinism can be set from the Trainer class
 def enable_determinism(seed=DEFAULT_PRNG_SEED):
     # seed the Python hash generator
     os.environ['PYTHONHASHSEED'] = str(seed)
@@ -71,7 +72,10 @@ def gather_objects(*, path, filter_, package_name, obj_name, default_obj, update
     return res
 
 
+# this function is used as an external function for joining dict copies
+# together, it is even compatible with Python 2
+# in Python 3.9+ it could be replaced using |
 def update_dicts(dict1, dict2):
     res = copy.deepcopy(dict1)
-    res.update(dict2)
+    res.update(copy.deepcopy(dict2))
     return res
