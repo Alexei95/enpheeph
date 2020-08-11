@@ -6,12 +6,22 @@
 * Implement compression of saved models using algorithms
 * Use global configuration (INI / yaml + command line arguments)
 * Implement torch.jit.script with torch.jit.fork/wait for CPU parallelism (PyTorch 1.6)
+  * While the injection is GPU-specific, it can be run on any capable device
 * Support for weight injection
   * Support different memory mapping for low-level fault injection
   * Implement sparse operations (natively supported by PyTorch)
 * Check out PyProf for profiling (not working with PyTorch 1.6)
 * Check out PyTorch 1.6
-* Convert everything to PyTorch Lightning
+* Convert everything to PyTorch Lightning (waiting for 0.9 release for DataModule)
+  * Use seed_everything and deterministic flag in Trainer
+  * Use argument parser together with Trainer
+  * Use callbacks (model checkpointing, early stopping, ...)
+    * Implement model compression (lzma) after model checkpointing
+    * Check out model / trainer loading / saving
+  * Implement a wrapper class for using external modules and datasets
+  * Check support for colab TPUs for running experiments (ImageNet and similar)
+* Pretrain models and upload them using Torch Hub
+* Check Cross-Validation for averages
 
 ## DONE TODOs
 
