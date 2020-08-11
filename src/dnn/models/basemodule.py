@@ -12,7 +12,9 @@ import pytorch_lightning as pl
 # loss and accuracy functions are functions accepting predictions and targets
 # in this order
 
-class BaseModule(pl.LightningModule):
+# metaclass usage for abstract class definition
+# or inheritance-based abstract class
+class BaseModule(pl.LightningModule, abc.ABC):
     def __init__(self, loss, accuracy_fnc, optimizer_class, optimizer_args, input_dims=None, output_dims=None, *args, **kwargs):
         '''Here we save all the useful settings, like a loss and an accuracy
         functions, accepting predictions and targets in this order.'''
@@ -26,6 +28,7 @@ class BaseModule(pl.LightningModule):
         self._input_dims = input_dims
         self._output_dims = output_dims
 
+        # this call is done for saving the object properties, stored in self
         self.save_hyperparameters()
 
     @abc.abstractmethod

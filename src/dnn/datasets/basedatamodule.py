@@ -1,3 +1,4 @@
+import abc
 import copy
 import pathlib
 import sys
@@ -11,7 +12,9 @@ from ...common import DEFAULT_DATASET_PATH
 from .common import *
 
 
-class BaseDataModule(pl.DataModule):
+# metaclass usage for abstract class definition
+# or inheritance-based abstract class
+class BaseDataModule(pl.DataModule, abc.ABC):
     def __init__(self, path=DEFAULT_DATASET_PATH,
 
                        name=None,
@@ -94,6 +97,19 @@ class BaseDataModule(pl.DataModule):
         self._test_drop_incomplete_batch = test_drop_incomplete_batch
         self._test_batch_timeout = test_batch_timeout
         self._test_dataset = None
+
+        self._base_asserts()
+
+    def _asserts(self, *args, **kwargs):
+        pass
+
+    def _base_asserts(self):
+        '''This function contains all the basic assertions which are run after
+        receiving the arguments.
+        '''
+        for dataset_type in ['train', 'val', 'test']:
+            assert getattr(self, f"_{dataset_type}_percentage") > 0
+            assert getattr(self, f"_{dataset_type}_percentage") < 1
 
     @property
     def path(self):

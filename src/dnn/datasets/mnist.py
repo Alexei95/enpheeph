@@ -57,11 +57,20 @@ class MNISTDataModule(basedatamodule.BaseDataModule):
                        'test_percentage': test_percentage,})
         super().__init__(*args, **kwargs)
 
+        self._asserts()
+
         self._train_val_length = MNIST_TRAIN_VAL_LENGTH
         self._test_val_length = MNIST_TEST_LENGTH
 
         self._train_indices = None
         self._val_indices = None
+        # while we don't actually require indices to split the dataset for
+        # testing, they are used if a lower testing percentage is used
+        self._test_indices = None
+
+    def _asserts(self):
+        assert (self._train_percentage + self._val_percentage) > 0
+        assert (self._train_percentage + self._val_percentage) < 1
 
     def prepare_data(self):
         # download
@@ -75,8 +84,10 @@ class MNISTDataModule(basedatamodule.BaseDataModule):
         self._train_indices = train_val_indices[0:train_n_indices]
         self._val_indices = train_val_indices[train_n_indices:(train_n_indices + val_n_indices)]
 
-
     def setup(self, stage):
+        # if we don't have indices setup for training and validation
+        # we create new ones
+        # indices are not required for testing as we use the whole dataset
         if self._mnist_train_indices is None or self._mnist_val_indices is None:
             self.reset_indices()
         mnist_train = self._dataset_class(self._path, train=True, download=False, transform=self._train_transform)
