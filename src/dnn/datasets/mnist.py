@@ -6,7 +6,7 @@ import torch.utils.data
 import torchvision.datasets
 import torchvision.transforms
 
-from . import basedatamodule
+from . import datamoduleabc
 
 
 MNIST_TRAIN_TRANSFORM = torchvision.transforms.Compose([
@@ -32,7 +32,7 @@ MNIST_SIZE = torch.Size([1, 28, 28])
 MNIST_N_CLASSES = len(MNIST_DATASET.classes)
 
 
-class MNISTDataModule(basedatamodule.BaseDataModule):
+class MNISTDataModule(datamoduleabc.DataModuleABC):
     _name = MNIST_NAME
     _n_classes = MNIST_N_CLASSES
     _size = MNIST_SIZE

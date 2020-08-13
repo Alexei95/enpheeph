@@ -2,7 +2,10 @@ import abc
 
 import torch
 import pytorch_lightning as pl
-import torchsummary
+try:
+    import torchsummary
+except ImportError:
+    torchsummary = None
 
 # CHECK WHETHER WE WANT THIS INTERDEPENDENCY
 from .. import datasets
@@ -18,7 +21,7 @@ from .. import datasets
 
 # metaclass usage for abstract class definition
 # or inheritance-based abstract class
-class BaseModule(pl.LightningModule, abc.ABC):
+class ModuleABC(pl.LightningModule, abc.ABC):
     def __init__(self, loss, accuracy_fnc, optimizer_class, optimizer_args, input_size=None, output_size=None, *args, **kwargs):
         '''Here we save all the useful settings, like a loss and an accuracy
         functions, accepting predictions and targets in this order.'''
@@ -48,7 +51,13 @@ class BaseModule(pl.LightningModule, abc.ABC):
         return None
 
     @staticmethod
+    # NOTE: we don't strictly need this feature for running the fault injector, 
+    # so we try importing torchsummary, setting it to None if not available and
+    # returning None if the model_summary function is called
     def model_summary(model, input_size=None):
+        # if torchsummary is not available we return None
+        if torchsummary is None:
+            return None
         # get model and input size, if input is None try inputs from dataset sizes
         # return summary
         if input_size is None:
@@ -67,6 +76,9 @@ class BaseModule(pl.LightningModule, abc.ABC):
                 # slow because of cpu
                 device = getattr(model, 'device', 'cpu')
                 summary = torchsummary.summary(model, size, device=device)
+            # RuntimeError occurs if sizes mismatch in a network, so if that
+            # occurs it means the network is not compatible with the dataset
+            # size we are using, so we skip it
             except RuntimeError:
                 continue
             else:

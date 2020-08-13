@@ -4,7 +4,7 @@ import functools
 import torch
 import pytorch_lightning as pl
 
-from . import basemodule
+from . import moduleabc
 
 # standard VGG configs, 11, 13, 16, 19, number is the output channel size
 # for conv, M is max pooling
@@ -24,7 +24,7 @@ else:
     DEFAULT_VGG_INPUT_SIZE = CIFAR10._size
 
 
-class VGG(basemodule.BaseModule):
+class VGG(moduleabc.ModuleABC):
     '''
     VGG model
     '''

@@ -3,7 +3,7 @@ import collections
 import torch
 import pytorch_lightning as pl
 
-from . import basemodule
+from . import moduleabc
 
 MNIST = basemodule.datasets.DATASETS.get('MNIST', None)
 if MNIST is None:
@@ -12,7 +12,7 @@ else:
     DEFAULT_LENET5_INPUT_SIZE = MNIST._size
 
 
-class LeNet5(basemodule.BaseModule):
+class LeNet5(moduleabc.ModuleABC):
     def __init__(self, input_size=DEFAULT_LENET5_INPUT_SIZE, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

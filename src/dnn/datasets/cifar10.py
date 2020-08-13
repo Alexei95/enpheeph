@@ -6,7 +6,7 @@ import torch.utils.data
 import torchvision.datasets
 import torchvision.transforms
 
-from . import basedatamodule
+from . import datamoduleabc
 
 CIFAR10_TRAIN_TRANSFORM = torchvision.transforms.Compose([
                             torchvision.transforms.ToTensor(),
@@ -36,7 +36,7 @@ CIFAR10_SIZE = torch.Size([3, 32, 32])
 CIFAR10_N_CLASSES = 10
 
 
-class CIFAR10DataModule(basedatamodule.BaseDataModule):
+class CIFAR10DataModule(datamoduleabc.DataModuleABC):
     _name = CIFAR10_NAME
     _n_classes = CIFAR10_N_CLASSES
     _size = CIFAR10_SIZE
