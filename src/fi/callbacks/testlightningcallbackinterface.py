@@ -10,3 +10,5 @@ class TestLightningCallbackInterface(pl.Callback):
 
     def on_test_end(self, trainer, pl_module):
         self._fault_injector.restore_fi(pl_module)
+
+CALLBACK = {TestLightningCallbackInterface.__name__: TestLightningCallbackInterface}
