@@ -2,6 +2,10 @@ import abc
 
 import torch
 import pytorch_lightning as pl
+import torchsummary
+
+# CHECK WHETHER WE WANT THIS INTERDEPENDENCY
+from .. import datasets
 
 # FIXME: for now we are using self.logger for logging the training and
 # testing steps, but in reality self.logger can be a list containing multiple
@@ -15,7 +19,7 @@ import pytorch_lightning as pl
 # metaclass usage for abstract class definition
 # or inheritance-based abstract class
 class BaseModule(pl.LightningModule, abc.ABC):
-    def __init__(self, loss, accuracy_fnc, optimizer_class, optimizer_args, input_dims=None, output_dims=None, *args, **kwargs):
+    def __init__(self, loss, accuracy_fnc, optimizer_class, optimizer_args, input_size=None, output_size=None, *args, **kwargs):
         '''Here we save all the useful settings, like a loss and an accuracy
         functions, accepting predictions and targets in this order.'''
         super().__init__(*args, **kwargs)
@@ -25,8 +29,13 @@ class BaseModule(pl.LightningModule, abc.ABC):
         self._optimizer_class = optimizer_class
         self._optimizer_args = optimizer_args
 
-        self._input_dims = input_dims
-        self._output_dims = output_dims
+        # these dimensions are for supporting custom input/output sizes with
+        # fixed model type, e.g. LeNet5 on ImageNet
+        # NOTE: not implemented yet
+        self._input_size = torch.Size(input_size)
+        self._output_size = torch.Size(output_size)
+
+        self._summary = None
 
         # this call is done for saving the object properties, stored in self
         self.save_hyperparameters()
@@ -37,6 +46,48 @@ class BaseModule(pl.LightningModule, abc.ABC):
         input. It is an abstract method, so it cannot be instantiated directly
         but it must be subclassed.'''
         return None
+
+    @staticmethod
+    def model_summary(model, input_size=None):
+        # get model and input size, if input is None try inputs from dataset sizes
+        # return summary
+        if input_size is None:
+            # gather dataset sizes
+            # we need a static set of dataset sizes, the one we have now is dynamic
+            # solution: use class attributes as defaults, and eventually they are updated dynamically
+            # NOTE: current solution uses class attributes,
+            # but it could also instantiate the class and get the dynamic
+            # one with the default arguments
+            input_sizes = [x._size for x in datasets.DATASETS.values() if x._size is not None]
+        else:
+            input_sizes = [input_size]
+
+        for size in input_sizes:
+            try:
+                # slow because of cpu
+                device = getattr(model, 'device', 'cpu')
+                summary = torchsummary.summary(model, size, device=device)
+            except RuntimeError:
+                continue
+            else:
+                return summary
+
+    @property
+    def input_size(self):
+        ### CHECK
+        return self._input_size
+
+    @property
+    def output_size(self):
+        ### CHECK
+        return self._output_size
+
+    @property
+    def summary(self):
+        if self._summary is None:
+            self._summary = self.model_summary(self, self._input_size)
+        return self._summary
+
 
     def training_step(self, train_batch, batch_idx):
         x, y = train_batch
