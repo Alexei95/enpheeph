@@ -1,6 +1,7 @@
 # TODOs for Fault Injection Framework
 
 * Have models with different configurations depending on dataset
+* Check interdependency of modules
 * Implement logging
 * Implement pruning (structured + unstructured)
 * Implement compression of saved models using algorithms
@@ -15,6 +16,8 @@
 * Convert everything to PyTorch Lightning (waiting for 0.9 release for DataModule)
   * Use seed_everything and deterministic flag in Trainer
   * Use argument parser together with Trainer
+    * Check out hyperparameter saving
+    * Check out model specific arguments
   * Use callbacks (model checkpointing, early stopping, ...)
     * Implement model compression (lzma) after model checkpointing
     * Check out model / trainer loading / saving
