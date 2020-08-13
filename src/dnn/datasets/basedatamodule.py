@@ -15,9 +15,15 @@ from .common import *
 # metaclass usage for abstract class definition
 # or inheritance-based abstract class
 class BaseDataModule(pl.DataModule, abc.ABC):
+    _name = None
+    _n_classes = None
+    _size = None
+
     def __init__(self, path=DEFAULT_DATASET_PATH,
 
                        name=None,
+                       n_classes=None,
+                       size=None,
 
                        dataset_class=None,
 
@@ -57,6 +63,8 @@ class BaseDataModule(pl.DataModule, abc.ABC):
 
         self._path = pathlib.Path(path).resolve()
         self._name = name
+        self._n_classes = n_classes
+        self._size = size
         self._dataset_class = dataset_class
 
         self._train_transform = self.setup_transform(transform=train_transform,
@@ -118,6 +126,14 @@ class BaseDataModule(pl.DataModule, abc.ABC):
     @property
     def name(self):
         return self._name
+
+    @property
+    def n_classes(self):
+        return self._n_classes
+
+    @property
+    def size(self):
+        return self._size
 
     @staticmethod
     def setup_transform(transform=None, normalize=DEFAULT_NORMALIZE, default=DEFAULT_TRANSFORM):
