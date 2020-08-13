@@ -5,16 +5,21 @@ import pytorch_lightning as pl
 
 from . import basemodule
 
-DEFAULT_LENET5_IN_CHANNELS = 1
+MNIST = basemodule.datasets.DATASETS.get('MNIST', None)
+if MNIST is None:
+    DEFAULT_LENET5_INPUT_SIZE = torch.Size([1, 28, 28])
+else:
+    DEFAULT_LENET5_INPUT_SIZE = MNIST._size
 
 
 class LeNet5(basemodule.BaseModule):
-    def __init__(self, in_channels=DEFAULT_LENET5_IN_CHANNELS, *args, **kwargs):
+    def __init__(self, input_size=DEFAULT_LENET5_INPUT_SIZE, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # this implementation is from the PyTorch implementation in the tutorial
         # FIXME: make the first layer customizable to accept also different
         # datasets, depending on the input dimension
+        in_channels = self._input_size[0]
         self.convnet = torch.nn.Sequential(collections.OrderedDict([
             ('c1', torch.nn.Conv2d(in_channels, 6, kernel_size=(3, 3))),
             ('relu1', torch.nn.ReLU()),

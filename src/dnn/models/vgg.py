@@ -17,8 +17,12 @@ DEFAULT_VGG_CONFIGS = {
            512, 512, 'M', 512, 512, 512, 512, 'M'],
 }
 
-# default input channels, 3 for RGB images (CIFAR10, ImageNet)
-DEFAULT_VGG_IN_CHANNELS = 3
+CIFAR10 = basemodule.datasets.DATASETS.get('CIFAR10', None)
+if CIFAR10 is None:
+    DEFAULT_VGG_INPUT_SIZE = torch.Size([3, 32, 32])
+else:
+    DEFAULT_VGG_INPUT_SIZE = CIFAR10._size
+
 
 class VGG(basemodule.BaseModule):
     '''
@@ -60,10 +64,11 @@ class VGG(basemodule.BaseModule):
 # variable named DEFAULT_CONFIGS
 # batch_norm is for batch normalization
 # in_channels represents the number of input channels
-def make_layers_vgg(cfg, batch_norm=False, in_channels=DEFAULT_VGG_IN_CHANNELS):
+def make_layers_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE):
     # FIXME: make the first layer customizable to accept also different
     # datasets, depending on the input dimension
     layers = []
+    in_channels = input_size[0]
     for i, v in enumerate(cfg):
         if v == 'M':
             layers += [('pool{}'.format(i), torch.nn.MaxPool2d(kernel_size=2, stride=2))]
