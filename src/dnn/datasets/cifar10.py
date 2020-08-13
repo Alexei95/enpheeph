@@ -32,10 +32,18 @@ CIFAR10_VALIDATION_PERCENTAGE = 0.1
 CIFAR10_TEST_PERCENTAGE = 1.0
 CIFAR10_DATASET = torchvision.datasets.CIFAR10
 CIFAR10_NAME = CIFAR10_DATASET.__name__
+CIFAR10_SIZE = torch.Size([3, 32, 32])
+CIFAR10_N_CLASSES = 10
 
 
 class CIFAR10DataModule(basedatamodule.BaseDataModule):
+    _name = CIFAR10_NAME
+    _n_classes = CIFAR10_N_CLASSES
+    _size = CIFAR10_SIZE
+
     def __init__(self, name=CIFAR10_NAME,
+                       n_classes=CIFAR10_N_CLASSES,
+                       size=CIFAR10_SIZE,
 
                        dataset_class=CIFAR10_DATASET,
 
@@ -47,7 +55,7 @@ class CIFAR10DataModule(basedatamodule.BaseDataModule):
 
                        test_transform=CIFAR10_TEST_TRANSFORM,
                        test_percentage=CIFAR10_TEST_PERCENTAGE,
-                       
+
                        *args,
                        **kwargs):
         kwargs.update({'path': path,

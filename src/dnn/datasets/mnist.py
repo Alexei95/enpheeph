@@ -28,10 +28,18 @@ MNIST_VALIDATION_PERCENTAGE = 0.1
 MNIST_TEST_PERCENTAGE = 1.0
 MNIST_DATASET = torchvision.datasets.MNIST
 MNIST_NAME = MNIST_DATASET.__name__
+MNIST_SIZE = torch.Size([1, 28, 28])
+MNIST_N_CLASSES = len(MNIST_DATASET.classes)
 
 
 class MNISTDataModule(basedatamodule.BaseDataModule):
+    _name = MNIST_NAME
+    _n_classes = MNIST_N_CLASSES
+    _size = MNIST_SIZE
+
     def __init__(self, name=MNIST_NAME,
+                       n_classes=MNIST_N_CLASSES,
+                       size=MNIST_SIZE,
 
                        dataset_class=MNIST_DATASET,
 
@@ -43,7 +51,7 @@ class MNISTDataModule(basedatamodule.BaseDataModule):
 
                        test_transform=MNIST_TEST_TRANSFORM,
                        test_percentage=MNIST_TEST_PERCENTAGE,
-                       
+
                        *args,
                        **kwargs):
         kwargs.update({'path': path,
