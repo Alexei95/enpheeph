@@ -3,7 +3,7 @@ import copy
 
 
 class FaultInjectorABC(abc.ABC):
-    def __init__(self, target_module_name):
+    def __init__(self, target_module_name=None, *args, **kwargs):
         self._target_module_name = target_module_name
 
         self._backup_modules = {}
@@ -52,7 +52,3 @@ class FaultInjectorABC(abc.ABC):
         old_module_copy = copy.deepcopy(self._backup_modules[(hash(parent_module), target_module_name)])
         old_module_copy.load_state_dict(copy.deepcopy(self._backup_modules[(hash(parent_module), target_module_name)]))
         return old_module_copy
-
-        
-
-    
