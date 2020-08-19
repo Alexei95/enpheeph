@@ -89,7 +89,7 @@ class MNISTDataModule(datamoduleabc.DataModuleABC):
     def reset_indices(self):
         train_n_indices = math.floor(self._train_percentage * self._train_val_length)
         val_n_indices = math.ceil(self._val_percentage * self._train_val_length)
-        train_val_indices = torch.randperm(mnist_train_n_indices + mnist_val_n_indices).tolist()
+        train_val_indices = torch.randperm(train_n_indices + val_n_indices).tolist()
         self._train_indices = train_val_indices[0:train_n_indices]
         self._val_indices = train_val_indices[train_n_indices:(train_n_indices + val_n_indices)]
 
