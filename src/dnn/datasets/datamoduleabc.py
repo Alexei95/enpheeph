@@ -117,8 +117,8 @@ class DataModuleABC(pl.LightningDataModule):
         receiving the arguments.
         '''
         for dataset_type in ['train', 'val', 'test']:
-            assert getattr(self, f"_{dataset_type}_percentage") > 0
-            assert getattr(self, f"_{dataset_type}_percentage") < 1
+            assert getattr(self, f"_{dataset_type}_percentage") >= 0
+            assert getattr(self, f"_{dataset_type}_percentage") <= 1
 
     @property
     def path(self):
