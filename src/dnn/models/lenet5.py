@@ -4,8 +4,9 @@ import torch
 import pytorch_lightning as pl
 
 from . import moduleabc
+from ..datasets import DATASETS
 
-MNIST = basemodule.datasets.DATASETS.get('MNIST', None)
+MNIST = DATASETS.get('MNIST', None)
 if MNIST is None:
     DEFAULT_LENET5_INPUT_SIZE = torch.Size([1, 28, 28])
 else:
