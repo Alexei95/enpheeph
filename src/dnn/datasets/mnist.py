@@ -54,8 +54,7 @@ class MNISTDataModule(datamoduleabc.DataModuleABC):
 
                        *args,
                        **kwargs):
-        kwargs.update({'path': path,
-                       'name': name,
+        kwargs.update({'name': name,
                        'dataset_class': dataset_class,
                        'train_transform': train_transform,
                        'train_percentage': train_percentage,
