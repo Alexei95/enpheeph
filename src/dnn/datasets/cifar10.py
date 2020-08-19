@@ -88,7 +88,7 @@ class CIFAR10DataModule(datamoduleabc.DataModuleABC):
 
 
     def setup(self, stage):
-        if self._cifar10_train_indices is None or self._cifar10_val_indices is None:
+        if self._train_indices is None or self._val_indices is None:
             self.reset_indices()
         cifar10_train = self._dataset_class(self._path, train=True, download=False, transform=self._train_transform)
         cifar10_val = self._dataset_class(self._path, train=True, download=False, transform=self._val_transform)

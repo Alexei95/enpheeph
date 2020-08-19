@@ -95,7 +95,7 @@ class MNISTDataModule(datamoduleabc.DataModuleABC):
         # if we don't have indices setup for training and validation
         # we create new ones
         # indices are not required for testing as we use the whole dataset
-        if self._mnist_train_indices is None or self._mnist_val_indices is None:
+        if self._train_indices is None or self._val_indices is None:
             self.reset_indices()
         mnist_train = self._dataset_class(self._path, train=True, download=False, transform=self._train_transform)
         mnist_val = self._dataset_class(self._path, train=True, download=False, transform=self._val_transform)
