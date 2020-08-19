@@ -4,8 +4,6 @@ import torch
 
 
 class OperationABC(torch.nn.Module, abc.ABC):
-    def __init__(self, *args, **kwargs):
-
     @abc.abstractmethod
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         pass

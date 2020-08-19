@@ -1,4 +1,3 @@
-import importlib
 import pathlib
 
 from ....utils import gather_objects, update_dicts

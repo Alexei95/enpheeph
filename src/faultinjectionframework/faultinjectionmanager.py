@@ -1,13 +1,7 @@
-import abc
 import copy
 
 
-class FaultInjectorABC(abc.ABC):
-    def __init__(self, target_module_name=None, *args, **kwargs):
-        self._target_module_name = target_module_name
-
-        self._backup_modules = {}
-
+class FaultInjectionManager(object):
     def setup_fi(self, model):
         # NOTE: we could have used named_modules, but then we would have checked
         # the module directly, making it impossible to update it without knowing
@@ -36,11 +30,6 @@ class FaultInjectorABC(abc.ABC):
             if hasattr(m, self._target_module):
                 old_module = self.restore_module(m, self._target_module_name)
                 setattr(m, self._target_module_name, old_module)
-
-
-    @abc.abstractmethod
-    def update_module(self, parent_module, target_module_name):
-        pass
 
     def backup_module(self, parent_module, target_module_name):
         original_module = getattr(parent_module, target_module_name)
