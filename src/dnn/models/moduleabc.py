@@ -35,8 +35,14 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         # these dimensions are for supporting custom input/output sizes with
         # fixed model type, e.g. LeNet5 on ImageNet
         # NOTE: not implemented yet
-        self._input_size = torch.Size(input_size)
-        self._output_size = torch.Size(output_size)
+        if input_size is None:
+            self._input_size = torch.Size([])
+        else:
+            self._input_size = torch.Size(input_size)
+        if output_size is None:
+            self._output_size = torch.Size([])
+        else:
+            self._output_size = torch.Size(output_size)
 
         self._summary = None
 

@@ -6,15 +6,20 @@ import pytorch_lightning as pl
 from . import moduleabc
 from ..datasets import DATASETS
 
+# FIXME: implementation of input and output sizes can be improved
 MNIST = DATASETS.get('MNIST', None)
 if MNIST is None:
     DEFAULT_LENET5_INPUT_SIZE = torch.Size([1, 28, 28])
+    DEFAULT_LENET5_OUTPUT_SIZE = torch.Size([10])
 else:
     DEFAULT_LENET5_INPUT_SIZE = MNIST._size
+    DEFAULT_LENET5_OUTPUT_SIZE = torch.size([MNIST._n_classes])
 
 
 class LeNet5(moduleabc.ModuleABC):
-    def __init__(self, input_size=DEFAULT_LENET5_INPUT_SIZE, *args, **kwargs):
+    def __init__(self, input_size=DEFAULT_LENET5_INPUT_SIZE, output_size=DEFAULT_LENET5_OUTPUT_SIZE, *args, **kwargs):
+        kwargs['input_size'] = input_size
+        kwargs['output_size'] = output_size
         super().__init__(*args, **kwargs)
 
         # this implementation is from the PyTorch implementation in the tutorial

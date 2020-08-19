@@ -30,6 +30,7 @@ class VGG(moduleabc.ModuleABC):
     '''
     VGG model
     '''
+    # FIXME: missing input and output sizes implementation
     def __init__(self, features, *args, **kwargs):
         super().__init__()
         self.features = features
