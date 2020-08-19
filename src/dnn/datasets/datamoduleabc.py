@@ -14,7 +14,8 @@ from .common import *
 
 # metaclass usage for abstract class definition
 # or inheritance-based abstract class
-class BaseDataModule(pl.LightningDataModule, metaclass=abc.ABCMeta):
+# no abstract class as it creates metaclass issues
+class BaseDataModule(pl.LightningDataModule):
     _name = None
     _n_classes = None
     _size = None
