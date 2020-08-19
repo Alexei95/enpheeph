@@ -3,6 +3,7 @@ import functools
 
 import torch
 import pytorch_lightning as pl
+import pytorch_lightning.core.decorators as pl_decorators
 
 from . import moduleabc
 from ..datasets import DATASETS
@@ -53,8 +54,8 @@ class VGG(moduleabc.ModuleABC):
 
     # the decorator is to automatically move all the inputs and outputs to the
     # correct device, it has no effect if no LightningModule or not to
-    # __call__ or forward
-    @pl.core.decorators.auto_move_data
+    # __call__ or forward, and it is generally automatically applied
+    @pl_decorators.auto_move_data
     def forward(self, x, *args, **kwargs):
         x = self.features(x)
         x = x.view(x.size(0), -1)
