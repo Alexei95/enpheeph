@@ -77,7 +77,7 @@ class MNISTDataModule(datamoduleabc.DataModuleABC):
 
     def _asserts(self):
         assert (self._train_percentage + self._val_percentage) > 0
-        assert (self._train_percentage + self._val_percentage) < 1
+        assert (self._train_percentage + self._val_percentage) <= 1
 
     def prepare_data(self):
         # download
