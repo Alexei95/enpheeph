@@ -3,6 +3,7 @@ import pathlib
 import sys
 
 import pytorch_lightning as pl
+import torch
 import torch.utils.data
 import torchvision.datasets
 import torchvision.transforms
@@ -83,7 +84,7 @@ class CIFAR10DataModule(datamoduleabc.DataModuleABC):
     def reset_indices(self):
         train_n_indices = math.floor(self._train_percentage * self._train_val_length)
         val_n_indices = math.ceil(self._val_percentage * self._train_val_length)
-        train_val_indices = randperm(cifar10_train_n_indices + cifar10_val_n_indices).tolist()
+        train_val_indices = torch.randperm(cifar10_train_n_indices + cifar10_val_n_indices).tolist()
         self._train_indices = train_val_indices[0:train_n_indices]
         self._val_indices = train_val_indices[train_n_indices:(train_n_indices + val_n_indices)]
 
