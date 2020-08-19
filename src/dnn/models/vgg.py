@@ -5,6 +5,7 @@ import torch
 import pytorch_lightning as pl
 
 from . import moduleabc
+from ..datasets import DATASETS
 
 # standard VGG configs, 11, 13, 16, 19, number is the output channel size
 # for conv, M is max pooling
@@ -17,7 +18,7 @@ DEFAULT_VGG_CONFIGS = {
            512, 512, 'M', 512, 512, 512, 512, 'M'],
 }
 
-CIFAR10 = basemodule.datasets.DATASETS.get('CIFAR10', None)
+CIFAR10 = DATASETS.get('CIFAR10', None)
 if CIFAR10 is None:
     DEFAULT_VGG_INPUT_SIZE = torch.Size([3, 32, 32])
 else:
