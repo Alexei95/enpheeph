@@ -62,7 +62,7 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         # output = (input - filter + 2 * padding) / stride + 1
         kernel = []
         for i, o, p, s in zip(input_size, output_size, padding, stride):
-            kernel.append(i + 2 * p - (o - 1) * s)
+            kernel.append(int(i + 2 * p - (o - 1) * s))
         return tuple(kernel)
 
     @staticmethod
@@ -71,7 +71,7 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         # output = (input - filter + 2 * padding) / stride + 1
         output = []
         for i, k, p, s in zip(input_size, kernel_size, padding, stride):
-            output.append((i - k + 2 * p) / s + 1)
+            output.append(int((i - k + 2 * p) / s + 1))
         return tuple(output)
 
     @staticmethod
