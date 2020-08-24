@@ -125,16 +125,19 @@ class DataModuleABC(pl.LightningDataModule):
         return self._path
 
     @property
-    def name(self):
-        return self._name
+    @classmethod
+    def name(cls):
+        return cls._name
 
     @property
-    def n_classes(self):
-        return self._n_classes
+    @classmethod
+    def n_classes(cls):
+        return cls._n_classes
 
     @property
-    def size(self):
-        return self._size
+    @classmethod
+    def size(cls):
+        return cls._size
 
     @staticmethod
     def setup_transform(transform=None, normalize=DEFAULT_NORMALIZE, default=DEFAULT_TRANSFORM):
