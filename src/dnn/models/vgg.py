@@ -93,8 +93,8 @@ def make_layers_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE):
     return torch.nn.Sequential(collections.OrderedDict(layers))
 
 
-def make_vgg(output_size=DEFAULT_VGG_OUTPUT_SIZE, *args, **kwargs):
-    return VGG(make_layers_vgg(*args, **kwargs), output_size=output_size)
+def make_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE, output_size=DEFAULT_VGG_OUTPUT_SIZE, *args, **kwargs):
+    return VGG(make_layers_vgg(cfg=cfg, batch_norm=batch_norm, input_size=input_size), output_size=output_size, *args, **kwargs)
 
 
 VGG11 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['11'])
