@@ -21,6 +21,9 @@ PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent
 # package dir
 PACKAGE_DIR = PROJECT_DIR / 'src'
 # main datasets directory
-DEFAULT_DATASET_PATH = PROJECT_DIR / 'datasets'
+DEFAULT_DATASET_PATH = PROJECT_DIR / 'data' / 'datasets'
 # main directory for saving models
-DEFAULT_MODEL_PATH = PROJECT_DIR / 'models'
+DEFAULT_MODEL_PATH = PROJECT_DIR / 'data' / 'trained_models'
+
+# default time format string
+DEFAULT_TIME_FORMAT = '%Y_%m_%d_%H_%M_%S_%f_%z'

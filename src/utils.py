@@ -1,4 +1,5 @@
 import copy
+import datetime
 import importlib
 import os
 import pathlib
@@ -7,8 +8,34 @@ import sys
 # PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent
 # if str(PROJECT_DIR) not in sys.path:
 #     sys.path.append(str(PROJECT_DIR))
+from .common import DEFAULT_PRNG_SEED, DEFAULT_TIME_FORMAT
 
-from .common import DEFAULT_PRNG_SEED
+
+### time handling functions ###
+
+# returns current utctime
+def current_utctime():
+    return datetime.datetime.now(datetime.timezone.utc)
+
+
+# returns a string version of the current utc time
+def current_utctime_string(template=DEFAULT_TIME_FORMAT):
+    return time_string(current_utctime(), template)
+
+
+# converts localtime to utctime
+# it should work in more or less all cases
+def localtime_to_utctime(datetime_obj):
+    localtime_timestamp = datetime_obj.timestamp()
+    return datetime.datetime.fromtimestamp(localtime_timestamp,
+                                           tz=datetime.timezone.utc)
+
+
+# returns the string of a datetime object given the format
+def time_string(datetime_obj, template=DEFAULT_TIME_FORMAT):
+    return datetime_obj.strftime(template)
+
+### end time handling functions ###
 
 # this function sets up the seed for PyTorch / numpy
 # if cuda is available it also enables cuDNN deterministic flags
