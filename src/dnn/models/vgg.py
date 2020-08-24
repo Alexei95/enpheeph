@@ -77,7 +77,6 @@ def make_layers_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE):
     # datasets, depending on the input dimension
     layers = []
     in_channels = input_size[0]
-    kernel_size =
     for i, v in enumerate(cfg):
         if v == 'M':
             layers += [('pool{}'.format(i), torch.nn.MaxPool2d(kernel_size=2, stride=2))]
