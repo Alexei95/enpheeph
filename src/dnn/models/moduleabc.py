@@ -54,10 +54,28 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         '''This defines the forward method for getting predictions from a test
         input. It is an abstract method, so it cannot be instantiated directly
         but it must be subclassed.'''
-        return None
+        pass
 
     @staticmethod
-    # NOTE: we don't strictly need this feature for running the fault injector, 
+    def compute_kernel_dimension(input_size, output_size, stride=(1, 1),
+                                 padding=(0, 0)):
+        # output = (input - filter + 2 * padding) / stride + 1
+        kernel = []
+        for i, o, p, s in zip(input_size, output_size, padding, stride):
+            kernel.append(i + 2 * p - (o - 1) * s)
+        return tuple(kernel)
+
+    @staticmethod
+    def compute_output_dimension(input_size, kernel_size, stride=(1, 1),
+                            padding=(0, 0)):
+        # output = (input - filter + 2 * padding) / stride + 1
+        output = []
+        for i, k, p, s in zip(input_size, kernel_size, padding, stride):
+            output.append((i - k + 2 * p) / s + 1)
+        return tuple(output)
+
+    @staticmethod
+    # NOTE: we don't strictly need this feature for running the fault injector,
     # so we try importing torchsummary, setting it to None if not available and
     # returning None if the model_summary function is called
     def model_summary(model, input_size=None):
@@ -105,7 +123,6 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         if self._summary is None:
             self._summary = self.model_summary(self, self._input_size)
         return self._summary
-
 
     def training_step(self, train_batch, batch_idx):
         x, y = train_batch

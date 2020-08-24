@@ -22,8 +22,10 @@ DEFAULT_VGG_CONFIGS = {
 CIFAR10 = DATASETS.get('CIFAR10', None)
 if CIFAR10 is None:
     DEFAULT_VGG_INPUT_SIZE = torch.Size([3, 32, 32])
+    DEFAULT_VGG_OUTPUT_SIZE = torch.Size([10])
 else:
-    DEFAULT_VGG_INPUT_SIZE = CIFAR10._size
+    DEFAULT_VGG_INPUT_SIZE = CIFAR10.size
+    DEFAULT_VGG_OUTPUT_SIZE = torch.Size([CIFAR10.n_classes])
 
 
 class VGG(moduleabc.ModuleABC):
@@ -31,8 +33,11 @@ class VGG(moduleabc.ModuleABC):
     VGG model
     '''
     # FIXME: missing input and output sizes implementation
-    def __init__(self, features, *args, **kwargs):
-        super().__init__()
+    def __init__(self, features, output_size=DEFAULT_VGG_OUTPUT_SIZE, *args, **kwargs):
+        kwargs['output_size'] = output_size
+
+        super().__init__(*args, **kwargs)
+
         self.features = features
         self.classifier = torch.nn.Sequential(collections.OrderedDict([
             ('classifier_dropout0', torch.nn.Dropout()),
@@ -72,6 +77,7 @@ def make_layers_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE):
     # datasets, depending on the input dimension
     layers = []
     in_channels = input_size[0]
+    kernel_size =
     for i, v in enumerate(cfg):
         if v == 'M':
             layers += [('pool{}'.format(i), torch.nn.MaxPool2d(kernel_size=2, stride=2))]
@@ -87,8 +93,9 @@ def make_layers_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE):
             in_channels = v
     return torch.nn.Sequential(collections.OrderedDict(layers))
 
-def make_vgg(*args, **kwargs):
-    return VGG(make_layers_vgg(*args, **kwargs))
+
+def make_vgg(output_size=DEFAULT_VGG_OUTPUT_SIZE, *args, **kwargs):
+    return VGG(make_layers_vgg(*args, **kwargs), output_size=output_size)
 
 
 VGG11 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['11'])
@@ -96,6 +103,7 @@ VGG11 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['11'])
 VGG11.__name__ = 'VGG11'
 VGG13 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['13'])
 VGG13.__name__ = 'VGG13'
+# ImageNet-compatible, size: 3, 224, 224
 VGG16 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['16'])
 VGG16.__name__ = 'VGG16'
 VGG19 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['19'])
