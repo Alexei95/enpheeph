@@ -124,17 +124,14 @@ class DataModuleABC(pl.LightningDataModule):
     def path(self):
         return self._path
 
-    @property
     @classmethod
     def name(cls):
         return cls._name
 
-    @property
     @classmethod
     def n_classes(cls):
         return cls._n_classes
 
-    @property
     @classmethod
     def size(cls):
         return cls._size

@@ -24,8 +24,8 @@ if CIFAR10 is None:
     DEFAULT_VGG_INPUT_SIZE = torch.Size([3, 32, 32])
     DEFAULT_VGG_OUTPUT_SIZE = torch.Size([10])
 else:
-    DEFAULT_VGG_INPUT_SIZE = CIFAR10.size
-    DEFAULT_VGG_OUTPUT_SIZE = torch.Size([CIFAR10.n_classes])
+    DEFAULT_VGG_INPUT_SIZE = CIFAR10.size()
+    DEFAULT_VGG_OUTPUT_SIZE = torch.Size([CIFAR10.n_classes()])
 
 
 class VGG(moduleabc.ModuleABC):

@@ -12,8 +12,8 @@ if MNIST is None:
     DEFAULT_LENET5_INPUT_SIZE = torch.Size([1, 28, 28])
     DEFAULT_LENET5_OUTPUT_SIZE = torch.Size([10])
 else:
-    DEFAULT_LENET5_INPUT_SIZE = MNIST.size
-    DEFAULT_LENET5_OUTPUT_SIZE = torch.Size([MNIST.n_classes])
+    DEFAULT_LENET5_INPUT_SIZE = MNIST.size()
+    DEFAULT_LENET5_OUTPUT_SIZE = torch.Size([MNIST.n_classes()])
 
 # this size is required to compare the size of the initial layer to match the
 # input dataset with the following layers
