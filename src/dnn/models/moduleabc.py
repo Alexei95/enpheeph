@@ -133,7 +133,7 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         result = pl.TrainResult(minimize=loss, checkpoint_on=loss, early_stop_on=loss)
         result.log_dict({'train_loss': loss, 'train_accuracy': accuracy},
                         prog_bar=True, logger=True, on_epoch=True,
-                        reduce_fx=torch.mean)
+                        reduce_fx=torch.mean, sync_dist=True)
 
         return result
 
@@ -146,7 +146,7 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         result = pl.EvalResult(checkpoint_on=loss, early_stop_on=loss)
         result.log_dict({'test_loss': loss, 'test_accuracy': accuracy},
                         prog_bar=True, logger=True, on_epoch=True,
-                        reduce_fx=torch.mean)
+                        reduce_fx=torch.mean, sync_dist=True)
 
         return result
 
@@ -159,7 +159,7 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         result = pl.EvalResult(checkpoint_on=loss, early_stop_on=loss)
         result.log_dict({'validation_loss': loss, 'validation_accuracy': accuracy},
                         prog_bar=True, logger=True, on_epoch=True,
-                        reduce_fx=torch.mean)
+                        reduce_fx=torch.mean, sync_dist=True)
 
         return result
 
