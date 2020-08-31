@@ -12,6 +12,8 @@ import torchvision.transforms
 from . import datamoduleabc
 
 
+### COMPLETE IMAGENET IMPLEMENTATION
+
 IMAGENET_TRAIN_VAL_LENGTH = 50000
 IMAGENET_TEST_LENGTH = 10000
 IMAGENET_TRAIN_PERCENTAGE = 0.9
@@ -75,6 +77,8 @@ class ImageNetDataModule(datamoduleabc.DataModuleABC):
                        'test_percentage': test_percentage,})
         super().__init__(*args, **kwargs)
 
+        return NotImplemented
+
         self._train_val_length = CIFAR10_TRAIN_VAL_LENGTH
         self._test_val_length = CIFAR10_TEST_LENGTH
 
@@ -82,11 +86,13 @@ class ImageNetDataModule(datamoduleabc.DataModuleABC):
         self._val_indices = None
 
     def prepare_data(self):
+        return NotImplemented
         # download
         self._dataset_class(self._path, train=True, download=True, transform=None)
         self._dataset_class(self._path, train=False, download=True, transform=None)
 
     def reset_indices(self):
+        return NotImplemented
         train_n_indices = math.floor(self._train_percentage * self._train_val_length)
         val_n_indices = math.ceil(self._val_percentage * self._train_val_length)
         train_val_indices = torch.randperm(train_n_indices + val_n_indices).tolist()
@@ -94,6 +100,7 @@ class ImageNetDataModule(datamoduleabc.DataModuleABC):
         self._val_indices = train_val_indices[train_n_indices:(train_n_indices + val_n_indices)]
 
     def setup(self, stage):
+        return NotImplemented
         if self._train_indices is None or self._val_indices is None:
             self.reset_indices()
         cifar10_train = self._dataset_class(self._path, train=True, download=False, transform=self._train_transform)

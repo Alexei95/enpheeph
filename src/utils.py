@@ -1,5 +1,6 @@
 import copy
 import datetime
+import enum
 import importlib
 import os
 import pathlib
@@ -106,3 +107,28 @@ def update_dicts(dict1, dict2):
     res = copy.deepcopy(dict1)
     res.update(copy.deepcopy(dict2))
     return res
+
+
+# NOTE: recipe for Ordered Enumerations in Python docs
+# https://docs.python.org/3.8/library/enum.html#orderedenum
+class OrderedEnum(enum.Enum):
+
+    def __ge__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value >= other.value
+        return NotImplemented
+
+    def __gt__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value > other.value
+        return NotImplemented
+
+    def __le__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value <= other.value
+        return NotImplemented
+
+    def __lt__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value < other.value
+        return NotImplemented
