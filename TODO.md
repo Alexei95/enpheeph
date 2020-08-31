@@ -25,6 +25,7 @@
   * Check support for colab TPUs for running experiments (ImageNet and similar)
 * Pretrain models and upload them using Torch Hub
 * Check Cross-Validation for averages
+* Improve data classes, using the module dataclasses
 
 ## DONE TODOs
 
