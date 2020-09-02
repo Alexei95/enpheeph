@@ -32,7 +32,9 @@ class FaultCircleShape(typing.NamedTuple):
 
 # FIXME: improve these declarations with default types and checks subclassing
 # typing.NamedTuple
-Position2DplusT = collections.namedtuple('Position2DplusT', ['x', 'y', 't'])
+# fault probability is required for the conversion to error made by the System model
+# FIXME: implement also particle strength (Mev) to determine the area of impact
+FaultSource2D = collections.namedtuple('FaultSource2D', ['x', 'y', 't', 'fault_probability'])
 # this fault identifier uses some parameters like affected area that depend on
 # the device model, therefore the fault source returns only the position of the
 # hit in relative terms

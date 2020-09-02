@@ -18,7 +18,6 @@ class ModelWrapperABC(abc.ABC):
     def copy_module(module, *args, **kwargs):
         pass
 
-
     def has_module(self, name, *args, **kwargs):
         try:
             self.get_module(name)
@@ -27,6 +26,8 @@ class ModelWrapperABC(abc.ABC):
         else:
             return True
 
+    # we implement a custom getattribute to have direct access to model
+    # attributes, by prepending 'model_' before the attribute
     def __getattribute__(self, name: str):
         if name.startswith('model_'):
             return getattr(self._model, name)

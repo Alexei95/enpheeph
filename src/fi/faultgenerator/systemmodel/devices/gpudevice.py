@@ -3,17 +3,15 @@ from . import deviceabc
 
 class GPUDevice(deviceabc.DeviceABVC):
     def __init__(self,
-                 total_chip_area,
-                 number_sub_components,
-                 register_area_per_subcomponent,
-                 memory_area_per_subcomponent, ):
+                 flops,
+                 execution_order,
+                 *args, **kwargs):
+        self._flops = flops
+        self._execution_order = execution_order
 
     @property
-    @abc.abstractmethod
-    def weight_fault_probability(self):
-        pass
+    def execution_order(self):
+        return self._execution_order
 
-    @property
-    @abc.abstractmethod
-    def activation_fault_probability(self):
-        pass
+    def execution_time(self, n_operations):
+        return n_operations / self._flops

@@ -23,7 +23,7 @@ class ParticleSource(faultsourceabc.FaultSourceABC):
         return self._sampler
 
     # we return a list of fault positions, depending on x, y and t
-    def generate_faults(self, area, time) -> typing.Tuple[common.Position2DplusT]:
+    def generate_fault_sources(self, area, time) -> typing.Tuple[common.FaultSource2D]:
         # we assume area in cm2 and time in hours
         # the number of particles hit depend on area, time and flux
         n_of_neutrons = area * time * self._flux
@@ -33,5 +33,6 @@ class ParticleSource(faultsourceabc.FaultSourceABC):
             pos_x = self._sampler()
             pos_y = self._sampler()
             t = self._sampler()
-            res.append(common.Position2DplusT(pos_x, pos_y, t))
+            fault_probability = self._sampler()
+            res.append(common.FaultSource2D(pos_x, pos_y, t, fault_probability))
         return tuple(res)

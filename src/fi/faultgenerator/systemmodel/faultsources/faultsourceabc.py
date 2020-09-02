@@ -9,5 +9,5 @@ class FaultSourceABC(abc.ABC):
         super().__init__(*args, **kwargs)
 
     @abc.abstractmethod
-    def generate_faults(self, *args, **kwargs) -> typing.Tuple:
+    def generate_fault_sources(self, *args, **kwargs) -> typing.Tuple:
         pass
