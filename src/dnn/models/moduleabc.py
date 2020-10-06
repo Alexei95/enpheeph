@@ -1,6 +1,7 @@
 import abc
 
 import torch
+import torch.quantization
 import pytorch_lightning as pl
 try:
     import torchsummary
@@ -22,15 +23,10 @@ from .. import datasets
 # metaclass usage for abstract class definition
 # or inheritance-based abstract class
 class ModuleABC(pl.LightningModule, abc.ABC):
-    def __init__(self, loss, accuracy_fnc, optimizer_class, optimizer_args, input_size=None, output_size=None, *args, **kwargs):
+    def __init__(self, input_size=None, output_size=None, quantization_ready=True, *args, **kwargs):
         '''Here we save all the useful settings, like a loss and an accuracy
         functions, accepting predictions and targets in this order.'''
         super().__init__(*args, **kwargs)
-
-        self._loss = loss
-        self._accuracy_fnc = accuracy_fnc
-        self._optimizer_class = optimizer_class
-        self._optimizer_args = optimizer_args
 
         # these dimensions are for supporting custom input/output sizes with
         # fixed model type, e.g. LeNet5 on ImageNet
@@ -44,10 +40,18 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         else:
             self._output_size = torch.Size(output_size)
 
+        self._quantization_ready = quantization_ready
+        self._quantization_forward_pre_hook_handle = None
+        self._quantization_forward_pre_hook_handle = None
+        self.torch_add = torch.add
+
         self._summary = None
 
         # this call is done for saving the object properties, stored in self
         self.save_hyperparameters()
+
+        if self._quantization_ready:
+            self.enable_quantization()
 
     @abc.abstractmethod
     def forward(self, *args, **kwargs):
@@ -56,23 +60,35 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         but it must be subclassed.'''
         pass
 
-    @staticmethod
-    def compute_kernel_dimension(input_size, output_size, stride=(1, 1),
-                                 padding=(0, 0)):
-        # output = (input - filter + 2 * padding) / stride + 1
-        kernel = []
-        for i, o, p, s in zip(input_size, output_size, padding, stride):
-            kernel.append(int(i + 2 * p - (o - 1) * s))
-        return tuple(kernel)
+    def enable_quantization(self):
+        if self._quantization_forward_pre_hook_handle is None and self._quantization_forward_pre_hook_handle is None:
+            self._quantization_forward_pre_hook_handle = self.register_forward_pre_hook(self.quantization_forward_pre_hook)
+            self._quantization_forward_pre_hook_handle = self.register_forward_hook(self.quantization_forward_post_hook)
+
+        self.torch_add = torch.nn.quantized.FloatFunctional()
+
+    def disable_quantization(self):
+        if self._quantization_forward_pre_hook_handle is not None:
+            self._quantization_forward_pre_hook_handle.remove()
+            self._quantization_forward_pre_hook_handle = None
+
+        if self._quantization_forward_pre_hook_handle is not None:
+            self._quantization_forward_pre_hook_handle.remove()
+            self._quantization_forward_pre_hook_handle = None
+
+        self.torch_add = torch.add
 
     @staticmethod
-    def compute_output_dimension(input_size, kernel_size, stride=(1, 1),
-                            padding=(0, 0)):
-        # output = (input - filter + 2 * padding) / stride + 1
-        output = []
-        for i, k, p, s in zip(input_size, kernel_size, padding, stride):
-            output.append(int((i - k + 2 * p) / s + 1))
-        return tuple(output)
+    # this hook is called before the forward to add the quantization stub to
+    # the input
+    def quantization_forward_pre_hook(self, input):
+        return torch.quantization.QuantStub()(input)
+
+    @staticmethod
+    # this hook is called after the forward to add the quantization destub to
+    # the input
+    def quantization_forward_post_hook(self, input, output):
+        return torch.quantization.DeQuantStub()(output)
 
     @staticmethod
     # NOTE: we don't strictly need this feature for running the fault injector,
@@ -108,6 +124,10 @@ class ModuleABC(pl.LightningModule, abc.ABC):
             else:
                 return summary
 
+    # TODO: implement pruning
+    def pruning(self, *args, **kwargs):
+        raise NotImplementedError
+
     @property
     def input_size(self):
         ### CHECK
@@ -123,47 +143,3 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         if self._summary is None:
             self._summary = self.model_summary(self, self._input_size)
         return self._summary
-
-    def training_step(self, train_batch, batch_idx):
-        x, y = train_batch
-        predictions = self.forward(x)
-        loss = self._loss(predictions, y)
-        accuracy = self._accuracy_fnc(predictions, y)
-
-        result = pl.TrainResult(minimize=loss, checkpoint_on=loss, early_stop_on=loss)
-        result.log_dict({'train_loss': loss, 'train_accuracy': accuracy},
-                        prog_bar=True, logger=True, on_epoch=True,
-                        reduce_fx=torch.mean, sync_dist=True)
-
-        return result
-
-    def test_step(self, test_batch, batch_idx):
-        x, y = test_batch
-        predictions = self.forward(x)
-        loss = self._loss(predictions, y)
-        accuracy = self._accuracy_fnc(predictions, y)
-
-        result = pl.EvalResult(checkpoint_on=loss, early_stop_on=loss)
-        result.log_dict({'test_loss': loss, 'test_accuracy': accuracy},
-                        prog_bar=True, logger=True, on_epoch=True,
-                        reduce_fx=torch.mean, sync_dist=True)
-
-        return result
-
-    def validation_step(self, val_batch, batch_idx):
-        x, y = val_batch
-        predictions = self.forward(x)
-        loss = self._loss(predictions, y)
-        accuracy = self._accuracy_fnc(predictions, y)
-
-        result = pl.EvalResult(checkpoint_on=loss, early_stop_on=loss)
-        result.log_dict({'validation_loss': loss, 'validation_accuracy': accuracy},
-                        prog_bar=True, logger=True, on_epoch=True,
-                        reduce_fx=torch.mean, sync_dist=True)
-
-        return result
-
-    def configure_optimizers(self):
-        optimizer = self._optimizer_class(self.parameters(), **self._optimizer_args)
-        # different optimizers can be passed as a tuple
-        return optimizer
