@@ -4,8 +4,12 @@ import torch
 import pytorch_lightning as pl
 import pytorch_lightning.core.decorators as pl_decorators
 
-from . import moduleabc
-from ..datasets import DATASETS
+from . import visionmoduleabc
+# to avoid interdependency
+try:
+    from ...datasets import DATASETS
+except ImportError:
+    DATASETS = tuple()
 
 # FIXME: implementation of input and output sizes can be improved
 MNIST = DATASETS.get('MNIST', None)
@@ -19,14 +23,15 @@ else:
 # this size is required to compare the size of the initial layer to match the
 # input dataset with the following layers
 # it is computed based on the 28x28 MNIST dataset
-DEFAULT_LENET5_C1_OUTPUT_SIZE = moduleabc.ModuleABC.compute_output_dimension(input_size=(28, 28),
-                                                                             kernel_size=(3, 3),
-                                                                             stride=(1, 1),
-                                                                             padding=(0, 0))
+DEFAULT_LENET5_C1_OUTPUT_SIZE = visionmoduleabc.VisionModuleABC.compute_output_dimension(input_size=(28, 28),
+                                                                                         kernel_size=(3, 3),
+                                                                                         stride=(1, 1),
+                                                                                         padding=(0, 0))
 
 
-class LeNet5(moduleabc.ModuleABC):
+class LeNet5(visionmoduleabc.VisionModuleABC):
     def __init__(self, input_size=DEFAULT_LENET5_INPUT_SIZE, output_size=DEFAULT_LENET5_OUTPUT_SIZE, *args, **kwargs):
+        # to add missing arguments to kwargs, in this way we can have different defaults
         kwargs['input_size'] = input_size
         kwargs['output_size'] = output_size
 

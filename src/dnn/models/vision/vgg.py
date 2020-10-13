@@ -5,8 +5,12 @@ import torch
 import pytorch_lightning as pl
 import pytorch_lightning.core.decorators as pl_decorators
 
-from . import moduleabc
-from ..datasets import DATASETS
+from . import visionmoduleabc
+# to avoid interdependency
+try:
+    from ...datasets import DATASETS
+except ImportError:
+    DATASETS = tuple()
 
 # standard VGG configs, 11, 13, 16, 19, number is the output channel size
 # for conv, M is max pooling
@@ -28,7 +32,7 @@ else:
     DEFAULT_VGG_OUTPUT_SIZE = torch.Size([CIFAR10.n_classes()])
 
 
-class VGG(moduleabc.ModuleABC):
+class VGG(visionmoduleabc.VisionModuleABC):
     '''
     VGG model
     '''
@@ -73,10 +77,12 @@ class VGG(moduleabc.ModuleABC):
 # batch_norm is for batch normalization
 # in_channels represents the number of input channels
 def make_layers_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE):
-    # FIXME: make the first layer customizable to accept also different
-    # datasets, depending on the input dimension
     layers = []
     in_channels = input_size[0]
+    # FIXME: make the first layer customizable to accept also different
+    # datasets, depending on the input dimension
+    # TODO: add a first layer to match the sizes to the standard ones
+    # before all the other layers
     for i, v in enumerate(cfg):
         if v == 'M':
             layers += [('pool{}'.format(i), torch.nn.MaxPool2d(kernel_size=2, stride=2))]

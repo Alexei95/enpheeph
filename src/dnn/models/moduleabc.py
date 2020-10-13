@@ -1,4 +1,5 @@
 import abc
+import collections.abc
 
 import torch
 import torch.quantization
@@ -9,7 +10,10 @@ except ImportError:
     torchsummary = None
 
 # CHECK WHETHER WE WANT THIS INTERDEPENDENCY
-from .. import datasets
+try:
+    from .. import datasets
+except ImportError:
+    datasets = None
 
 # FIXME: for now we are using self.logger for logging the training and
 # testing steps, but in reality self.logger can be a list containing multiple
@@ -100,7 +104,9 @@ class ModuleABC(pl.LightningModule, abc.ABC):
             return None
         # get model and input size, if input is None try inputs from dataset sizes
         # return summary
-        if input_size is None:
+        if input_size is None and dataset is None:
+            raise ValueError('please provide a list as input size for running the summary test')
+        elif input_size is None:
             # gather dataset sizes
             # we need a static set of dataset sizes, the one we have now is dynamic
             # solution: use class attributes as defaults, and eventually they are updated dynamically
@@ -109,6 +115,10 @@ class ModuleABC(pl.LightningModule, abc.ABC):
             # one with the default arguments
             input_sizes = [x._size for x in datasets.DATASETS.values() if x._size is not None]
         else:
+            # cleanest way to check if we have a list
+            # if isinstance(input_size, collections.abc.Iterable) and not isinstance(input_size, str):
+            #     input_sizes = input_size
+            # else:
             input_sizes = [input_size]
 
         for size in input_sizes:

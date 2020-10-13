@@ -2,7 +2,6 @@ import abc
 
 import torch
 
-# CHECK WHETHER WE WANT THIS INTERDEPENDENCY
 from .. import moduleabc
 
 # FIXME: for now we are using self.logger for logging the training and

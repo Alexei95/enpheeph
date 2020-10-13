@@ -4,8 +4,12 @@ import torch
 import pytorch_lightning as pl
 import pytorch_lightning.core.decorators as pl_decorators
 
-from . import moduleabc
-from ..datasets import DATASETS
+from . import visionmoduleabc
+# to avoid interdependency
+try:
+    from ...datasets import DATASETS
+except ImportError:
+    DATASETS = tuple()
 
 # FIXME: implementation of input and output sizes can be improved
 ImageNet = DATASETS.get('ImageNet', None)
@@ -18,14 +22,15 @@ else:
 
 # this size is required to compare the size of the initial layer to match the
 # input dataset with the following layers
-DEFAULT_ALEXNET_C1_OUTPUT_SIZE = moduleabc.ModuleABC.compute_output_dimension(input_size=(227, 227),
-                                                                              kernel_size=(11, 11),
-                                                                              stride=(4, 4),
-                                                                              padding=(2, 2))
+DEFAULT_ALEXNET_C1_OUTPUT_SIZE = visionmoduleabc.VisionModuleABC.compute_output_dimension(input_size=(227, 227),
+                                                                                          kernel_size=(11, 11),
+                                                                                          stride=(4, 4),
+                                                                                          padding=(2, 2))
 
 
-class AlexNet(moduleabc.ModuleABC):
+class AlexNet(visionmoduleabc.VisionModuleABC):
     def __init__(self, input_size=DEFAULT_ALEXNET_INPUT_SIZE, output_size=DEFAULT_ALEXNET_OUTPUT_SIZE, *args, **kwargs):
+        # to add missing arguments to kwargs, in this way we can have different defaults
         kwargs['input_size'] = input_size
         kwargs['output_size'] = output_size
 
