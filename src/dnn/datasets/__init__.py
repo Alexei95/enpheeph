@@ -9,4 +9,4 @@ DATASETS = gather_objects(path=pathlib.Path(__file__).parent,
                           obj_name='DATASET',
                           default_obj={},
                           update_function=update_dicts,
-                          glob='*.py')
+                          glob='**/*.py')

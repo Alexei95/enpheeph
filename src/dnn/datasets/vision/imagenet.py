@@ -9,7 +9,7 @@ import torch.utils.data
 import torchvision.datasets
 import torchvision.transforms
 
-from . import datamoduleabc
+from . import visiondatamoduleabc
 
 
 ### COMPLETE IMAGENET IMPLEMENTATION
@@ -45,7 +45,7 @@ CIFAR10_TEST_TRANSFORM = torchvision.transforms.Compose([
                         ])
 
 
-class ImageNetDataModule(datamoduleabc.DataModuleABC):
+class ImageNetDataModule(visiondatamoduleabc.VisionDataModuleABC):
     _name = IMAGENET_NAME
     _n_classes = IMAGENET_N_CLASSES
     _size = IMAGENET_SIZE
@@ -74,7 +74,7 @@ class ImageNetDataModule(datamoduleabc.DataModuleABC):
                        'val_transform': val_transform,
                        'val_percentage': val_percentage,
                        'test_transform': test_transform,
-                       'test_percentage': test_percentage,})
+                       'test_percentage': test_percentage, })
         super().__init__(*args, **kwargs)
 
         return NotImplemented

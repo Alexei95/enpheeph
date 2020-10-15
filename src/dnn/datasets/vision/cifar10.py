@@ -8,7 +8,7 @@ import torch.utils.data
 import torchvision.datasets
 import torchvision.transforms
 
-from . import datamoduleabc
+from . import visiondatamoduleabc
 
 CIFAR10_TRAIN_TRANSFORM = torchvision.transforms.Compose([
                             torchvision.transforms.RandomCrop(32, padding=4),  # works only on PIL images
@@ -38,7 +38,7 @@ CIFAR10_SIZE = torch.Size([3, 32, 32])
 CIFAR10_N_CLASSES = 10
 
 
-class CIFAR10DataModule(datamoduleabc.DataModuleABC):
+class CIFAR10DataModule(visiondatamoduleabc.VisionDataModuleABC):
     _name = CIFAR10_NAME
     _n_classes = CIFAR10_N_CLASSES
     _size = CIFAR10_SIZE
@@ -69,7 +69,7 @@ class CIFAR10DataModule(datamoduleabc.DataModuleABC):
                        'val_transform': val_transform,
                        'val_percentage': val_percentage,
                        'test_transform': test_transform,
-                       'test_percentage': test_percentage,})
+                       'test_percentage': test_percentage, })
         super().__init__(*args, **kwargs)
 
         self._train_val_length = CIFAR10_TRAIN_VAL_LENGTH
@@ -89,7 +89,6 @@ class CIFAR10DataModule(datamoduleabc.DataModuleABC):
         train_val_indices = torch.randperm(train_n_indices + val_n_indices).tolist()
         self._train_indices = train_val_indices[0:train_n_indices]
         self._val_indices = train_val_indices[train_n_indices:(train_n_indices + val_n_indices)]
-
 
     def setup(self, stage):
         if self._train_indices is None or self._val_indices is None:
