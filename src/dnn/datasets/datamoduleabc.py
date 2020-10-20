@@ -12,7 +12,7 @@ from ...common import DEFAULT_DATASET_PATH
 from .common import *
 
 
-class DataModuleABC(pl.DataModule):
+class DataModuleABC(pl.LightningDataModule):
     _name = None
     _size = None
     _n_elements = None  # across all dataset types
