@@ -25,10 +25,11 @@ else:
 # it is computed based on the 28x28 MNIST dataset
 # it is required if we want to use bigger images than what the network
 # was designed for
-DEFAULT_LENET5_C1_OUTPUT_SIZE = visionmoduleabc.VisionModuleABC.compute_output_dimension(input_size=(28, 28),
-                                                                                         kernel_size=(3, 3),
-                                                                                         stride=(1, 1),
-                                                                                         padding=(0, 0))
+DEFAULT_LENET5_C1_OUTPUT_SIZE = visionmoduleabc.VisionModuleABC.compute_output_dimension(
+    input_size=DEFAULT_LENET5_INPUT_SIZE[-2:],
+    kernel_size=(3, 3),
+    stride=(1, 1),
+    padding=(0, 0))
 
 
 class LeNet5(visionmoduleabc.VisionModuleABC):
@@ -48,9 +49,9 @@ class LeNet5(visionmoduleabc.VisionModuleABC):
         n_classes = self._output_size[0]
 
         if self._convert_input:
-            c1_input_size = self._input_size[1:]
+            c1_input_size = self._input_size[-2:]
         else:
-            c1_input_size = DEFAULT_LENET5_INPUT_SIZE
+            c1_input_size = DEFAULT_LENET5_INPUT_SIZE[-2:]
 
         c1_kernel_size = self.compute_kernel_dimension(input_size=c1_input_size,
                                                        output_size=DEFAULT_LENET5_C1_OUTPUT_SIZE,

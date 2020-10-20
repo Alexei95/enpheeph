@@ -113,9 +113,9 @@ def make_layers_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE, co
     # one, to avoid analyzing only a patch of it
     # TODO: if smaller, it should be done with an appropriate up-scaling
     #       look up deconvolution in PyTorch
-    if input_size[1:] != DEFAULT_VGG_C0_INPUT_SIZE and convert_input:
+    if convert_input and input_size[-2:] != DEFAULT_VGG_C0_INPUT_SIZE:
         c0_kernel_size = visionmoduleabc.VisionModuleABC.compute_kernel_dimension(
-            input_size=input_size[1:],
+            input_size=input_size[-2:],
             output_size=DEFAULT_VGG_C0_INPUT_SIZE,
             stride=(1, 1),
             padding=(1, 1))
@@ -147,7 +147,7 @@ VGG11 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['11'])
 VGG11.__name__ = 'VGG11'
 VGG13 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['13'])
 VGG13.__name__ = 'VGG13'
-# ImageNet-compatible, size: 3, 224, 224
+# ImageNet-compatible, size: 3, 224, 224 or 3, 227, 227
 VGG16 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['16'])
 VGG16.__name__ = 'VGG16'
 VGG19 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['19'])

@@ -48,9 +48,9 @@ class AlexNet(visionmoduleabc.VisionModuleABC):
         n_classes = self._output_size[0]
 
         if self._convert_input:
-            c1_input_size = self._input_size[1:]
+            c1_input_size = self._input_size[-2:]
         else:
-            c1_input_size = DEFAULT_ALEXNET_INPUT_SIZE
+            c1_input_size = DEFAULT_ALEXNET_INPUT_SIZE[2-:]
 
         c1_kernel_size = self.compute_kernel_dimension(input_size=c1_input_size,
                                                        output_size=DEFAULT_ALEXNET_C1_OUTPUT_SIZE,
