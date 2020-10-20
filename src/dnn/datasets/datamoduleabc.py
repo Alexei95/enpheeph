@@ -61,7 +61,6 @@ class DataModuleABC(pl.LightningDataModule):
 
         self._path = pathlib.Path(path).resolve()
         self._name = name
-        self._n_classes = n_classes
         self._size = size
         self._n_elements = n_elements
         self._dataset_class = dataset_class
