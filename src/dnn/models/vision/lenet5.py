@@ -50,7 +50,7 @@ class LeNet5(visionmoduleabc.VisionModuleABC):
         if self._convert_input:
             c1_input_size = self._input_size[1:]
         else:
-            c1_input_size = DEFAULT_ALEXNET_INPUT_SIZE
+            c1_input_size = DEFAULT_LENET5_INPUT_SIZE
 
         c1_kernel_size = self.compute_kernel_dimension(input_size=c1_input_size,
                                                        output_size=DEFAULT_LENET5_C1_OUTPUT_SIZE,
