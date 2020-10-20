@@ -1,4 +1,5 @@
 import torch
+import torchvision
 
 DEFAULT_NORMALIZE = True
 
