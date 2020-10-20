@@ -2,6 +2,7 @@ import abc
 
 import torch
 
+from .common import *
 from .. import moduleabc
 
 # FIXME: for now we are using self.logger for logging the training and
@@ -16,7 +17,7 @@ from .. import moduleabc
 # metaclass usage for abstract class definition
 # or inheritance-based abstract class
 class VisionModuleABC(moduleabc.ModuleABC, abc.ABC):
-    def __init__(self, loss, accuracy_fnc, optimizer_class, optimizer_args, *args, **kwargs):
+    def __init__(self, loss, accuracy_fnc, optimizer_class, optimizer_args, convert_input=DEFAULT_CONVERT_INPUT,*args, **kwargs):
         '''Here we save all the useful settings, like a loss and an accuracy
         functions, accepting predictions and targets in this order.'''
         super().__init__(*args, **kwargs)
@@ -25,6 +26,7 @@ class VisionModuleABC(moduleabc.ModuleABC, abc.ABC):
         self._accuracy_fnc = accuracy_fnc
         self._optimizer_class = optimizer_class
         self._optimizer_args = optimizer_args
+        self._convert_input = convert_input
 
         # this call is done for saving the object properties, stored in self
         self.save_hyperparameters()
@@ -60,12 +62,7 @@ class VisionModuleABC(moduleabc.ModuleABC, abc.ABC):
         loss = self._loss(predictions, y)
         accuracy = self._accuracy_fnc(predictions, y)
 
-        result = pl.TrainResult(minimize=loss, checkpoint_on=loss, early_stop_on=loss)
-        result.log_dict({'train_loss': loss, 'train_accuracy': accuracy},
-                        prog_bar=True, logger=True, on_epoch=True,
-                        reduce_fx=torch.mean, sync_dist=True)
-
-        return result
+        self.custom_log_dict({'train_loss': loss, 'train_accuracy': accuracy})
 
     def test_step(self, test_batch, batch_idx):
         x, y = test_batch
@@ -73,12 +70,7 @@ class VisionModuleABC(moduleabc.ModuleABC, abc.ABC):
         loss = self._loss(predictions, y)
         accuracy = self._accuracy_fnc(predictions, y)
 
-        result = pl.EvalResult(checkpoint_on=loss, early_stop_on=loss)
-        result.log_dict({'test_loss': loss, 'test_accuracy': accuracy},
-                        prog_bar=True, logger=True, on_epoch=True,
-                        reduce_fx=torch.mean, sync_dist=True)
-
-        return result
+        self.custom_log_dict({'test_loss': loss, 'test_accuracy': accuracy})
 
     def validation_step(self, val_batch, batch_idx):
         x, y = val_batch
@@ -86,12 +78,7 @@ class VisionModuleABC(moduleabc.ModuleABC, abc.ABC):
         loss = self._loss(predictions, y)
         accuracy = self._accuracy_fnc(predictions, y)
 
-        result = pl.EvalResult(checkpoint_on=loss, early_stop_on=loss)
-        result.log_dict({'validation_loss': loss, 'validation_accuracy': accuracy},
-                        prog_bar=True, logger=True, on_epoch=True,
-                        reduce_fx=torch.mean, sync_dist=True)
-
-        return result
+        self.custom_log_dict({'validation_loss': loss, 'validation_accuracy': accuracy})
 
     def configure_optimizers(self):
         optimizer = self._optimizer_class(self.parameters(), **self._optimizer_args)

@@ -22,7 +22,10 @@ else:
 
 # this size is required to compare the size of the initial layer to match the
 # input dataset with the following layers
-DEFAULT_ALEXNET_C1_OUTPUT_SIZE = visionmoduleabc.VisionModuleABC.compute_output_dimension(input_size=(227, 227),
+# it is computed based on the 227x227 ImageNet dataset
+# it is required if we want to use bigger images than what the network
+# was designed for
+DEFAULT_ALEXNET_C1_OUTPUT_SIZE = visionmoduleabc.VisionModuleABC.compute_output_dimension(input_size=DEFAULT_ALEXNET_INPUT_SIZE[-2:],
                                                                                           kernel_size=(11, 11),
                                                                                           stride=(4, 4),
                                                                                           padding=(2, 2))
@@ -44,10 +47,15 @@ class AlexNet(visionmoduleabc.VisionModuleABC):
         # the number of classes is the first dimension of the output
         n_classes = self._output_size[0]
 
-        c1_kernel_size = self.compute_kernel_dimension(input_size=self._input_size[1:],
+        if self._convert_input:
+            c1_input_size = self._input_size[1:]
+        else:
+            c1_input_size = DEFAULT_ALEXNET_INPUT_SIZE
+
+        c1_kernel_size = self.compute_kernel_dimension(input_size=c1_input_size,
                                                        output_size=DEFAULT_ALEXNET_C1_OUTPUT_SIZE,
-                                                       stride=(1, 1),
-                                                       padding=(0, 0))
+                                                       stride=(4, 4),
+                                                       padding=(2, 2))
 
         # input needs to be at least 3x227x227, so that the following dimension
         # is 64x56x56

@@ -104,7 +104,7 @@ class ModuleABC(pl.LightningModule, abc.ABC):
             return None
         # get model and input size, if input is None try inputs from dataset sizes
         # return summary
-        if input_size is None and dataset is None:
+        if input_size is None and datasets is None:
             raise ValueError('please provide a list as input size for running the summary test')
         elif input_size is None:
             # gather dataset sizes
@@ -153,3 +153,11 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         if self._summary is None:
             self._summary = self.model_summary(self, self._input_size)
         return self._summary
+
+    # FIXME: change this hardcoded version of constants into a
+    # namespace/namedtuple for configuration
+    def custom_log_dict(self, dictionary):
+        config = dict(prog_bar=True, logger=True, on_epoch=True,
+                      reduce_fx=torch.mean, sync_dist=True)
+
+        self.log_dict(dictionary, **config)

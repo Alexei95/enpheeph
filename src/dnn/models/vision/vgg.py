@@ -5,6 +5,7 @@ import torch
 import pytorch_lightning as pl
 import pytorch_lightning.core.decorators as pl_decorators
 
+from .common import *
 from . import visionmoduleabc
 # to avoid interdependency
 try:
@@ -22,14 +23,24 @@ DEFAULT_VGG_CONFIGS = {
     '19': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512,
            512, 512, 'M', 512, 512, 512, 512, 'M'],
 }
+DEFAULT_VGG_INIT_WEIGHTS = True
 
-CIFAR10 = DATASETS.get('CIFAR10', None)
-if CIFAR10 is None:
-    DEFAULT_VGG_INPUT_SIZE = torch.Size([3, 32, 32])
-    DEFAULT_VGG_OUTPUT_SIZE = torch.Size([10])
+IMAGENET = DATASETS.get('ImageNet', None)
+if IMAGENET is None:
+    DEFAULT_VGG_INPUT_SIZE = torch.Size([3, 227, 227])
+    DEFAULT_VGG_OUTPUT_SIZE = torch.Size([1000])
 else:
-    DEFAULT_VGG_INPUT_SIZE = CIFAR10.size()
-    DEFAULT_VGG_OUTPUT_SIZE = torch.Size([CIFAR10.n_classes()])
+    DEFAULT_VGG_INPUT_SIZE = IMAGENET.size()
+    DEFAULT_VGG_OUTPUT_SIZE = torch.Size([IMAGENET.n_classes()])
+
+# we assume the default input size for VGG to be ImageNet 227x227
+
+# this size is required to compare the size of the initial layer to match the
+# input dataset with the following layers
+# it is computed based on the 227x227 ImageNet dataset
+# it is required if we want to use bigger images than what the network
+# was designed for
+DEFAULT_VGG_C0_INPUT_SIZE = DEFAULT_VGG_INPUT_SIZE[-2:]
 
 
 class VGG(visionmoduleabc.VisionModuleABC):
@@ -37,8 +48,10 @@ class VGG(visionmoduleabc.VisionModuleABC):
     VGG model
     '''
     # FIXME: missing input and output sizes implementation
-    def __init__(self, features, output_size=DEFAULT_VGG_OUTPUT_SIZE, *args, **kwargs):
+    def __init__(self, features, output_size=DEFAULT_VGG_OUTPUT_SIZE, init_weights=DEFAULT_VGG_INIT_WEIGHTS, *args, **kwargs):
         kwargs['output_size'] = output_size
+        kwargs['features'] = features
+        kwargs['init_weights'] = init_weights
 
         super().__init__(*args, **kwargs)
 
@@ -50,8 +63,11 @@ class VGG(visionmoduleabc.VisionModuleABC):
             ('classifier_dropout1', torch.nn.Dropout()),
             ('classifier_fc1', torch.nn.Linear(512, 512)),
             ('classifier_act1', torch.nn.ReLU(True)),
-            ('classifier_fc2', torch.nn.Linear(512, 10)),
+            ('classifier_fc2', torch.nn.Linear(512, *self.output_size)),
         ]))
+
+        if init_weights:
+            self._initialize_weights()
 
         # FIXME: check out weight initialization, here is gaussian for weights
         # and zeros for bias, find a way of generalizing
@@ -72,17 +88,39 @@ class VGG(visionmoduleabc.VisionModuleABC):
         x = self.classifier(x)
         return x
 
+    def _initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, torch.nn.Conv2d):
+                torch.nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    torch.nn.init.constant_(m.bias, 0)
+            elif isinstance(m, torch.nn.BatchNorm2d):
+                torch.nn.init.constant_(m.weight, 1)
+                torch.nn.init.constant_(m.bias, 0)
+            elif isinstance(m, torch.nn.Linear):
+                torch.nn.init.normal_(m.weight, 0, 0.01)
+                torch.nn.init.constant_(m.bias, 0)
+
+
 # cfg is a list of layer dimensions for convolution, compare it with the
-# variable named DEFAULT_CONFIGS
+# variable named DEFAULT_VGG_CONFIGS
 # batch_norm is for batch normalization
 # in_channels represents the number of input channels
-def make_layers_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE):
+def make_layers_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE, convert_input=DEFAULT_CONVERT_INPUT):
     layers = []
     in_channels = input_size[0]
-    # FIXME: make the first layer customizable to accept also different
-    # datasets, depending on the input dimension
-    # TODO: add a first layer to match the sizes to the standard ones
-    # before all the other layers
+    # this convolutional layer resizes the input if larger than the expected
+    # one, to avoid analyzing only a patch of it
+    # TODO: if smaller, it should be done with an appropriate up-scaling
+    #       look up deconvolution in PyTorch
+    if input_size[1:] != DEFAULT_VGG_C0_INPUT_SIZE and convert_input:
+        c0_kernel_size = visionmoduleabc.VisionModuleABC.compute_kernel_dimension(
+            input_size=input_size[1:],
+            output_size=DEFAULT_VGG_C0_INPUT_SIZE,
+            stride=(1, 1),
+            padding=(1, 1))
+        conv2d = torch.nn.Conv2d(in_channels, in_channels, kernel_size=c0_kernel_size, padding=1)
+        layers.append(conv2d)
     for i, v in enumerate(cfg):
         if v == 'M':
             layers += [('pool{}'.format(i), torch.nn.MaxPool2d(kernel_size=2, stride=2))]
@@ -99,8 +137,9 @@ def make_layers_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE):
     return torch.nn.Sequential(collections.OrderedDict(layers))
 
 
-def make_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE, output_size=DEFAULT_VGG_OUTPUT_SIZE, *args, **kwargs):
-    return VGG(make_layers_vgg(cfg=cfg, batch_norm=batch_norm, input_size=input_size), output_size=output_size, *args, **kwargs)
+# wrapper to return the correct instance of the network class
+def make_vgg(cfg, batch_norm=False, input_size=DEFAULT_VGG_INPUT_SIZE, output_size=DEFAULT_VGG_OUTPUT_SIZE, convert_input=DEFAULT_CONVERT_INPUT, *args, **kwargs):
+    return VGG(make_layers_vgg(cfg=cfg, batch_norm=batch_norm, input_size=input_size, convert_input=convert_input), output_size=output_size, *args, **kwargs)
 
 
 VGG11 = functools.partial(make_vgg, cfg=DEFAULT_VGG_CONFIGS['11'])
