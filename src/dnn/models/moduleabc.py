@@ -2,7 +2,6 @@ import abc
 import collections.abc
 
 import torch
-import torch.quantization
 import pytorch_lightning as pl
 try:
     import torchsummary
@@ -27,7 +26,7 @@ except ImportError:
 # metaclass usage for abstract class definition
 # or inheritance-based abstract class
 class ModuleABC(pl.LightningModule, abc.ABC):
-    def __init__(self, input_size=None, output_size=None, quantization_ready=True, *args, **kwargs):
+    def __init__(self, input_size=None, output_size=None, *args, **kwargs):
         '''Here we save all the useful settings, like a loss and an accuracy
         functions, accepting predictions and targets in this order.'''
         super().__init__(*args, **kwargs)
@@ -44,18 +43,12 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         else:
             self._output_size = torch.Size(output_size)
 
-        self._quantization_ready = quantization_ready
-        self._quantization_forward_pre_hook_handle = None
-        self._quantization_forward_pre_hook_handle = None
-        self.torch_add = torch.add
 
         self._summary = None
 
         # this call is done for saving the object properties, stored in self
         self.save_hyperparameters()
 
-        if self._quantization_ready:
-            self.enable_quantization()
 
     @abc.abstractmethod
     def forward(self, *args, **kwargs):
@@ -63,36 +56,6 @@ class ModuleABC(pl.LightningModule, abc.ABC):
         input. It is an abstract method, so it cannot be instantiated directly
         but it must be subclassed.'''
         pass
-
-    def enable_quantization(self):
-        if self._quantization_forward_pre_hook_handle is None and self._quantization_forward_pre_hook_handle is None:
-            self._quantization_forward_pre_hook_handle = self.register_forward_pre_hook(self.quantization_forward_pre_hook)
-            self._quantization_forward_pre_hook_handle = self.register_forward_hook(self.quantization_forward_post_hook)
-
-        self.torch_add = torch.nn.quantized.FloatFunctional()
-
-    def disable_quantization(self):
-        if self._quantization_forward_pre_hook_handle is not None:
-            self._quantization_forward_pre_hook_handle.remove()
-            self._quantization_forward_pre_hook_handle = None
-
-        if self._quantization_forward_pre_hook_handle is not None:
-            self._quantization_forward_pre_hook_handle.remove()
-            self._quantization_forward_pre_hook_handle = None
-
-        self.torch_add = torch.add
-
-    @staticmethod
-    # this hook is called before the forward to add the quantization stub to
-    # the input
-    def quantization_forward_pre_hook(self, input):
-        return torch.quantization.QuantStub()(input)
-
-    @staticmethod
-    # this hook is called after the forward to add the quantization destub to
-    # the input
-    def quantization_forward_post_hook(self, input, output):
-        return torch.quantization.DeQuantStub()(output)
 
     @staticmethod
     # NOTE: we don't strictly need this feature for running the fault injector,
@@ -133,10 +96,6 @@ class ModuleABC(pl.LightningModule, abc.ABC):
                 continue
             else:
                 return summary
-
-    # TODO: implement pruning
-    def pruning(self, *args, **kwargs):
-        raise NotImplementedError
 
     @property
     def input_size(self):
