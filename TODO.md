@@ -27,6 +27,7 @@
 * Check Cross-Validation for averages
 * Improve data classes, using the module dataclasses
 * For now we use torch-summary for the summaries, but we can switch to PyTorch-Lightning when the support for FLOPS and memory size is available
+* Change license to GNU Affero General Public License
 
 ## DONE TODOs
 

@@ -6,7 +6,7 @@ import torch
 import torch.nn.utils.prune
 import pytorch_lightning as pl
 
-from .. import moduleabc
+from ... import moduleabc
 
 DEFAULT_PRUNING_ARGS = {}
 DEFAULT_PRUNING_FUNCTION = torch.nn.utils.prune.Identity  # mask is full of 1s
