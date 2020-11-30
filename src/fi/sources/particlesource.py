@@ -14,7 +14,8 @@ class ParticleSource(sourceabc.SourceABC):
     def _generate_strike(self, hardware_info: fault_model_common.HardwareInfo):
         strikes = []
         n_particles = self._particle_model.flux_intensity * hardware_info.chip_area * hardware_info.execution_time
-        for i in range(n_particles):
+        for _ in range(n_particles):
+            particle = self._particle_model.generate_particle(
             energy = self._particle_model.process_relative_energy(self._sampler.sample())
             # + 1 is for time, the others are space
             rel_space_time_coordinates = self._sampler.sample(n_samples=len(hardware_info.chip_dimensions) + 1)
@@ -24,8 +25,5 @@ class ParticleSource(sourceabc.SourceABC):
 
     # NOTE: choose between single parameters for better configurability or
     # the whole hardware model, which seems a bit overkill for now
-    def generate_strikes(self, n_iterations, hardware_info: fault_model_common.HardwareInfo) -> list[list[common.Particle]]:
-        strike_sets = []
-        for i in range(n_iterations):
-            strike_sets.append(self._generate_strike(hardware_info=hardware_info))
-
+    def generate_strikes(self, n_iterations, hardware_info: fault_model_common.HardwareInfo, *args, **kwargs) -> typing.List[typing.List[common.Particle]]:
+        return [self._generate_strike(hardware_info=hardware_info) for _ in range(n_iterations)]
