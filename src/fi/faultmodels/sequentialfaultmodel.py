@@ -13,7 +13,7 @@ class SequentialFaultModel(faultmodelabc.FaultModelABC):
 
         self.submodels = submodels
 
-    def __call__(self, fault_input, *args, **kwargs):
+    def __call__(self, fault_config: , *args, **kwargs):
         x = fault_input
         for submodel in self.submodels:
             x = submodel(x)

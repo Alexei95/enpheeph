@@ -27,7 +27,9 @@
 * Check Cross-Validation for averages
 * Improve data classes, using the module dataclasses
 * For now we use torch-summary for the summaries, but we can switch to PyTorch-Lightning when the support for FLOPS and memory size is available
-* Change license to GNU Affero General Public License
+* Add license info in all files
+* Change discovery of models to use __init_subclass__ in DNN (register subclasses)
+  * No need to update gather_objects, but we can skip using the values
 
 ## DONE TODOs
 
@@ -39,3 +41,4 @@
 * Use a plugin-like system, with different fault injectors / samplers which can be selected
   * Implement a global structure containing the injectors, samplers, models (e.g. in __init__)
 * Integrate samplers
+* Use MIT for license
