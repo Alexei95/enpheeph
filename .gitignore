@@ -1,6 +1,9 @@
 # VSCode settings
 .vscode/
 
+# Spyder settings
+.spyproject
+
 # Python extra files - bytecode
 __pycache__
 *.pyc

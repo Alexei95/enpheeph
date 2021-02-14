@@ -30,6 +30,9 @@
 * Add license info in all files
 * Change discovery of models to use __init_subclass__ in DNN (register subclasses)
   * No need to update gather_objects, but we can skip using the values
+* Implement a pipeline for testing the injections: the original module has stats collected on the ranges or the exact values of each layer/buffer, and then the module can be split, to be run in parallel for each layer to compare the results for possible faults
+  * Another possibility is to model how to affect the outputs (ultimate goal of the fault injection campaign)
+* Implement statistics for each layer/element
 
 ## DONE TODOs
 
