@@ -3,7 +3,7 @@ import enum
 import typing
 
 
-ParameterType = enum.Enum('ParameterType', 'Weight Activation', module=__name__)
+ParameterType = enum.Enum('ParameterType', 'Weight Activation SparseWeightCOOIndex SparseWeightCOOValue SparseActivationCOOIndex SparseWeightCOOValue', module=__name__)
 BitValue = enum.Enum('BitValue', 'Random Zero One BitFlip', module=__name__)
 
 

@@ -20,3 +20,6 @@ __pycache__
 # DSE results
 /*.csv
 /results
+
+# data for testing
+/data

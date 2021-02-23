@@ -18,25 +18,23 @@ def init_weight(fault: basefaultdescriptor.BaseFaultDescriptor,
     # to inject the values, we need to flatten the tensor
     flattened_tensor = original_tensor.flatten()
     # then we need to process them one by one
-    flattened_bit_tensor = []
-    for element in flattened_tensor:
-        flattened_bit_tensor.append(fiutils.pytorch_element_to_binary(element))
-    # then we inject the faults
     injected_flattened_bit_tensor = []
-    for binary in flattened_bit_tensor:
-        injected_flattened_bit_tensor.append(fiutils.inject_fault(binary, fault))
-    # we convert back to the original data
+    for element in flattened_tensor:
+        injected_flattened_bit_tensor.append(fiutils.inject_fault_pytorch(element, fault))
+    # we create a list with the injected data, converting back to tensors
     injected_flattened_tensor_list = []
     for injected_binary, original_binary in zip(injected_flattened_bit_tensor, flattened_bit_tensor):
         injected_flattened_tensor_list.append(fiutils.binary_to_pytorch_element(injected_binary, original_binary))
+    # we create a tensor from the list, moving it to the same device as the original one
     injected_flattened_tensor = torch.Tensor(injected_flattened_tensor_list).to(flattened_tensor)
-
-
-
-
-
-
-
+    # we reshape the tensor to the original one
+    injected_tensor = injected_flattened_tensor.reshape(original_tensor)
+    # we update the weights to the new value
+    weights[fault.tensor_index] = injected_tensor
+    # we set the weights to the updated value
+    setattr(module, fault.parameter_name, weights)
+    # we return the new module
+    return module
 
 
 def init_activation(fault: basefaultdescriptor.BaseFaultDescriptor,
@@ -52,7 +50,7 @@ PARAMETER_TYPE_MAPPING = {basefaultdescriptor.ParameterType.Weight: init_weight,
 
 @dataclasses.dataclass(init=True)
 class BaseInjectionCallback(pytorch_lightning.Callback):
-    fault_descriptor_list: list[basefaultdescriptor.BaseFaultDescriptor] = []
+    fault_descriptor_list: typing.List[basefaultdescriptor.BaseFaultDescriptor] = []
     enabled: bool = True
     _active: bool = dataclasses.field(init=False, default=False)
     _modules: dict[str, torch.nn.Module] = dataclasses.field(init=False, default=[])

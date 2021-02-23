@@ -14,44 +14,33 @@ import enum
 import typing
 
 
-PhysicalType = enum.Enum('PhysicalType', 'Compute Control StaticMemory DynamicMemory Interconnection')
+PhysicalType = enum.IntFlag('PhysicalType',
+                            ['Compute',
+                             'Control',
+                             'StaticMemory',
+                             'DynamicMemory',
+                             'Interconnection',
+                            ],
+                            module=__name__)
+ArchitecturalType = enum.IntFlag('ArchitecturalType',
+                                 ['',
+                                  '',
+                                  '',
+                                  '',
+                                  '',
+                                 ],
+                                 module=__name__)
 
-
-@dataclasses.dataclass(init=True)
-class Cell(object):
-    # FIXME: other info can be added, like other physical properties
-    width: float
-    # width_unit: LengthMeasurementUnit -> new enum/dataclass with prefixes for cm/mm/m, ...
-    height: float
-    #depth: float = None
-
-    #@property
-    #def twodimensional(self):
-    #    return self.depth is None
-
-
-@dataclasses.dataclass(init=True)
-class HardwareInfo(object):
-    # FIXME: other info can be added, like other physical properties
-    width: float
-    # width_unit: LengthMeasurementUnit -> new enum/dataclass with prefixes for cm/mm/m, ...
-    height: float
-    # depth: float = None
-
-    #@property
-    #def twodimensional(self):
-    #    return self.depth is None
-
-
-@dataclasses.dataclass(init=True)
-class ModelMap(object):
-    cells: typing.Tuple[typing.Tuple[ArchitecturalType]]
 
 @dataclasses.dataclass(init=True)
 class HardwareModel(object):
-    hardware_info: HardwareInfo
-    model_map: ModelMap
-    architectural_map: typing.Tuple[typing.Tuple[ArchitecturalType]]
+    chip_width: float
+    chip_height: float
+    chip_measurement_unit: str = "mm^2"
+
+    physical_cells: typing.Tuple[typing.Tuple[PhysicalType]]
+    architectural_cells: typing.Tuple[typing.Tuple[ArchitecturalType]]
+    software_cells: typing.Tuple[typing.Tuple[SoftwareType]]
 
     def __post_init__(self):
         pass

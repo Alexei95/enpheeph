@@ -8,10 +8,22 @@ from . import basefaultdescriptor
 # uint to avoid double sign repetition
 DATA_CONVERSION_MAPPING = {numpy.dtype('float16'): numpy.uint16,
                            numpy.dtype('float32'): numpy.uint32,
-                           numpy.dtype('float64'): numpy.uint64}
+                           numpy.dtype('float64'): numpy.uint64,
+                           numpy.dtype('uint8'): numpy.uint8,
+                           numpy.dtype('int8'): numpy.uint8,
+                           numpy.dtype('int16'): numpy.uint16,
+                           numpy.dtype('int32'): numpy.uint32,
+                           numpy.dtype('int64'): numpy.uint64,
+                           }
 DATA_WIDTH_MAPPING = {numpy.dtype('float16'): '16',
                       numpy.dtype('float32'): '32',
-                      numpy.dtype('float64'): '64'}
+                      numpy.dtype('float64'): '64',
+                      numpy.dtype('uint8'): '8',
+                      numpy.dtype('int8'): '8',
+                      numpy.dtype('int16'): '16',
+                      numpy.dtype('int32'): '32',
+                      numpy.dtype('int64'): '64',
+                      }
 # this template first requires the width (the single {}) and then it can
 # convert a number to a binary view using that width and filling the extra
 # on the left with 0s
@@ -37,8 +49,9 @@ def pytorch_element_to_binary(value: torch.Tensor) -> str:
     return str_bin_value
 
 
-def inject_fault(binary: str, fault: basefaultdescriptor.BaseFaultDescriptor,
-                 sampler: torch.Generator = None):
+def inject_fault_binary(binary: str,
+                        fault: basefaultdescriptor.BaseFaultDescriptor,
+                        sampler: torch.Generator = None) -> str:
     injected_binary = copy.deepcopy(binary)
     for index in fault.bit_index:
         if fault.bit_value == basefaultdescriptor.BitValue.One:
@@ -60,7 +73,7 @@ def inject_fault(binary: str, fault: basefaultdescriptor.BaseFaultDescriptor,
 
 
 # original_value is used only for device and datatype conversion
-def binary_to_pytorch_element(binary: str, original_value: torch.Tensor):
+def binary_to_pytorch_element(binary: str, original_value: torch.Tensor) -> torch.Tensor:
     # required because shapes (1, ) and () are considered different and we need ()
     if original_value.size() != tuple():
         original_value = original_value[0]
@@ -76,3 +89,12 @@ def binary_to_pytorch_element(binary: str, original_value: torch.Tensor):
     new_numpy_value = new_dtype([python_int]).view(dtype)
     # we use [0] to return a single element
     return torch.from_numpy(new_numpy_value).to(original_value)[0]
+
+
+def inject_fault_pytorch(tensor: torch.Tensor,
+                         fault: basefaultdescriptor.BaseFaultDescriptor,
+                         sampler: torch.Generator = None) -> torch.Tensor:
+    binary = pytorch_to_binary(tensor)
+    injected_binary = inject_fault_binary(binary, fault, sampler)
+    injected_tensor = binary_to_pytorch_element(binary, tensor)
+    return injected_tensor
