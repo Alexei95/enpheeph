@@ -13,6 +13,8 @@ import dataclasses
 import enum
 import typing
 
+from . import basefaultdescriptor
+
 
 PhysicalType = enum.IntFlag('PhysicalType',
                             ['Compute',
@@ -20,7 +22,7 @@ PhysicalType = enum.IntFlag('PhysicalType',
                              'StaticMemory',
                              'DynamicMemory',
                              'Interconnection',
-                            ],
+                             ],
                             module=__name__)
 ArchitecturalType = enum.IntFlag('ArchitecturalType',
                                  ['',
@@ -28,8 +30,23 @@ ArchitecturalType = enum.IntFlag('ArchitecturalType',
                                   '',
                                   '',
                                   '',
-                                 ],
+                                  ],
                                  module=__name__)
+SoftwareType = enum.IntFlag('SoftwareType',
+                            ['',
+                             '',
+                             '',
+                             '',
+                             '',
+                             ],
+                            module=__name__)
+
+# we use these functions to convert the effects of a fault from a level to
+# another
+# for now the model is statistical, taken from other papers
+def physical_to_architectural(physical_type: PhysicalType,
+                              architectural_type: ArchitecturalType):
+    pass
 
 
 @dataclasses.dataclass(init=True)
