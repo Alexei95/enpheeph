@@ -21,11 +21,11 @@ class BaseFaultDescriptor(object):
     # type of parameter to inject, weight, activation, ...
     parameter_type: ParameterType
     # index of the tensor to be injected
-    tensor_index: tuple[typing.Union[int, slice]]
+    tensor_index: tuple[typing.Union[int, slice], ...]
     # index of the bit to be injected
     # even if it is a slice, it must be converted to indices
     # just use tuple(range(*slice.indices(slice.stop)))
-    bit_index: tuple[int]
+    bit_index: typing.Tuple[int, ...]
     # type of bit injection to be carried out
     bit_value: BitValue
 

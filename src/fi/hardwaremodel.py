@@ -16,7 +16,10 @@ import copy
 import dataclasses
 import enum
 import functools
+import itertools
 import typing
+
+import networkx
 
 from . import basefaultdescriptor
 
@@ -24,6 +27,7 @@ from . import basefaultdescriptor
 # in this way we still use combinations Physical_Compute | Architectural_Register
 # but we have unique identifiers for dicts and stuff, otherwise we would have
 # collisions when numbering different enums
+# NOTE: use enum._decompose(Enum, value) to get a list of the composing consts
 CellType = enum.IntFlag('CellType',
                         [
 
@@ -48,69 +52,13 @@ CellType = enum.IntFlag('CellType',
 
 @dataclasses.dataclass(init=True)
 class Cell(object):
-    types: typing.List[enum.IntFlag, ...] = dataclasses.field(init=True,
-                                                        default_factory=list)
-    _tree_default_dict_factory = dataclasses.field(init=False,
-                    default=functools.partial(collections.defaultdict, list))
-    _dependency_default_dict_factory = dataclasses.field(init=False,
-                    default=functools.partial(collections.defaultdict, 0))
-
-    # these lists are used to have all the predecessors and successors for
-    # propagating the fault effects
-    # siblings is for cells at the same tree level
-    predecessors: typing.DefaultDict[CellType, typing.List[Cell, ...]] = \
-        dataclasses.field(init=True,
-                          default_factory=_tree_default_dict_factory)
-    siblings: typing.DefaultDict[CellType, typing.List[Cell, ...]] = \
-        dataclasses.field(init=True,
-                          default_factory=_tree_default_dict_factory)
-    successors: typing.DefaultDict[CellType, typing.List[Cell, ...]] = \
-        dataclasses.field(init=True,
-                          default_factory=_tree_default_dict_factory)
-
-    # these dicts associate each cell type to the propagation probability
-    # generally we consider only successors, but in case also predecessors and
-    # siblings can be considered
-    # each of them contain the probability [0, 1] to propagate the fault
-    dependency_predecessors: typing.DefaultDict[CellType, float] = \
-        dataclasses.field(init=True,
-                          default_factory=_dependency_default_dict_factory)
-    dependency_siblings: typing.DefaultDict[CellType, float] = \
-        dataclasses.field(init=True,
-                          default_factory=_dependency_default_dict_factory)
-    dependency_successors: typing.DefaultDict[CellType, float] = \
-        dataclasses.field(init=True,
-                          default_factory=_dependency_default_dict_factory)
+    types: CellType
+    _id_generator = dataclasses.field(init=False, repr=False,
+                                      default=itertools.counter())
+    _id: int = dataclasses.field(init=False)
 
     def __post_init__(self):
-        pass
-
-    def add_sibling(self, celltype: CellType, cell: Cell):
-        self.siblings[celltype].append(cell)
-
-    def add_predecessor(self, celltype: CellType, cell: Cell):
-        self.predecessors[celltype].append(cell)
-
-    def add_successor(self, celltype: CellType, cell: Cell):
-        self.successors[celltype].append(cell)
-
-    def reset_siblings(self, celltype: typing.Union[CellType, None] = None):
-        if celltype is None:
-            self.siblings = self._tree_default_dict_factory()
-        del self.siblings[celltype]
-
-    def reset_predecessors(self, celltype: typing.Union[CellType, None] = None):
-        if celltype is None:
-            self.predecessors = self._tree_default_dict_factory()
-        del self.predecessors[celltype]
-
-    def reset_successors(self, celltype: typing.Union[CellType, None] = None):
-        if celltype is None:
-            self.successors = self._tree_default_dict_factory()
-        del self.successors[celltype]
-
-
-
+        self._id = next(self._id_generator)
 
 
 @dataclasses.dataclass(init=True)
@@ -119,7 +67,21 @@ class HardwareModel(object):
     chip_height: float
     chip_measurement_unit: str = "mm^2"
 
-    cells: typing.Tuple[typing.Tuple[Cell, ...], ...]
+    # this is a dict mapping each id to its own cell
+    cells: typing.Dict[int, Cell]
+    # this cells map is used to determine the hitting point of the fault
+    # we use cell ids as elements, so that they can be used to get the cells
+    # from the hash map
+    cells_map: typing.Tuple[typing.Tuple[Cell, ...], ...]
+    # we use a graph to represent the dependencies for computing the fault
+    # propagation
+    # the graph is compiled outside the model, and it is used for propagating
+    # the effects of a particle strike in a predetermined location
+    # cells_graph.add_edge(v1, v2, dependency_matrix={celltype1: prob1})
+    # v1, v2 are the ids of the cells
+    cells_graph: networkx.DiGraph
 
     def __post_init__(self):
         pass
+
+    def inject_particle(self, particle):

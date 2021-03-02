@@ -50,11 +50,14 @@ PARAMETER_TYPE_MAPPING = {basefaultdescriptor.ParameterType.Weight: init_weight,
 
 @dataclasses.dataclass(init=True)
 class BaseInjectionCallback(pytorch_lightning.Callback):
-    fault_descriptor_list: typing.List[basefaultdescriptor.BaseFaultDescriptor] = []
+    fault_descriptor_list: typing.List[basefaultdescriptor.BaseFaultDescriptor, ...] = \
+        dataclasses.field(default_factory=[])
     enabled: bool = True
     _active: bool = dataclasses.field(init=False, default=False)
-    _modules: dict[str, torch.nn.Module] = dataclasses.field(init=False, default=[])
-    _modules_backup: dict[str, torch.nn.Module] = dataclasses.field(init=False, default=[])
+    _modules: typing.Dict[str, torch.nn.Module] = dataclasses.field(init=False,
+                                                        default_factory=dict)
+    _modules_backup: typing.Dict[str, torch.nn.Module] = dataclasses.field(init=False,
+                                                        default_factory=dict)
 
     def __post_init__(self):
         # we check all the faults are mapped
