@@ -13,6 +13,7 @@ sys.path.append(str(MODEL_DIR))
 import torch
 import torchvision
 import pytorch_lightning
+import torchprof
 
 #from fi import basefaultdescriptor, baseinjectioncallback
 
@@ -37,7 +38,14 @@ for b, batch in enumerate(cifar10_test_dataloader, start=1):
     with torch.no_grad():
         images, labels = batch
         images_cuda = images.to(torch.device('cuda'))
-        predictions_cuda = vgg_model(images_cuda)
+
+        # we profile only at first batch
+        with torchprof.Profile(vgg_model, enabled=b == 1, use_cuda=True, profile_memory=True) as prof:
+            predictions_cuda = vgg_model(images_cuda)
+
+        if b == 1:
+            print(prof.display(show_events=True))
+
         predictions = predictions_cuda.to(torch.device('cpu'))
 
         del images_cuda
