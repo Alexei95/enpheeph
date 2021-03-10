@@ -106,6 +106,9 @@ class Summary(object):
                             for subevent_list in event_list
                             for e in subevent_list)
 
+        # remember it's in microseconds
+        self._total_execution_time = total_execution_time
+
         # now we have to make the data easily accessible
         for i, (lsummary, lprof) in enumerate(self._torchprof_layer_profiling.items()):
             # as for total time, we iterate over all event lists
