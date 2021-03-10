@@ -14,11 +14,21 @@ import torchinfo
 
 
 class LayerInfo(typing.NamedTuple):
+    # used to identify the main kernel type
     name: str
+    # used to have intrinsic ordering
     index: int
+    # a string with the representation of the layer
+    # it contains other useful info which must be parsed on a layer-by-layer
+    # basis
+    representation: str
+    # input size, including also batch size as first value
     input_size: typing.Tuple[int, ...]
+    # output size, including also batch size as first value
     output_size: typing.Tuple[int, ...]
-    extra_sizes: typing.Optional[typing.Tuple[typing.Tuple[int, ...]]]
+    # kernel size, not used for some layers, left blank in those cases
+    kernel_size: typing.Tuple[int, ...]
+    # execution time relative to the total one, between 0 and 1
     relative_execution_time: float
 
 
@@ -34,175 +44,109 @@ class Summary(object):
 
     # if we don't want fields, just put normal values
     _torchinfo_summary = None
-    _torchprof_profiling = None
-    _onnx_profiling = None
-    _onnx_summary = None
+    _torchprof_layer_profiling = None
     _layer_stats = None
     _total_execution_time = None  # microseconds
 
     def __post_init__(self):
         # we initialize the internal layer stats
-        self._layer_stats = collections.OrderedDict()
-
-        # we gather the layers info
-        # self._get_torchinfo_summary()
-        # self._get_onnx_summary()
-
-        # we gather the execution times
-        # self._get_torchprof_profiling()
-        # self._get_onnx_profiling()
+        self._layer_stats = []
 
         # we populate the layer stats
+        # summary is computed in here
         # profiling is done inside this function, one layer at a time
+        # therefore we don't have raw profiling data in a single object
         self._populate_layer_stats()
 
-    def _populate_layer_stats(self):
+    def _populate_layer_stats(self, force_update=False):
         # we check if it has been already updated
-        if self._layer_stats:
+        if self._layer_stats and not force_update:
             return
 
-        print(self._torchprof_profiling.display(show_events=True))
+        # this dummy input is used for the summary over the whole model
+        dummy_input = torch.randn(*self.input_size)
+        summary = torchinfo.summary(self.model, input_data=dummy_input)
 
-        # we want only the leaf layers, which have no further children
-        # to check further children we use the inner_layers, which returns a
-        # dict
-        # we do not need these, as we have high-level class info from the
-        # profiler
-        #layers = [l.class_name for l in self._torchinfo.summary_list
-        #                       if not l.inner_layers]
+        self._torchinfo_summary = summary
 
-        # we get the trace names from the profiling
-        layer_traces = [t for t in self._torchprof_profiling.traces if t.leaf]
-        # we get the path names from the traces
-        layer_paths = [t.path for t in layer_traces]
-        # we gather the corresponding events from the path names
-        # each of this is actually a list, and it contains only one element
-        # which is a EventList, having CPU/CUDA self-time
-        # for the total time, it must be computed from sum of each event
-        layer_events_container = [self._torchprof_profiling.trace_profile_events[p] for p in layer_paths]
-        # we remove the extra list, so that we have only EventLists
-        layer_event_lists = [e[0] for e in layer_events_container]
-        # we sum all the events to get the total CUDA time
-        # each event list can contain different sublists depending on the number
-        # of children
-        # FIXME: this works only with CUDA for now, must be adapted for CPU later
-        layer_total_cuda_times = [sum(e.cuda_time for e in event_sublist)
-                                  for event_list in layer_events_container
-                                  for event_sublist in event_list]
+        layers = [l
+                  for l in self._torchinfo_summary.summary_list
+                  if not l.inner_layers]
 
-        # we normalize the layer time, so that we are able to scale it to
-        # different models,
-        # the size scaling is done in the hardware model itself, while timing
-        # may not be accurate if done on very different hardware
-        self._total_execution_time = sum(layer_total_cuda_times)
-        layer_rel_cuda_times = [cuda_time / self._total_execution_time
-                                for cuda_time in layer_total_cuda_times]
+        # we set up the layer profiling results, each key is the summary of the
+        # layer, while the item is the profiling result itself
+        layer_profiling = collections.OrderedDict()
+        # we cycle through all the leaf layers
+        for l in layers:
+            # we create copies on the GPU of the module and a dummy input
+            module = copy.deepcopy(l.module).eval().to('cuda')
+            dummy_input = torch.randn(*l.input_size, device='cuda')
 
-        # we build a list with all the summaries of the leaf layers
-        layers_summary = [summary for summary in self._torchinfo.summary_list
-                          if not summary.inner_layers]
-        # we build all the LayerInfo objects
-        for layer_index, layer_time in enumerate(layer_rel_cuda_times):
-            # to get the names of the modules, we can iterate over the traces
-            # since we already have leaves, we don't have to filter them
-            # we have to access the torch.nn.Module and get its name with the
-            # hidden function
-            # we use an index to distinguish the different layers with same
-            # main kernel
-            layer_name = layer_traces[layer_index]
+            # we profile with no backward accumulation
+            with torchprof.Profile(module, enabled=True, use_cuda=True,
+                                   profile_memory=True) as prof:
+                with torch.no_grad():
+                    module(dummy_input)
 
-            # we get the required sizes for the layer
-            layer_input_size = self._torchinfo_summary.
+            # we save a copy of the results
+            layer_profiling[l] = copy.deepcopy(prof)
 
-        self._layer_stats.update({name: cuda_time
-                                 for name, cuda_time in zip(layer_names,
-                                                        layer_rel_cuda_times)})
+        self._torchprof_layer_profiling = copy.deepcopy(layer_profiling)
 
-    def _get_torchprof_profiling(self):
-        if self._torchprof_profiling is not None:
-            return
+        # we compute the total execution time on CUDA by going over all
+        # possible events, and summing over the total CUDA time of each of them
+        # the result is in microseconds
+        # the structure is
+        # layer_profile -> trace-event list dict -> sub-event list -> event
+        # pay attention as trace_profile_events is a defaultdict, so to get
+        # the time we need to go over the values
+        total_execution_time = sum(e.cuda_time_total
+                            for p in self._torchprof_layer_profiling.values()
+                            for event_list in p.trace_profile_events.values()
+                            for subevent_list in event_list
+                            for e in subevent_list)
 
-        # we create the tensor to match the correct input size
-        tensor = torch.randn(*self.input_size, device='cuda')
+        # now we have to make the data easily accessible
+        for i, (lsummary, lprof) in enumerate(self._torchprof_layer_profiling.items()):
+            # as for total time, we iterate over all event lists
+            # in this case we are already iterating over the layers, so we skip
+            # that
+            # pay attention as trace_profile_events is a defaultdict, so to get
+            # the time we need to go over the values
+            execution_time = sum(e.cuda_time_total
+                                for event_list in lprof.trace_profile_events.values()
+                                for subevent_list in event_list
+                                for e in subevent_list)
+            # we make it relative
+            relative_execution_time = execution_time / total_execution_time
 
-        # FIXME: find a way of reverting this settings to the previous values
-        # FIXED: it uses more memory but it doesn't change the original model
-        temp_model = copy.deepcopy(self.model).eval().to('cuda')
+            # we generate the object
+            linfo = LayerInfo(name=lsummary.class_name,
+                              index=i,
+                              representation=repr(lsummary.module),
+                              input_size=lsummary.input_size,
+                              output_size=lsummary.output_size,
+                              kernel_size=lsummary.kernel_size,
+                              relative_execution_time=relative_execution_time,
+                              )
 
-        # here we need the temporary model, otherwise the results are wrong
-        with torchprof.Profile(temp_model, enabled=True, use_cuda=True, profile_memory=True) as prof:
-            temp_model(tensor)
-        self._torchprof_profiling = prof
-
-    def _get_torchinfo_summary(self):
-        if self._torchinfo_summary is not None:
-            return
-        # verbose is set to 0 to avoid printing the results
-        self._torchinfo_summary = torchinfo.summary(self.model, self.input_size,
-                                               verbose=0)
-
-    def _get_onnx_summary(self):
-        # TO COMPLETE
-        raise NotImplementedError
-
-        # we generate the onnx export of the torch module to import it into
-        # onnx and get the layer operations
-
-        # dummy input
-        tensor = torch.randn(*self.input_size, device='cpu')
-        # output buffer, bytes
-        export_buffer = io.BytesIO()
-
-        # FIXME: find a way of reverting this settings to the previous values
-        self.model.eval()
-        self.model.to('cpu')
-
-        torch.onnx.export(self.model,
-                          tensor,
-                          export_buffer,
-                          # this is to avoid exporting the weight values, as
-                          # we only require the model structure
-                          export_params=False,
-                          )
-
-        # we reset the buffer to read it with onnx
-        export_buffer.flush()
-        export_buffer.seek(0)
-
-    def _get_onnx_profiling(self):
-        # TO COMPLETE
-        raise NotImplementedError
-
-        options = onnxruntime.SessionOptions()
-        # we enable profiling
-        options.enable_profiling = True
-        session = onnxruntime.InferenceSession(path_to_model, options)
-
-        input_name = session.get_inputs()[0].name
-
-        dummy = numpy.random.rand(1, 3, 224, 224).astype(dtype=numpy.float32)
-
-        session.run(None, {input_name: dummy})
-
-        # profile name can't be chosen, but we can delete it after we read it
-        prof_file = session.end_profiling()
+            # we append it to the stats list
+            self._layer_stats.append(linfo)
 
     @property
-    def layer_stats(self) -> typing.OrderedDict[int, LayerInfo]:
+    def layer_stats(self) -> typing.List[LayerInfo]:
         return copy.deepcopy(self._layer_stats)
 
     @property
-    def total_execution_time(self):
+    def total_execution_time(self) -> float:
         return self._total_execution_time
 
     @property
-    def raw_torchinfo_summary(self):
+    def raw_torchinfo_summary(self) -> torchinfo.ModelStatistics:
         return copy.deepcopy(self._torchinfo_summary)
 
     @property
-    def raw_torchprof_profiling(self):
-        return copy.deepcopy(self._torchprof_profiling)
-
-    @property
-    def raw_onnx_profiling(self):
-        return copy.deepcopy(self._onnx_profiling)
+    def raw_torchprof_layer_profiling(self) -> typing.Dict[
+                                            torchinfo.layer_info.LayerInfo,
+                                            torchprof.Profile]:
+        return copy.deepcopy(self._torchprof_layer_profiling)
