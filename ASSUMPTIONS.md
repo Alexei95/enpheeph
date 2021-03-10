@@ -9,4 +9,5 @@ Here we list all the assumptions we made for working on this library:
       1. However, self_cpu_time_total (and correspondingly also CUDA self-time) exists for each EventList in the trace
 2. Profiling is done on the GPU, so it requires to have the GPU which is gonna be the target of the experiments
    1. This limitation can be overcome in the future by allowing relative profiling, e.g. how much each operation contributes in a relative way
-      1. This possible solution has limitations, as different platforms could handle different operations in an opposite way, leading to non-representative characterization
+      1. This possible solution has limitations, as different platforms could handle different operations in a different way, leading to non-representative characterization
+   2. Profiling a single layer compared to the result on the same layer when profiling the whole model are comparable, with no definite difference

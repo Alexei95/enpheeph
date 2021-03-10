@@ -30,3 +30,54 @@ Unfortunately, onnx and onnxruntime do not support sparse weight, so that would 
 A possible solution could be to use ```top_level_events_only``` in ```torch.autograd.profiler``` (which will become ```torch.profiler```), but this will be available at the time of writing in a future PyTorch release (1.8, done on 2021/03/04, currently on 1.7.1). UPDATE 2021/03/06, PyTorch 1.8, ```top_level_events_only``` still shows only the kernels, which can be useful but it is different from what we need (layer execution time).
 
 Self-time is not directly available via the FunctionEvents in torchprof, and even using the raw interface to the torch profiler does not provide direct access. Therefore, the only way is recursively accessing the ```cpu_children``` attribute in each FunctionEvent, and subtract the children time from the parent's, to get the self-time. However, accessing each trace, the EventList itself, containing all of the FunctionEvents, contains also CPU and CUDA total self-time, and hence it can be used for implementation.
+
+### 2021/03/10
+
+Torchprof and torchinfo summaries are not directly matchable, as they may use different copies of the model, impossible to give equality checks across different modules.
+
+A solution may be to go through the summaries and run the profiling on each sub-layer. However, this may lead to inconclusive results, as a run on sub-each sub-layer may be different from a consecutive run over all the layers at the same time. More testing is required.
+
+Testing the profiling, using only one layer, we obtained 84.15672599999985 ms as measurement, while using the whole model we got 85.045844 ms. Therefore, given the variability of profiling, the results are close enough to be interchanged.
+
+The point is to compute the summary of the model, and profile each leaf layer independently starting from the summarised layers. In this way we are sure the data belong to the correct layer, while obtaining very accurate results.
+
+## Hardware Model
+
+### 2021/03/07
+
+The current idea for hardware model is to have a set of classes, maybe with a common base class (Kernel), which are used to model the behaviour of a kernel when a particle hits.
+
+When a particle hits, we need to consider the underlying technology (silicon or whatever), which generates a fault at a bit level given the proper interaction. This interaction can be summed up as a probability of generating a fault from a particle strike. The probablity can be derived from other works or by doing Monte-Carlo simulations.
+
+Once a fault exists in the system, it needs to propagate. For propagation there are different options:
+
+1. Detailed model of each bit/interconnection used in the kernel, which therefore could follow a precise physical model for particle interaction
+   1. It could be implemented using a grid
+      1. A grid with such small dimension would be too difficult to actually use, as it would incur a huge overhead
+   2. Use an inverse map, where each element has its own boundary limits, and we check which element the particle hits by going through the list
+      1. This solution may work, but it requires definitions for many elements, such as Interconnection, Computing, StaticMemory, ...
+
+After propagating the fault from the particle strike to the kernel, it is a matter of modeling the kernel itself. Also here, there are different choices:
+
+1. Modeling probabilistically the effect of a fault on any element to the output of the kernel
+   1. It could use estimated values
+      1. Taken from other Monte Carlo papers
+      2. Taken from real-world simulations
+   2. We could simulate some kernels using other injection tools ([NVBitFI](https://github.com/NVlabs/nvbitfi), on a side note, it could be useful for integrating ISA-level fault injections on PyTorch code, by converting PyTorch to TorchScript (C++) and using NVBitFI on it), however it could be time-expensive, better suited for a journal version
+2. Directly executing the script to propagate the fault, which could be feasible on open-source GPUs, where the execution path is known, but it is an issue per se on closed-source GPUs.
+
+### 2021/03/08
+
+We may need a higher-level model of the GPU, as there are some high-level properties, such as control and memory sections, together with shared instruction info, scheduling, interconnections. It can be modeled similarly to a single kernel, being split in subcomponents (Interconnections, Control, Memory, ...). A possibility is to have place-holder slots for Kernels, which are filled based on the time.
+
+Using kernel slots, we need to limit the processing sizes, so that we can map the correct number of operations, i.e. a conv2d with 100x100 to cover requires more operations than a 10x10, and this must be taken into account.
+
+### 2021/03/09
+
+Kernel slots should be used to fill the operations, however the number of operations and the timings are not to be considered exact as they are, given that we only need an estimate of the associations.
+
+The overall objective is to have a precise location for when the fault occurs, in terms of weight, input and output.
+
+Each slot, given the input/output capabilities of the kernel, is used to address the number of repetitions of the operation.
+
+Currently, Summary provides a dict containing the info for layer and execution time. However, it can be improved by using only the layer index and adding info such as input/output size, execution time, name of the kernel.
