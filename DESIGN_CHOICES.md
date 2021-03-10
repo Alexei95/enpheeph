@@ -41,6 +41,8 @@ Testing the profiling, using only one layer, we obtained 84.15672599999985 ms as
 
 The point is to compute the summary of the model, and profile each leaf layer independently starting from the summarised layers. In this way we are sure the data belong to the correct layer, while obtaining very accurate results.
 
+Final implementation has layer summaries associated with raw profiling results, and a specialized list with all the required info for each layer.
+
 ## Hardware Model
 
 ### 2021/03/07
