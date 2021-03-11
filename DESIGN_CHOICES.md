@@ -141,4 +141,6 @@ Some documentation exists:
             * This document seems very useful as it describes the high-level internal operation of threads and warps, so that it is easy to understand where faults could occur
         * [Tuning CUDA Applications for Ampere](https://docs.nvidia.com/cuda/pdf/Ampere_Tuning_Guide.pdf), a guide containing extra info specific for Ampere GPUs
             * It contains extra info, which may be specific to Ampere, useful for having a good model
-    * [cuDNN Developer Manual](https://docs.nvidia.com/deeplearning/cudnn/pdf/cuDNN-Developer-Guide.pdf), which describes the operations done in the
+    * [cuDNN Documentation](https://docs.nvidia.com/deeplearning/cudnn/index.html), it contains all the documents for using cuDNN, together with some detailed explanations
+        * [cuDNN Developer Manual](https://docs.nvidia.com/deeplearning/cudnn/pdf/cuDNN-Developer-Guide.pdf), which describes the operations done in the
+            * The developer manual seems useful for memory accessing patterns, as there are descriptions of data layouts, accesses and operations when executing this specific functions
