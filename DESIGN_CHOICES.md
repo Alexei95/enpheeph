@@ -54,18 +54,18 @@ When a particle hits, we need to consider the underlying technology (silicon or 
 Once a fault exists in the system, it needs to propagate. For propagation there are different options:
 
 1. Detailed model of each bit/interconnection used in the kernel, which therefore could follow a precise physical model for particle interaction
-   1. It could be implemented using a grid
-      1. A grid with such small dimension would be too difficult to actually use, as it would incur a huge overhead
+    1. It could be implemented using a grid
+        1. A grid with such small dimension would be too difficult to actually use, as it would incur a huge overhead
    2. Use an inverse map, where each element has its own boundary limits, and we check which element the particle hits by going through the list
-      1. This solution may work, but it requires definitions for many elements, such as Interconnection, Computing, StaticMemory, ...
+        1. This solution may work, but it requires definitions for many elements, such as Interconnection, Computing, StaticMemory, ...
 
 After propagating the fault from the particle strike to the kernel, it is a matter of modeling the kernel itself. Also here, there are different choices:
 
 1. Modeling probabilistically the effect of a fault on any element to the output of the kernel
-   1. It could use estimated values
-      1. Taken from other Monte Carlo papers
-      2. Taken from real-world simulations
-   2. We could simulate some kernels using other injection tools ([NVBitFI](https://github.com/NVlabs/nvbitfi), on a side note, it could be useful for integrating ISA-level fault injections on PyTorch code, by converting PyTorch to TorchScript (C++) and using NVBitFI on it), however it could be time-expensive, better suited for a journal version
+    1. It could use estimated values
+        1. Taken from other Monte Carlo papers
+        2. Taken from real-world simulations
+    2. We could simulate some kernels using other injection tools ([NVBitFI](https://github.com/NVlabs/nvbitfi), on a side note, it could be useful for integrating ISA-level fault injections on PyTorch code, by converting PyTorch to TorchScript (C++) and using NVBitFI on it), however it could be time-expensive, better suited for a journal version
 2. Directly executing the script to propagate the fault, which could be feasible on open-source GPUs, where the execution path is known, but it is an issue per se on closed-source GPUs.
 
 ### 2021/03/08
@@ -91,56 +91,57 @@ Currently, Summary provides a dict containing the info for layer and execution t
 We will base our model on the GA102 GPU, which is the biggest available version of the [Ampere Architecture by Nvidia](https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf). This chip is used in the Nvidia RTX A6000, RTX A40 and RTX 3090 FE (actually the RTX 3090 has only 41 TPCs, instead of the theoretical maximum of 42).
 
 Each GPU is split into Graphic Processing Clusters (GPCs), at the highest hardware level. It contains:
-    * Dedicated Raster engine
-    * 2 Raster Operator (ROP) partitions, each containing 8 ROPs
-    * 6 Texture Processing Clusters (TPCs), each containing:
-        * 2 Streaming Multiprocessors (SMs), each composed of:
-            * 128 CUDA cores
-                * 64 FP32 datapaths, 16 per processing block
-                * 64 FP32/INT32 datapaths, 16 per processing block
-            * 1 2nd-gen Ray Tracing Core
-            * 128 KB Shared L1/Shared Memory (the amount can be configured)
-            * 2 FP64 units, TFLOPS at 1/64th the TFLOPS of FP32 operations
-            * 4 processing blocks, which split the previous resources, plus each of them containing:
-                * 1 3rd-gen Tensor Cores
-                * 64 KB (16,384 x 32bit) Register File
-                * 1 Texture Units
-                * L0 instruction cache
-                * one warp scheduler
-                * one dispatch unit (32 thread/clk)
-        * 1 PolyMorph Engine
+
+* Dedicated Raster engine
+* 2 Raster Operator (ROP) partitions, each containing 8 ROPs
+* 6 Texture Processing Clusters (TPCs), each containing:
+    * 2 Streaming Multiprocessors (SMs), each composed of:
+        * 128 CUDA cores
+            * 64 FP32 datapaths, 16 per processing block
+            * 64 FP32/INT32 datapaths, 16 per processing block
+        * 1 2nd-gen Ray Tracing Core
+        * 128 KB Shared L1/Shared Memory (the amount can be configured)
+        * 2 FP64 units, TFLOPS at 1/64th the TFLOPS of FP32 operations
+        * 4 processing blocks, which split the previous resources, plus each of them containing:
+            * 1 3rd-gen Tensor Cores
+            * 64 KB (16,384 x 32bit) Register File
+            * 1 Texture Units
+            * L0 instruction cache
+            * one warp scheduler
+            * one dispatch unit (32 thread/clk)
+    * 1 PolyMorph Engine
 
 There are 12 32-bit memory controllers, covering a total of 384 bits. Each controller has 512 KB L2 cache, for a total of 6144 KB.
 
-Each SM contains
-
 Total characteristics:
-    * 7 GPCs
-    * 112 ROPs
-    * 168 FP64 units
-    * 336 3rd-gen Tensor Cores
-    * 84 Ray-Tracing Cores
-    * 336 Texture Units
-    * 6144 KB L2 Cache
-    * 21504 KB Register File
-    * 628.44 mm2 Die Size
-    * 28.3 Billion Transistors
 
+* 7 GPCs
+* 112 ROPs
+* 168 FP64 units
+* 336 3rd-gen Tensor Cores
+* 84 Ray-Tracing Cores
+* 336 Texture Units
+* 6144 KB L2 Cache
+* 21504 KB Register File
+* 628.44 mm2 Die Size
+* 28.3 Billion Transistors
 
 #### GPU Internal Working and API
 
 This part is important to understand the way the GPU processes the instructions and the data.
 
 There are different libraries:
-    * CUDA is the generic C++ library used to run code on the Nvidia GPUs
-    * cuDNN is a library built on top of CUDA to define commonly used functions, such as convolutions, activation functions and other utilities, to provide a unified and optimized set of functions to all CUDA users interested in Machine Learning applications
+
+* CUDA is the generic C++ library used to run code on the Nvidia GPUs
+* cuDNN is a library built on top of CUDA to define commonly used functions, such as convolutions, activation functions and other utilities, to provide a unified and optimized set of functions to all CUDA users interested in Machine Learning applications
 
 Some documentation exists:
-    * [CUDA Documentation](https://docs.nvidia.com/cuda/), which contains all the documentation for understanding and developing CUDA-compatible code
-        * [CUDA C++ Programming Guide](https://docs.nvidia.com/cuda/pdf/CUDA_C_Programming_Guide.pdf), which provides documentation on the way the GPU works and interprets the instructions, together with all the bell and whistles required to implement optimized software to be run on GPUs
-            * This document seems very useful as it describes the high-level internal operation of threads and warps, so that it is easy to understand where faults could occur
-        * [Tuning CUDA Applications for Ampere](https://docs.nvidia.com/cuda/pdf/Ampere_Tuning_Guide.pdf), a guide containing extra info specific for Ampere GPUs
-            * It contains extra info, which may be specific to Ampere, useful for having a good model
-    * [cuDNN Documentation](https://docs.nvidia.com/deeplearning/cudnn/index.html), it contains all the documents for using cuDNN, together with some detailed explanations
-        * [cuDNN Developer Manual](https://docs.nvidia.com/deeplearning/cudnn/pdf/cuDNN-Developer-Guide.pdf), which describes the operations done in the
-            * The developer manual seems useful for memory accessing patterns, as there are descriptions of data layouts, accesses and operations when executing this specific functions
+
+* [CUDA Documentation](https://docs.nvidia.com/cuda/), which contains all the documentation for understanding and developing CUDA-compatible code
+    * [CUDA C++ Programming Guide](https://docs.nvidia.com/cuda/pdf/CUDA_C_Programming_Guide.pdf), which provides documentation on the way the GPU works and interprets the instructions, together with all the bell and whistles required to implement optimized software to be run on GPUs
+        * This document seems very useful as it describes the high-level internal operation of threads and warps, so that it is easy to understand where faults could occur
+    * [Tuning CUDA Applications for Ampere](https://docs.nvidia.com/cuda/pdf/Ampere_Tuning_Guide.pdf), a guide containing extra info specific for Ampere GPUs
+        * It contains extra info, which may be specific to Ampere, useful for having a good model
+* [cuDNN Documentation](https://docs.nvidia.com/deeplearning/cudnn/index.html), it contains all the documents for using cuDNN, together with some detailed explanations
+    * [cuDNN Developer Manual](https://docs.nvidia.com/deeplearning/cudnn/pdf/cuDNN-Developer-Guide.pdf), which describes the operations done in the
+        * The developer manual seems useful for memory accessing patterns, as there are descriptions of data layouts, accesses and operations when executing this specific functions
