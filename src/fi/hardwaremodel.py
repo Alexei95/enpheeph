@@ -13,8 +13,7 @@ import json
 import operator
 import typing
 
-
-HIERARCHY_FILE = 'hardware_model_hierarchy.json'
+from . import summary
 
 
 # FIXME: complete list
@@ -50,11 +49,16 @@ class GPUComponentEnumJSONConverter(json.JSONEncoder):
             return d
 
 
-class GPUComponent(typing.NamedTuple):
+class GPUComponentHierarchy(typing.NamedTuple):
     number_of_components: int
     component_type: NvidiaGPUComponentEnum
     parent: NvidiaGPUComponentEnum
     subcomponents: typing.List[NvidiaGPUComponentEnum, ...]
+
+
+class GPUComponent(typing.NamedTuple):
+    sequential_component_id: int
+    component_type: NvidiaGPUComponentEnum
 
 
 @dataclasses.dataclass(init=True, repr=True)
@@ -83,6 +87,31 @@ class Kernel(object):
         return n_output_elements / n_thread_output_elements
 
 
+SAMPLE_HIERARCHY = {
+    NvidiaGPUComponentEnum.GraphicProcessingCluster: {
+        'number_of_components': 7,
+        'component_type': NvidiaGPUComponentEnum.GraphicProcessingCluster,
+        'parent': NvidiaGPUComponentEnum.NONE,
+        'subcomponents': [
+            NvidiaGPUComponentEnum.RasterOperatorPartition,
+        ],
+    },
+}
+
+# FIXME: complete the sample map
+SAMPLE_MAP = [
+    [
+        [],
+        [],
+    ],
+    [
+        [],
+        [],
+    ],
+]
+
+
+
 @dataclasses.dataclass(init=True, repr=True)
 class HardwareModel(object):
     # string of hierarchy taken from the JSON file
@@ -99,8 +128,9 @@ class HardwareModel(object):
 
     def __post_init__(self):
         self._hierarchy = self._parse_hierarchy(hierarchy=self.json_hierarchy_string,
-                                                data_class=GPUComponent)
-        self._map = self._parse_map(map_=self.json_map_string)
+                                                data_class=GPUComponentHierarchy)
+        self._map = self._parse_map(map_=self.json_map_string,
+                                    data_class=GPUComponent)
         self._max_parallel_threads = self._count_parallel_threads(self._hierarchy,
                                         NvidiaGPUComponentEnum.CUDACore)
 
@@ -109,14 +139,25 @@ class HardwareModel(object):
                                object_hook=GPUComponentJEnumSONConverter.decode)
         parsed_hierarchy = {}
         for enum_value, c in hierarchy.items():
-            component = data_class(*c)
+            component = data_class(**c)
             parsed_hierarchy[enum_value] = component
         return parsed_hierarchy
 
-    def _parse_map(self, map_):
+    def _parse_map(self, map_, data_class):
         map_ = json.loads(map_,
                           object_hook=GPUComponentEnumJSONConverter.decode)
-        return map_
+        # we assume map is 2D
+        map_array = []
+        for row in map_:
+            parsed_row = []
+            for cell in row:
+                parsed_cell = []
+                for component in cell:
+                    parsed_cell.append(data_class(**component))
+                parsed_row.append(parsed_cell)
+            map_array.append(parsed_row)
+
+        return map_array
 
     # to compute the number for _parallel_threads
     def _count_parallel_threads(self, hierarchy, target):
@@ -130,6 +171,11 @@ class HardwareModel(object):
             parent = hierarchy[parent.parent]
             component_count *= parent.component_count
         return component_count
+
+    def schedule(self, summary_: summary.Summary):
+        # first of all, we need to go through the list of the kernels to be
+        # processed
+
 
     @property
     def hierarchy(self):

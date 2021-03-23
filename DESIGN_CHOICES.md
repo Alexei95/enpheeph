@@ -33,6 +33,10 @@ Here we analyze the different design choices that have been made when building t
         - [Hardware Model Implementation](#hardware-model-implementation-1)
     - [2021/03/19](#20210319)
         - [Hardware Model Implementation](#hardware-model-implementation-2)
+    - [2021/03/22](#20210322)
+        - [Hardware Model Implementation](#hardware-model-implementation-3)
+    - [2021/03/23](#20210323)
+        - [Hardware Model Implementation](#hardware-model-implementation-4)
 
 # Model summary for fault injection
 
@@ -319,3 +323,15 @@ In addition, each component has also a parent, to allow back-tracking. This is u
 
 - Kernel output size must contain a single element, otherwise we may have trouble compiling the total size
     - Same for thread output size
+
+
+## 2021/03/22
+
+### Hardware Model Implementation
+
+- Compute number of threads based on output size for kernel and for thread
+    - We compute the number of threads from the number of elements of the output, divived by the number of elements processed by each thread
+
+## 2021/03/23
+
+### Hardware Model Implementation

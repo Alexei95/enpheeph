@@ -124,7 +124,8 @@ class Summary(object):
             relative_execution_time = execution_time / total_execution_time
 
             # we generate the object
-            linfo = LayerInfo(name=lsummary.class_name,
+            linfo = LayerInfo(
+                              name=lsummary.class_name,
                               index=i,
                               representation=repr(lsummary.module),
                               input_size=lsummary.input_size,
