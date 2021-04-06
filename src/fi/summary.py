@@ -26,8 +26,10 @@ class LayerInfo(typing.NamedTuple):
     input_size: typing.Tuple[int, ...]
     # output size, including also batch size as first value
     output_size: typing.Tuple[int, ...]
-    # kernel size, not used for some layers, left blank in those cases
+    # kernel size, not used for some layers, empty in those cases
     kernel_size: typing.Tuple[int, ...]
+    # bias size, empty if no bias
+    bias_size: typing.Tuple[int, ...]
     # execution time relative to the total one, between 0 and 1
     relative_execution_time: float
 
@@ -46,7 +48,7 @@ class Summary(object):
     _torchinfo_summary = None
     _torchprof_layer_profiling = None
     _layer_stats = None
-    _total_execution_time = None  # microseconds
+    _total_execution_time = None  # seconds
 
     def __post_init__(self):
         # we initialize the internal layer stats
@@ -106,8 +108,8 @@ class Summary(object):
                             for subevent_list in event_list
                             for e in subevent_list)
 
-        # remember it's in microseconds
-        self._total_execution_time = total_execution_time
+        # remember it's in microseconds, so we convert to seconds
+        self._total_execution_time = total_execution_time * 10 ** 6
 
         # now we have to make the data easily accessible
         for i, (lsummary, lprof) in enumerate(self._torchprof_layer_profiling.items()):
@@ -123,14 +125,25 @@ class Summary(object):
             # we make it relative
             relative_execution_time = execution_time / total_execution_time
 
+            # bias size, we get the bias, defaulting to None
+            # we don't use an empty torch.Tensor as its size is [0]
+            # but we would like it to be []
+            bias = getattr(lsummary.module, 'bias', None)
+            # since size is a callable, we use tuple as default, so that we can
+            # call it to generate an empty element
+            # we convert the size in a standard tuple
+            bias_size = tuple(getattr(bias, 'size', tuple)())
+
+
             # we generate the object
             linfo = LayerInfo(
                               name=lsummary.class_name,
                               index=i,
                               representation=repr(lsummary.module),
-                              input_size=lsummary.input_size,
-                              output_size=lsummary.output_size,
-                              kernel_size=lsummary.kernel_size,
+                              input_size=tuple(lsummary.input_size),
+                              output_size=tuple(lsummary.output_size),
+                              kernel_size=tuple(lsummary.kernel_size),
+                              bias_size=bias_size,
                               relative_execution_time=relative_execution_time,
                               )
 
@@ -141,6 +154,7 @@ class Summary(object):
     def layer_stats(self) -> typing.List[LayerInfo]:
         return copy.deepcopy(self._layer_stats)
 
+    # return value is in seconds
     @property
     def total_execution_time(self) -> float:
         return self._total_execution_time

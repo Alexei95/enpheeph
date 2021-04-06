@@ -8,6 +8,7 @@ Here we analyze the different design choices that have been made when building t
 - [Table of Contents](#table-of-contents)
 - [Model summary for fault injection](#model-summary-for-fault-injection)
     - [2021/03/10](#20210310)
+    - [2021/03/26](#20210326)
 - [Hardware Model](#hardware-model)
     - [2021/03/07](#20210307)
     - [2021/03/08](#20210308)
@@ -37,6 +38,21 @@ Here we analyze the different design choices that have been made when building t
         - [Hardware Model Implementation](#hardware-model-implementation-3)
     - [2021/03/23](#20210323)
         - [Hardware Model Implementation](#hardware-model-implementation-4)
+    - [2021/03/26](#20210326-1)
+        - [GPU API](#gpu-api)
+        - [Hardware Model Implementation](#hardware-model-implementation-5)
+    - [2021/03/28](#20210328)
+        - [Hardware Model Implementation](#hardware-model-implementation-6)
+    - [2021/03/29](#20210329)
+        - [Hardware Model Implementation](#hardware-model-implementation-7)
+    - [2021/03/31](#20210331)
+        - [Hardware Model Implementation](#hardware-model-implementation-8)
+    - [2021/04/01](#20210401)
+        - [Summary Implementation](#summary-implementation)
+    - [2021/04/05](#20210405)
+        - [Hardware Model Implementation](#hardware-model-implementation-9)
+    - [2021/04/06](#20210406)
+        - [Hardware Model Implementation](#hardware-model-implementation-10)
 
 # Model summary for fault injection
 
@@ -78,6 +94,10 @@ Testing the profiling, using only one layer, we obtained 84.15672599999985 ms as
 The point is to compute the summary of the model, and profile each leaf layer independently starting from the summarised layers. In this way we are sure the data belong to the correct layer, while obtaining very accurate results.
 
 Final implementation has layer summaries associated with raw profiling results, and a specialized list with all the required info for each layer.
+
+## 2021/03/26
+
+PyTorch has released version 1.8.1 with the new profiler, which provides better interface and customizability. However, it does not provide any automatic grouping as in torchprof, therefore we will stick to torchprof to maintain automatic grouping capabilities, while they update the interface to support new functionalities.
 
 # Hardware Model
 
@@ -335,3 +355,74 @@ In addition, each component has also a parent, to allow back-tracking. This is u
 ## 2021/03/23
 
 ### Hardware Model Implementation
+
+## 2021/03/26
+
+### GPU API
+
+CUDA Streams are used to issue operations in-order on GPUs: all the instructions in a stream are issued in order, however instructions can be executed in parallel using multiple streams, if they do not block each other, e.g. a computation on data which has already been loaded.
+
+### Hardware Model Implementation
+
+We need to model each different kernel, and provide the number of threads and some more details on them.
+
+As a starting point, we can implement the conv2d algorithm. In our case, we will use the [cuDNN API Reference manual focusing on the forward cuDNN convolution function call](https://docs.nvidia.com/deeplearning/cudnn/api/index.html#cudnnConvolutionForward). In this case, there are all the details regarding the way the function call works. However, there are some details missing:
+
+- **There is no description of the actual algorithm implementations**: while different algorithms can be chosen (Winograd, GEMM, direct, FTT, ...), there is no direct description of the implemented algorithm. This limits the modelling capabilities, as we cannot know how many threads are required.
+
+## 2021/03/28
+
+### Hardware Model Implementation
+
+Several references are available describing how to choose the number of threads for each CUDA operation. However, none of them represents the official cuDNN implementation, which is the one used also by PyTorch and most high-level Deep Learning libraries.
+
+Therefore, we will analyze the different implementations and choose the optimal one.
+
+- [CUDA Separable Convolution by NVIDIA (2007)](https://developer.download.nvidia.com/assets/cuda/files/convolutionSeparable.pdf): in this document there is an old explanation regarding how to implement separable kernels for convolutions, that is kernels which can be split into two-dimensional operations instead of going over all the elements at once. Here there is also an explanation regarding how to choose the number of threads, and the final choice is **1 thread per output pixel**.
+    - [Lectures based on Separable Convolution](https://www.evl.uic.edu/sjames/cs525/final.html)
+    - [GPU Programming Course](https://www.evl.uic.edu/aej/525/)
+- [Convolutions in TVM, end-to-end deep learning library by Apache](https://tvm.apache.org/docs/tutorials/optimize/opt_conv_cuda.html): here we get a similar explanation regarding threads, where the number of threads depend on the dimensions of the kernel window, in this particular case, **each thread goes over a 4x4 grid**, which is strided by 4 in both directions to fill a 8x8 grid for the block.
+
+Final decision is to assume **1 thread per output pixel**, and obtaining the total runtime from that.
+
+## 2021/03/29
+
+### Hardware Model Implementation
+
+We added extra fields for the Kernel class, being the base class from which we can derive all the kernels.
+
+Now, we have input, weight, bias and output sizes, each of them being a single tuple contatining all the dimensions. If one of them is not needed, it will be left as an empty tuple. Similarly, we have the same sizes for each thread running the kernel, together with some constants (THREADS_PER_WARP, defining how many threads are in a warp) and some run-time properties (n_threads, n_warps).
+
+For scheduling, there will be a dict using the CUDA core identifiers (since we run **each thread in a single CUDA core**)
+
+## 2021/03/31
+
+### Hardware Model Implementation
+
+To consider the scheduling issue, we have to include a new ThreadDescriptor class, which contains start, stop and length times, as well as thread "id", which is a sequential integer for the kernel, a link to the parent kernel and to the CUDA core id.
+
+## 2021/04/01
+
+### Summary Implementation
+
+Updated the total execution time to be in seconds instead of microseconds, to have a standard value. Relative conversion stays the same as it is in microseconds all the time.
+
+## 2021/04/05
+
+### Hardware Model Implementation
+
+For scheduling properly, and maximizing the utilization of the GPU, we need to select multiple subsets of the free operators, until all of them are exhausted.
+
+## 2021/04/06
+
+### Hardware Model Implementation
+
+We don't need object-wide variables for free and scheduled operators, as these dicts will be handled on a per-run basis.
+
+TRY TO MAXIMIZE UTILIZATION, SO TRY TO FIT AS MANY THREADS AS POSSIBLE IN THE GPU
+
+CHECK FOR EACH KERNEL IF WE CAN ISSUE MORE THREADS
+
+UPDATE FREE OPERATORS
+
+REPEAT

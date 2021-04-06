@@ -27,3 +27,9 @@ Here we list all the assumptions we made for working on this library:
                 1. A sequential number representing the sequential id of the component
                 2. The Enum value of the component
             2. This is useful to map and schedule the kernels and threads on the components
+4. The hardware model for the different elements respect the following conditions
+    1. Kernels
+        1. Convolution
+            1. There is 1 thread for each output pixel
+                1. This condition may be different depending from the implementation, in future it may be adapted to the different hardwares/SDK implementations
+    2. Execution time is considered to be as if all threads run in parallel with no memory locks, therefore each thread will run in this much time in parallel with the others, not rising any memory conflicts or misses
