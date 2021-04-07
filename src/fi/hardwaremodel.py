@@ -22,18 +22,34 @@ from . import summary
 class NvidiaGPUComponentEnum(enum.Enum):
     NONE = enum.auto()
     GraphicProcessingCluster = enum.auto()
+    RasterEngine = enum.auto()
     RasterOperatorPartition = enum.auto()
     RasterOperator = enum.auto()
-    RasterEngine = enum.auto()
     TextureProcessingCluster = enum.auto()
     StreamingMultiprocessor = enum.auto()
+    StreamingMultiprocessorPartition = enum.auto()
     CUDACore = enum.auto()
+    FP32Datapath = enum.auto()
+    FP32INT32Datapath = enum.auto()
+    RayTracingCore = enum.auto()
+    RegisterFile = enum.auto()
+    TensorCore = enum.auto()
+    TextureUnit = enum.auto()
+    L0InstructionCache = enum.auto()
+    WarpScheduler = enum.auto()
+    DispatchUnit = enum.auto()
+    LoaDSToreUnit = enum.auto()
+    SpecialFunctionUnit = enum.auto()
+    FP64Datapath = enum.auto()
+    L1InstructionCacheSharedMemory = enum.auto()
+    PolyMorphEngine = enum.auto()
 
 
 # https://stackoverflow.com/a/24482806
 # we need a specialized parser for saving and loading the enumerations
 class GPUComponentEnumJSONConverter(json.JSONEncoder):
-    GPUComponentEnumList = {NvidiaGPUComponentEnum.__name__: NvidiaGPUComponentEnum}
+    GPUComponentEnumList = {NvidiaGPUComponentEnum.__name__:
+                                                        NvidiaGPUComponentEnum}
 
     # this is the encoder, to map correctly the Enum classes
     def default(self, obj):
@@ -56,7 +72,10 @@ class GPUComponentHierarchy(typing.NamedTuple):
     # the number of components existing in each parent instance, so if we have
     # the structure A contains B, and we have 2 A instances and 2 B per parent
     # instance, we get a total of 4 B instances in the whole device
-    number_of_components_per_parent: int
+    # in some particular cases, the number of components per parent can be a
+    # float, to represent components which are available only in a subset of
+    # parents
+    number_of_components_per_parent: typing.Union[int, float]
     component_type: NvidiaGPUComponentEnum
     parent: NvidiaGPUComponentEnum
     subcomponents: typing.List[NvidiaGPUComponentEnum, ...]
@@ -144,8 +163,8 @@ class ThreadDescriptor(typing.NamedTuple):
 
 
 # FIXME: complete the sample hierarchy
-SAMPLE_HIERARCHY = {
-    NvidiaGPUComponentEnum.GraphicProcessingCluster: {
+SAMPLE_HIERARCHY = [
+    {
         'number_of_components_per_parent': 7,
         'component_type': NvidiaGPUComponentEnum.GraphicProcessingCluster,
         'parent': NvidiaGPUComponentEnum.NONE,
@@ -153,23 +172,158 @@ SAMPLE_HIERARCHY = {
             NvidiaGPUComponentEnum.RasterOperatorPartition,
         ],
     },
-    NvidiaGPUComponentEnum.RasterOperatorPartition: {
+    {
+        'number_of_components_per_parent': 1,
+        'component_type': NvidiaGPUComponentEnum.RasterEngine,
+        'parent': NvidiaGPUComponentEnum.GraphicProcessingCluster,
+        'subcomponents': [],
+    },
+    {
         'number_of_components_per_parent': 2,
         'component_type': NvidiaGPUComponentEnum.RasterOperatorPartition,
-        'parent': NvidiaGPUComponentEnum.NvidiaGPUComponentEnum.GraphicProcessingCluster,
+        'parent': NvidiaGPUComponentEnum.GraphicProcessingCluster,
         'subcomponents': [
             NvidiaGPUComponentEnum.RasterOperator,
         ],
     },
-    NvidiaGPUComponentEnum.RasterOperatorPartition: {
-        'number_of_components_per_parent': 2,
-        'component_type': NvidiaGPUComponentEnum.RasterOperatorPartition,
-        'parent': NvidiaGPUComponentEnum.NvidiaGPUComponentEnum.GraphicProcessingCluster,
+    {
+        'number_of_components_per_parent': 8,
+        'component_type': NvidiaGPUComponentEnum.RasterOperator,
+        'parent': NvidiaGPUComponentEnum.RasterOperatorPartition,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 6,
+        'component_type': NvidiaGPUComponentEnum.TextureProcessingCluster,
+        'parent': NvidiaGPUComponentEnum.GraphicProcessingCluster,
         'subcomponents': [
-            NvidiaGPUComponentEnum.RasterOperator,
+            NvidiaGPUComponentEnum.PolyMorphEngine,
+            NvidiaGPUComponentEnum.StreamingMultiprocessor,
+            ],
+    },
+    {
+        'number_of_components_per_parent': 1,
+        'component_type': NvidiaGPUComponentEnum.PolyMorphEngine,
+        'parent': NvidiaGPUComponentEnum.TextureProcessingCluster,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 2,
+        'component_type': NvidiaGPUComponentEnum.StreamingMultiprocessor,
+        'parent': NvidiaGPUComponentEnum.TextureProcessingCluster,
+        'subcomponents': [
+            NvidiaGPUComponentEnum.RayTracingCore,
+            NvidiaGPUComponentEnum.L1InstructionCacheSharedMemory,
+            NvidiaGPUComponentEnum.FP64Datapath,
+            NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
+            ],
+    },
+    {
+        'number_of_components_per_parent': 1,
+        'component_type': NvidiaGPUComponentEnum.RayTracingCore,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessor,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 1,
+        'component_type':
+        NvidiaGPUComponentEnum.L1InstructionCacheSharedMemory,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessor,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 2,
+        'component_type': NvidiaGPUComponentEnum.FP64Datapath,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessor,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 4,
+        'component_type':
+        NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessor,
+        'subcomponents': [
+            NvidiaGPUComponentEnum.TensorCore,
+            NvidiaGPUComponentEnum.RegisterFile,
+            NvidiaGPUComponentEnum.TextureUnit,
+            NvidiaGPUComponentEnum.L0InstructionCache,
+            NvidiaGPUComponentEnum.WarpScheduler,
+            NvidiaGPUComponentEnum.DispatchUnit,
+            NvidiaGPUComponentEnum.LoaDSToreUnit,
+            NvidiaGPUComponentEnum.SpecialFunctionUnit,
+            NvidiaGPUComponentEnum.CUDACore,
+            ],
+    },
+    {
+        'number_of_components_per_parent': 1,
+        'component_type': NvidiaGPUComponentEnum.TensorCore,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 1,
+        'component_type': NvidiaGPUComponentEnum.RegisterFile,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 1,
+        'component_type': NvidiaGPUComponentEnum.TextureUnit,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 1,
+        'component_type': NvidiaGPUComponentEnum.L0InstructionCache,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 1,
+        'component_type': NvidiaGPUComponentEnum.WarpScheduler,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 1,
+        'component_type': NvidiaGPUComponentEnum.DispatchUnit,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 4,
+        'component_type': NvidiaGPUComponentEnum.LoaDSToreUnit,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 1,
+        'component_type': NvidiaGPUComponentEnum.SpecialFunctionUnit,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 32,
+        'component_type': NvidiaGPUComponentEnum.WarpScheduler,
+        'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
+        'subcomponents': [
+            NvidiaGPUComponentEnum.FP32Datapath,
+            NvidiaGPUComponentEnum.FP32INT32Datapath,
         ],
     },
-}
+    {
+        'number_of_components_per_parent': 0.5,
+        'component_type': NvidiaGPUComponentEnum.FP32Datapath,
+        'parent': NvidiaGPUComponentEnum.CUDACore,
+        'subcomponents': [],
+    },
+    {
+        'number_of_components_per_parent': 0.5,
+        'component_type': NvidiaGPUComponentEnum.FP32INT32Datapath,
+        'parent': NvidiaGPUComponentEnum.CUDACore,
+        'subcomponents': [],
+    },
+]
 
 # FIXME: complete the sample map
 SAMPLE_MAP = [
@@ -188,11 +342,12 @@ SAMPLE_MAP = [
 @dataclasses.dataclass(init=True, repr=True)
 class HardwareModel(object):
     # string of hierarchy taken from the JSON file
-    json_hierarchy_string = dataclasses.field(init=True, repr=False)
+    json_hierarchy_string: str = dataclasses.field(init=True, repr=False)
     # string of map with all the enum values, from the JSON file
-    json_map_string = dataclasses.field(init=True, repr=False)
+    json_map_string: str = dataclasses.field(init=True, repr=False)
 
-    # parsed hierarchy
+    # parsed hierarchy, basically a list of dicts with the arguments for
+    # GPUComponent
     _hierarchy = None
     # parsed map
     _map = None
@@ -200,20 +355,22 @@ class HardwareModel(object):
     _max_parallel_threads = None
 
     def __post_init__(self):
-        self._hierarchy = self._parse_hierarchy(hierarchy=self.json_hierarchy_string,
-                                                data_class=GPUComponentHierarchy)
+        self._hierarchy = self._parse_hierarchy(
+                            hierarchy=self.json_hierarchy_string,
+                            data_class=GPUComponentHierarchy)
         self._map = self._parse_map(map_=self.json_map_string,
                                     data_class=GPUComponent)
         self._max_parallel_threads = self._count_max_parallel_threads(
                                         self._hierarchy)
 
     def _parse_hierarchy(self, hierarchy, data_class):
-        hierarchy = json.loads(hierarchy,
-                               object_hook=GPUComponentJEnumSONConverter.decode)
+        hierarchy = json.loads(
+                        hierarchy,
+                        object_hook=GPUComponentJEnumSONConverter.decode)
         parsed_hierarchy = {}
-        for enum_value, c in hierarchy.items():
+        for c in hierarchy:
             component = data_class(**c)
-            parsed_hierarchy[enum_value] = component
+            parsed_hierarchy[c.component_type] = component
         return parsed_hierarchy
 
     def _parse_map(self, map_, data_class):
@@ -244,7 +401,7 @@ class HardwareModel(object):
         while parent.parent is not NvidiaGPUComponentEnum.NONE:
             parent = hierarchy[parent.parent]
             component_count *= parent.number_of_components_per_parent
-        return component_count
+        return math.ceil(component_count)
 
     def _count_max_parallel_threads(self, hierarchy):
         return self._count_number_of_components_per_device(hierarchy,
@@ -268,7 +425,10 @@ class HardwareModel(object):
         # so while we left choice for NvidiaGPUComponentEnum, it is supposed
         # to be indicating a CUDA core or equivalent
         schedule_dict = {}  # target id: list of ThreadDescriptor
-        target_components = self._count_number_of_components_per_device(self._hierarchy, target)
+        # we use math.ceil as the number may be a float
+        target_components = math.ceil(
+                                self._count_number_of_components_per_device(
+                                    self._hierarchy, target))
 
         # first of all, we need to go through the list of the kernels to be
         # processed, to create the corresponding list of kernels with threads
@@ -296,32 +456,34 @@ class HardwareModel(object):
         # we assume the operators run in order as the layers
         # at the beginning we set all the target ids to be free
         free_target_operators = {}  # timestamp: list of target id
-        free_target_operators[0.0] = list(range(target_ids)
+        free_target_operators[0.0] = list(range(target_components))
         for layer, kernel in kernels.items():
             # we get the number of required operators, which is the same as
             # the number of threads to be run in the kernel
             n_required_operators = kernel.n_threads
 
-            # we initialize the current time index to 0, the first key in the dict
+            # we initialize the current time index to 0, the first key in the
+            # dict
             current_time_index = 0
             # we update the current time to current index
-            current_time = list(free_target_operators.keys())[current_time_index]
+            current_time = list(free_target_operators.keys())[
+                                                        current_time_index]
             # we have a list of the operators which are free at the current
             # time
             current_free_operators = free_target_operators[current_time]
             # we select the subset of operators
             # we need to check whether we have enough operators available at
-            # current time, otherwise we reach the next time when more operators
-            # are freed
+            # current time, otherwise we reach the next time when more
+            # operators are freed
             # while the above algorithm is a good solution, it would have very
             # low overall utilization, leading to much worse performance with
             # lower power usage
             # therefore, we have to select the maximum possible subset of
             # operators at each time slot, and update the dict accordingly
 
-            # we also have a temporary dict for updating the number of operators
-            # number of totally selected operators, must match the required
-            # number
+            # we also have a temporary dict for updating the number of
+            # operators number of totally selected operators, must match the
+            # required number
             n_selected_operators = 0
 
             # we compute the execution time for the threads, we assume a thread
@@ -346,7 +508,7 @@ class HardwareModel(object):
                 # if the time does not exist, then we set all of them to be
                 # free, as it means no other scheduling has occurred yet
                 if current_time + execution_time not in free_target_operators:
-                    free_target_operators[current_time + execution_time] = copy.deepcopy(target_ids)
+                    free_target_operators[current_time + execution_time] = list(range(target_components))
                 # otherwise we append the free operators and we sort them
                 else:
                     free_target_operators[current_time + execution_time].extend(selected_operators)
