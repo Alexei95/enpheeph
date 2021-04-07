@@ -33,3 +33,5 @@ Here we list all the assumptions we made for working on this library:
             1. There is 1 thread for each output pixel
                 1. This condition may be different depending from the implementation, in future it may be adapted to the different hardwares/SDK implementations
     2. Execution time is considered to be as if all threads run in parallel with no memory locks, therefore each thread will run in this much time in parallel with the others, not rising any memory conflicts or misses
+    3. The components are numbered in increasing order from ```0``` to ```n_components - 1```
+    4. All the target operators are available when starting an inference run

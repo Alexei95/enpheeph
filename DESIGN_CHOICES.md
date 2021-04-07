@@ -53,6 +53,8 @@ Here we analyze the different design choices that have been made when building t
         - [Hardware Model Implementation](#hardware-model-implementation-9)
     - [2021/04/06](#20210406)
         - [Hardware Model Implementation](#hardware-model-implementation-10)
+    - [2021/04/07](#20210407)
+        - [Hardware Model Implementation](#hardware-model-implementation-11)
 
 # Model summary for fault injection
 
@@ -418,6 +420,14 @@ For scheduling properly, and maximizing the utilization of the GPU, we need to s
 ### Hardware Model Implementation
 
 We don't need object-wide variables for free and scheduled operators, as these dicts will be handled on a per-run basis.
+
+## 2021/04/07
+
+### Hardware Model Implementation
+
+We standardize the way we count the number of components, being it expressed in a per-parent basis, using an explicit variable for mentioning it.
+
+Removed the target IDs argument when scheduling, now we assume that they are all contiguously numbered from ```0``` to ```n_components - 1```.
 
 TRY TO MAXIMIZE UTILIZATION, SO TRY TO FIT AS MANY THREADS AS POSSIBLE IN THE GPU
 

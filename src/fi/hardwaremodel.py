@@ -53,7 +53,10 @@ class GPUComponentEnumJSONConverter(json.JSONEncoder):
 
 
 class GPUComponentHierarchy(typing.NamedTuple):
-    number_of_components: int
+    # the number of components existing in each parent instance, so if we have
+    # the structure A contains B, and we have 2 A instances and 2 B per parent
+    # instance, we get a total of 4 B instances in the whole device
+    number_of_components_per_parent: int
     component_type: NvidiaGPUComponentEnum
     parent: NvidiaGPUComponentEnum
     subcomponents: typing.List[NvidiaGPUComponentEnum, ...]
@@ -103,11 +106,16 @@ class Kernel(object):
     def n_warps(self) -> int:
         return math.ceil(self.n_threads / self.THREADS_PER_WARP)
 
-    # FIXME: implement a way of handling different blocks
+    # FIXME: implement a way of handling different blocks, this could be useful
+    # for handling memory conflicts in the hardware model
     @property
     def n_blocks(self):
         return NotImplemented
 
+    # this function returns a dict containing the association between a target
+    # id and the corresponding thread to be run
+    # it takes care of creating the thread descriptors with the correct
+    # parameters and saving all of them
     def make_threads(self, target_ids: typing.Tuple[int, ...],
                      time_start: float, time_stop: float,
                      total_time: float) -> typing.Dict[int, ThreadDescriptor]:
@@ -138,7 +146,7 @@ class ThreadDescriptor(typing.NamedTuple):
 # FIXME: complete the sample hierarchy
 SAMPLE_HIERARCHY = {
     NvidiaGPUComponentEnum.GraphicProcessingCluster: {
-        'number_of_components': 7,
+        'number_of_components_per_parent': 7,
         'component_type': NvidiaGPUComponentEnum.GraphicProcessingCluster,
         'parent': NvidiaGPUComponentEnum.NONE,
         'subcomponents': [
@@ -146,7 +154,7 @@ SAMPLE_HIERARCHY = {
         ],
     },
     NvidiaGPUComponentEnum.RasterOperatorPartition: {
-        'number_of_components': 2,
+        'number_of_components_per_parent': 2,
         'component_type': NvidiaGPUComponentEnum.RasterOperatorPartition,
         'parent': NvidiaGPUComponentEnum.NvidiaGPUComponentEnum.GraphicProcessingCluster,
         'subcomponents': [
@@ -154,7 +162,7 @@ SAMPLE_HIERARCHY = {
         ],
     },
     NvidiaGPUComponentEnum.RasterOperatorPartition: {
-        'number_of_components': 2,
+        'number_of_components_per_parent': 2,
         'component_type': NvidiaGPUComponentEnum.RasterOperatorPartition,
         'parent': NvidiaGPUComponentEnum.NvidiaGPUComponentEnum.GraphicProcessingCluster,
         'subcomponents': [
@@ -196,9 +204,8 @@ class HardwareModel(object):
                                                 data_class=GPUComponentHierarchy)
         self._map = self._parse_map(map_=self.json_map_string,
                                     data_class=GPUComponent)
-        self._max_parallel_threads = self._max_count_parallel_threads(
-                                        self._hierarchy,
-                                        NvidiaGPUComponentEnum.CUDACore)
+        self._max_parallel_threads = self._count_max_parallel_threads(
+                                        self._hierarchy)
 
     def _parse_hierarchy(self, hierarchy, data_class):
         hierarchy = json.loads(hierarchy,
@@ -225,31 +232,34 @@ class HardwareModel(object):
 
         return map_array
 
-    # to compute the number for _parallel_threads
-    def _count_max_parallel_threads(self, hierarchy, target):
+    # to compute the number of components by traversing through the hierarchy
+    # from bottom to top
+    def _count_number_of_components_per_device(self, hierarchy, target):
         # we go through all the components to get the total number
         # we start by setting the parent, where we loop, to the current target
         # module
         parent = hierarchy[target]
-        component_count = 1
+        component_count = parent.number_of_components_per_parent
         # we stop when we find a parent to be none
         while parent.parent is not NvidiaGPUComponentEnum.NONE:
             parent = hierarchy[parent.parent]
-            component_count *= parent.component_count
+            component_count *= parent.number_of_components_per_parent
         return component_count
+
+    def _count_max_parallel_threads(self, hierarchy):
+        return self._count_number_of_components_per_device(hierarchy,
+                                            NvidiaGPUComponentEnum.CUDACore)
 
     # FIXME: add defaults for target target ids
     # NOTE: in the future we can add support for custom free operators, if we
     # want to simulate a double parallel run or something that occupies some
     # operators in a certain order, using an extra arguments used as baseline
     # for the free_target_operators variable
-    # target_ids contain a list of all the possible usable target_ids, it is
-    # similar to a custom free_target_operators but less flexible, and it is
-    # used as reference for creating an empty list
+    # by default we assume all of the target operators are available at time 0
+    # and we also assume their number is contiguous
     def schedule_model_inference_run(self,
                                      summary_: summary.Summary,
                                      target: NvidiaGPUComponentEnum,
-                                     target_ids: typing.List[int, ...],
                                      ) -> typing.Dict[int,
                                         typing.List[ThreadDescriptor, ...]]:
         # NOTE: we assume that defaultdict is ordered, so Python 3.7+
@@ -258,12 +268,13 @@ class HardwareModel(object):
         # so while we left choice for NvidiaGPUComponentEnum, it is supposed
         # to be indicating a CUDA core or equivalent
         schedule_dict = {}  # target id: list of ThreadDescriptor
-        target_components = self._hierarchy[target].number_of_components
+        target_components = self._count_number_of_components_per_device(self._hierarchy, target)
 
         # first of all, we need to go through the list of the kernels to be
         # processed, to create the corresponding list of kernels with threads
         # information
-        # this is required as kernel times are relative, this value is in seconds
+        # this is required as kernel times are relative, this value is in
+        # seconds
         total_execution_time = summary_.total_execution_time
 
         kernels = {}  # layer summary: kernel
@@ -285,7 +296,7 @@ class HardwareModel(object):
         # we assume the operators run in order as the layers
         # at the beginning we set all the target ids to be free
         free_target_operators = {}  # timestamp: list of target id
-        free_target_operators[0.0] = copy.deepcopy(target_ids)
+        free_target_operators[0.0] = list(range(target_ids)
         for layer, kernel in kernels.items():
             # we get the number of required operators, which is the same as
             # the number of threads to be run in the kernel
