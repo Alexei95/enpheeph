@@ -5,7 +5,7 @@
 # https://stackoverflow.com/a/33533514
 from __future__ import annotations
 
-import collections
+import abc
 import copy
 import dataclasses
 import enum
@@ -15,11 +15,105 @@ import math
 import operator
 import typing
 
-from . import summary
+
+# https://stackoverflow.com/a/24482806
+# we need a specialized parser for saving and loading the enumerations
+# this class has been customized to support registering new encode/decode
+# functions for different objects
+# the structure is to have a element __cls__ in the dict, matching with the
+# class name corresponding to the function
+# in the encoder we use the class as index, as we receive Python objects
+# in the decoder we use the class name, since it must be converted to string
+# for being JSON-serializable
+# we also keep a class to class name association dict
+class JSONConverter(json.JSONEncoder):
+    EncoderList = {}
+    DecoderList = {}
+    ClassNameAssociation = {}
+
+    # the encoder should return a dict
+    # the decoder should allow extra keys in the dict, as there is also __cls__
+    # and it should return the corresponding Python object
+    @classmethod
+    def register_class(cls, class_, encode_func, decode_func):
+        cls.EncoderList[class_] = encode_func
+        cls.DecoderList[class_.__name__] = decode_func
+        cls.ClassNameAssociation[class_] = class_.__name__
+
+    # this function can be used as a wrapper on the class, assuming there are
+    # two methods to_json and from_json to convert it
+    @classmethod
+    def register_class_decorator(cls, class_):
+        cls.register_class(class_, class_.to_json, class_.from_json)
+        return class_
+
+    @classmethod
+    def deregister_class(cls, class_):
+        del cls.EncoderList[class_]
+        del cls.DecoderList[class_.__name__]
+        del cls.ClassNameAssociation[class_]
+
+    # this is the encoder, to map correctly the registered classes
+    def default(self, obj):
+        # type returns the class if the obj is an instance of such class
+        # be careful in not using classes, as they are of type 'type'
+        if type(obj) in self.EncoderList:
+            encoded_obj = self.EncoderList[type(obj)](obj)
+            # since we are working with instances, we get the class defining
+            # the object and we get its name, which should provide correct
+            # results for both Enums and standard classes
+            return {"__cls__": obj.__class__.__name__, **encoded_obj}
+        return json.JSONEncoder.default(self, obj)
+
+    # this is the decoder, to convert back into Python objects
+    @classmethod
+    def decode(cls, d):
+        if "__cls__" in d:
+            cls_name = d['__cls__']
+            return cls.DecoderList[cls_name](d)
+        else:
+            return d
 
 
-# FIXME: complete list
-class NvidiaGPUComponentEnum(enum.Enum):
+# FIXME: implement a basic serialization for standard __dict__ cases
+class JSONSerializableABC(object):
+    @classmethod
+    @abc.abstractmethod
+    def to_json(cls, obj):
+        raise NotImplementedError()
+
+    @classmethod
+    @abc.abstractmethod
+    def from_json(cls, d):
+        raise NotImplementedError()
+
+
+class JSONSerializableDictClass(JSONSerializableABC):
+    @classmethod
+    def to_json(cls, obj):
+        return obj.__dict__
+
+    @classmethod
+    def from_json(cls, d):
+        d_ = d.copy()
+        if '__cls__' in d_:
+            del d_['__cls__']
+        return cls(**d_)
+
+
+class JSONSerializableEnum(JSONSerializableABC):
+    @classmethod
+    def to_json(cls, obj):
+        # the name of the enum value can be accessed using name
+        return {'__enum__': obj.name}
+
+    @classmethod
+    def from_json(cls, d):
+        return getattr(cls, d['__enum__'])
+
+
+@JSONConverter.register_class_decorator
+class NvidiaGPUComponentEnum(JSONSerializableEnum, enum.Enum):
     NONE = enum.auto()
     GraphicProcessingCluster = enum.auto()
     RasterEngine = enum.auto()
@@ -45,30 +139,14 @@ class NvidiaGPUComponentEnum(enum.Enum):
     PolyMorphEngine = enum.auto()
 
 
-# https://stackoverflow.com/a/24482806
-# we need a specialized parser for saving and loading the enumerations
-class GPUComponentEnumJSONConverter(json.JSONEncoder):
-    GPUComponentEnumList = {NvidiaGPUComponentEnum.__name__:
-                                                        NvidiaGPUComponentEnum}
-
-    # this is the encoder, to map correctly the Enum classes
-    def default(self, obj):
-        if type(obj) in self.GPUComponentEnumList.values():
-            return {"__enum__": str(obj)}
-        return json.JSONEncoder.default(self, obj)
-
-    # this is the decoder, to convert back into Python objects
-    @staticmethod
-    def decode(d):
-        if "__enum__" in d:
-            name, member = d["__enum__"].split(".")
-            return getattr(GPUComponentEnumJSONConverter.GPUComponentEnumList[name],
-                           member)
-        else:
-            return d
-
-
-class GPUComponentHierarchy(typing.NamedTuple):
+# NOTE: unfortunately, for typing.NamedTuple there are issues with inheritance
+# as it changes the metaclass and hence the inheritance sequence for the fields
+# the proposed solution would be to use dataclasses
+# we lose unpacking properties and some nice behaviours, but it shouldn't
+# matter much
+@JSONConverter.register_class_decorator
+@dataclasses.dataclass(init=True, repr=True)
+class GPUComponentHierarchy(JSONSerializableDictClass):
     # the number of components existing in each parent instance, so if we have
     # the structure A contains B, and we have 2 A instances and 2 B per parent
     # instance, we get a total of 4 B instances in the whole device
@@ -81,7 +159,9 @@ class GPUComponentHierarchy(typing.NamedTuple):
     subcomponents: typing.List[NvidiaGPUComponentEnum, ...]
 
 
-class GPUComponent(typing.NamedTuple):
+@JSONConverter.register_class_decorator
+@dataclasses.dataclass(init=True, repr=True)
+class GPUComponent(JSONSerializableDictClass):
     # we generally use sequential component ids
     component_id: int
     component_type: NvidiaGPUComponentEnum
@@ -162,37 +242,37 @@ class ThreadDescriptor(typing.NamedTuple):
     total_time: float
 
 
-# FIXME: complete the sample hierarchy
+# NOTE: based on Nvidia GPU A100, Ampere workstation GPU, 2020
 SAMPLE_HIERARCHY = [
-    {
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 7,
         'component_type': NvidiaGPUComponentEnum.GraphicProcessingCluster,
         'parent': NvidiaGPUComponentEnum.NONE,
         'subcomponents': [
             NvidiaGPUComponentEnum.RasterOperatorPartition,
         ],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 1,
         'component_type': NvidiaGPUComponentEnum.RasterEngine,
         'parent': NvidiaGPUComponentEnum.GraphicProcessingCluster,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 2,
         'component_type': NvidiaGPUComponentEnum.RasterOperatorPartition,
         'parent': NvidiaGPUComponentEnum.GraphicProcessingCluster,
         'subcomponents': [
             NvidiaGPUComponentEnum.RasterOperator,
         ],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 8,
         'component_type': NvidiaGPUComponentEnum.RasterOperator,
         'parent': NvidiaGPUComponentEnum.RasterOperatorPartition,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 6,
         'component_type': NvidiaGPUComponentEnum.TextureProcessingCluster,
         'parent': NvidiaGPUComponentEnum.GraphicProcessingCluster,
@@ -200,14 +280,14 @@ SAMPLE_HIERARCHY = [
             NvidiaGPUComponentEnum.PolyMorphEngine,
             NvidiaGPUComponentEnum.StreamingMultiprocessor,
             ],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 1,
         'component_type': NvidiaGPUComponentEnum.PolyMorphEngine,
         'parent': NvidiaGPUComponentEnum.TextureProcessingCluster,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 2,
         'component_type': NvidiaGPUComponentEnum.StreamingMultiprocessor,
         'parent': NvidiaGPUComponentEnum.TextureProcessingCluster,
@@ -217,27 +297,27 @@ SAMPLE_HIERARCHY = [
             NvidiaGPUComponentEnum.FP64Datapath,
             NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
             ],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 1,
         'component_type': NvidiaGPUComponentEnum.RayTracingCore,
         'parent': NvidiaGPUComponentEnum.StreamingMultiprocessor,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 1,
         'component_type':
         NvidiaGPUComponentEnum.L1InstructionCacheSharedMemory,
         'parent': NvidiaGPUComponentEnum.StreamingMultiprocessor,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 2,
         'component_type': NvidiaGPUComponentEnum.FP64Datapath,
         'parent': NvidiaGPUComponentEnum.StreamingMultiprocessor,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 4,
         'component_type':
         NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
@@ -253,82 +333,91 @@ SAMPLE_HIERARCHY = [
             NvidiaGPUComponentEnum.SpecialFunctionUnit,
             NvidiaGPUComponentEnum.CUDACore,
             ],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 1,
         'component_type': NvidiaGPUComponentEnum.TensorCore,
         'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 1,
         'component_type': NvidiaGPUComponentEnum.RegisterFile,
         'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 1,
         'component_type': NvidiaGPUComponentEnum.TextureUnit,
         'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 1,
         'component_type': NvidiaGPUComponentEnum.L0InstructionCache,
         'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 1,
         'component_type': NvidiaGPUComponentEnum.WarpScheduler,
         'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 1,
         'component_type': NvidiaGPUComponentEnum.DispatchUnit,
         'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 4,
         'component_type': NvidiaGPUComponentEnum.LoaDSToreUnit,
         'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 1,
         'component_type': NvidiaGPUComponentEnum.SpecialFunctionUnit,
         'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 32,
-        'component_type': NvidiaGPUComponentEnum.WarpScheduler,
+        'component_type': NvidiaGPUComponentEnum.CUDACore,
         'parent': NvidiaGPUComponentEnum.StreamingMultiprocessorPartition,
         'subcomponents': [
             NvidiaGPUComponentEnum.FP32Datapath,
             NvidiaGPUComponentEnum.FP32INT32Datapath,
         ],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 0.5,
         'component_type': NvidiaGPUComponentEnum.FP32Datapath,
         'parent': NvidiaGPUComponentEnum.CUDACore,
         'subcomponents': [],
-    },
-    {
+    }),
+    GPUComponentHierarchy(**{
         'number_of_components_per_parent': 0.5,
         'component_type': NvidiaGPUComponentEnum.FP32INT32Datapath,
         'parent': NvidiaGPUComponentEnum.CUDACore,
         'subcomponents': [],
-    },
+    }),
 ]
+SAMPLE_HIERARCHY_JSON = json.dumps(
+    SAMPLE_HIERARCHY,
+    cls=JSONConverter,
+    indent=4,
+)
 
 # FIXME: complete the sample map
 SAMPLE_MAP = [
     [
-        [],
+        [
+            {'component_id': 0,
+             'component_type': NvidiaGPUComponentEnum.GraphicProcessingCluster,
+             },
+        ],
         [],
     ],
     [
@@ -336,7 +425,11 @@ SAMPLE_MAP = [
         [],
     ],
 ]
-
+SAMPLE_MAP_JSON = json.dumps(
+    SAMPLE_MAP,
+    cls=JSONConverter,
+    indent=4,
+)
 
 
 @dataclasses.dataclass(init=True, repr=True)
@@ -356,26 +449,23 @@ class HardwareModel(object):
 
     def __post_init__(self):
         self._hierarchy = self._parse_hierarchy(
-                            hierarchy=self.json_hierarchy_string,
-                            data_class=GPUComponentHierarchy)
-        self._map = self._parse_map(map_=self.json_map_string,
-                                    data_class=GPUComponent)
+                            hierarchy=self.json_hierarchy_string)
+        self._map = self._parse_map(map_=self.json_map_string)
         self._max_parallel_threads = self._count_max_parallel_threads(
                                         self._hierarchy)
 
-    def _parse_hierarchy(self, hierarchy, data_class):
+    def _parse_hierarchy(self, hierarchy: str):
         hierarchy = json.loads(
                         hierarchy,
-                        object_hook=GPUComponentJEnumSONConverter.decode)
+                        object_hook=JSONConverter.decode)
         parsed_hierarchy = {}
         for c in hierarchy:
-            component = data_class(**c)
-            parsed_hierarchy[c.component_type] = component
+            parsed_hierarchy[c.component_type] = copy.deepcopy(c)
         return parsed_hierarchy
 
-    def _parse_map(self, map_, data_class):
+    def _parse_map(self, map_: str):
         map_ = json.loads(map_,
-                          object_hook=GPUComponentEnumJSONConverter.decode)
+                          object_hook=JSONConverter.decode)
         # we assume map is 2D
         map_array = []
         for row in map_:
@@ -383,7 +473,7 @@ class HardwareModel(object):
             for cell in row:
                 parsed_cell = []
                 for component in cell:
-                    parsed_cell.append(data_class(**component))
+                    parsed_cell.append(copy.deepcopy(component))
                 parsed_row.append(parsed_cell)
             map_array.append(parsed_row)
 
@@ -398,14 +488,15 @@ class HardwareModel(object):
         parent = hierarchy[target]
         component_count = parent.number_of_components_per_parent
         # we stop when we find a parent to be none
-        while parent.parent is not NvidiaGPUComponentEnum.NONE:
+        while parent.parent is not parent.parent.NONE:
             parent = hierarchy[parent.parent]
             component_count *= parent.number_of_components_per_parent
         return math.ceil(component_count)
 
     def _count_max_parallel_threads(self, hierarchy):
-        return self._count_number_of_components_per_device(hierarchy,
-                                            NvidiaGPUComponentEnum.CUDACore)
+        return self._count_number_of_components_per_device(
+            hierarchy,
+            NvidiaGPUComponentEnum.CUDACore)
 
     # FIXME: add defaults for target target ids
     # NOTE: in the future we can add support for custom free operators, if we
@@ -414,11 +505,13 @@ class HardwareModel(object):
     # for the free_target_operators variable
     # by default we assume all of the target operators are available at time 0
     # and we also assume their number is contiguous
-    def schedule_model_inference_run(self,
-                                     summary_: summary.Summary,
-                                     target: NvidiaGPUComponentEnum,
-                                     ) -> typing.Dict[int,
-                                        typing.List[ThreadDescriptor, ...]]:
+    def schedule_model_inference_run(
+            self,
+            summary_: 'summary.Summary',
+            target: NvidiaGPUComponentEnum,
+            ) -> typing.Dict[
+                int,
+                typing.List[ThreadDescriptor, ...]]:
         # NOTE: we assume that defaultdict is ordered, so Python 3.7+
         # first we compute the list of all the possible CUDA cores for
         # scheduling
@@ -537,11 +630,17 @@ class HardwareModel(object):
         return schedule_dict
 
     # FIXME: add return type annotation
-    @property
-    def hierarchy(self):
+    @functools.cached_property
+    def hierarchy(self) -> typing.Dict[enum.Enum, GPUComponentHierarchy]:
         return copy.deepcopy(self._hierarchy)
 
+    @functools.cached_property
+    def hierarchy_json(self) -> str:
+        return json.dumps(list(self._hierarchy.values()),
+                          cls=JSONConverter,
+                          indent=4)
+
     # FIXME: add return type annotation
-    @property
+    @functools.cached_property
     def map(self):
         return copy.deepcopy(self._map)

@@ -55,6 +55,8 @@ Here we analyze the different design choices that have been made when building t
         - [Hardware Model Implementation](#hardware-model-implementation-10)
     - [2021/04/07](#20210407)
         - [Hardware Model Implementation](#hardware-model-implementation-11)
+    - [2021/04/08](#20210408)
+        - [Hardware Model Implementation](#hardware-model-implementation-12)
 
 # Model summary for fault injection
 
@@ -429,10 +431,14 @@ We standardize the way we count the number of components, being it expressed in 
 
 Removed the target IDs argument when scheduling, now we assume that they are all contiguously numbered from ```0``` to ```n_components - 1```.
 
-TRY TO MAXIMIZE UTILIZATION, SO TRY TO FIT AS MANY THREADS AS POSSIBLE IN THE GPU
+## 2021/04/08
 
-CHECK FOR EACH KERNEL IF WE CAN ISSUE MORE THREADS
+### Hardware Model Implementation
 
-UPDATE FREE OPERATORS
+There has been a slight redesign in the JSON import/export, now the model uses a registering process for saving the methods for encoding/decoding the corresponding classes. It has been implemented using a decorator, to make it easier, together with base classes implementing the methods for Enum and standard \_\_dict\_\_-based classes.
 
-REPEAT
+This update will be very useful in the future when adding more Enums and classes, however it required a change from typing.NamedTuple to dataclasses.dataclass, as the former has issues with inheritance related to the way the fields and field defaults are used in the metaclass.
+
+Also, there is now a property returning the hierarchy JSON, as the internal representation is not a list of components as for the input hierarchy JSON, but instead it is a dict matching the enum as key with the component as value, for access efficiency.
+
+All the properties have also been converted to functools.cached_property, given the high cost in terms of computation time, which may be useful in future for repetitive access.
