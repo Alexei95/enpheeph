@@ -62,6 +62,8 @@ Here we analyze the different design choices that have been made when building t
         - [Hardware Model Implementation](#hardware-model-implementation-13)
     - [2021/03/14](#20210314)
         - [Hardware Model Implementation](#hardware-model-implementation-14)
+        - [Summary Bugfixes](#summary-bugfixes)
+        - [Future Features](#future-features)
 
 # Model summary for fault injection
 
@@ -480,3 +482,24 @@ Other improvements cover the conversion of NamedTuple to dataclasses, to be able
 ## 2021/03/14
 
 ### Hardware Model Implementation
+
+We have added the original layer info in the kernel, to provide more info if required.
+
+Fixed some nasty bugs regarding the way kernels are scheduled, not respecting sequential operations and data dependency. Now we are limiting the parallelism of the GPU, as we are forcing all kernels to execute in sequence, when all the previous threads of the kernel have finished.
+
+
+### Summary Bugfixes
+
+We fixed the wrong multiplier used for converting from microseconds to seconds in layer times.
+
+### Future Features
+
+To improve the hardware modeling, there are many aspects which should be taken into account: the first one is dataflows and memory concurrency.
+
+Memory has a limited bandwidth, therefore we should take into account also the amount of transmission required by the actual kernel, together with possible data dependencies across input and output. Also, on-chip memory is limited, hence we cannot load more than a certain amount of data inside the GPU, before we need to start splitting it.
+
+Another aspect is the actual control time spent by the GPU in-between executions, as there is the need for scheduling, dispatching, issuing. This would make the correct positioning and targeting of threads for faults more realistic, even though it might add some more model overhead.
+
+Currently, we are able to support basic data dependencies, but in the future we will require a more detailed algorithm, as many threads can start earlier than when all the previous ones have finished, depending on the amount of input data required and given the locality of the data.
+
+This implementation may be delegated to each kernel, providing a base algorithm for checking the required amount of data to have been produced/loaded, as well as adding the proper representation of loading/unloading data in form of kernels. This implementation may have high priority as soon as the basic fault injection on system is implemented.

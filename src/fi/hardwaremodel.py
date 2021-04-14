@@ -13,6 +13,7 @@ import functools
 import json
 import math
 import operator
+import pprint
 import typing
 
 import src.fi.summary
@@ -199,6 +200,8 @@ class Kernel(object):
     thread_weight_size: typing.Optional[typing.Tuple[int, ...]] = None
     # output can be only one, but size can have multiple dimensions
     thread_bias_size: typing.Optional[typing.Tuple[int, ...]] = None
+    # here we can save the corresponding layer info of the kernel
+    raw_layer_info: typing.Optional[src.fi.summary.LayerInfo] = None
 
     # BUG: complete the function for different layers
     # given three parameters it returns the 4th one
@@ -244,34 +247,37 @@ class Kernel(object):
             target_ids: typing.Tuple[int, ...],
             start_time: float, stop_time: float,
             total_time: float,
-            starting_thread_id: typing.Optional[int] = 0
+            starting_unique_thread_id: typing.Optional[int] = 0
             ) -> typing.Dict[int, ThreadDescriptor]:
         threads = {}  # target id: thread
-        # we generate the range for the thread_ids, starting from a custom
-        # starting thread id, which is useful to give threads a continuous
-        # numbering, but by default it is set to 0
-        thread_ids = range(
-                starting_thread_id,
-                starting_thread_id + self.n_threads
-                )
-        for target_id, thread_id in zip(target_ids, thread_ids):
+        for target_id, thread_id in zip(target_ids, range(self.n_threads)):
             thread = ThreadDescriptor(
-                                      thread_id=thread_id,
-                                      target_id=target_id,
-                                      parent_kernel=self,
-                                      start_time=start_time,
-                                      stop_time=stop_time,
-                                      total_time=total_time,
-                                      )
+                # this covers the local thread id, inside the current kernel
+                kernel_thread_id=thread_id,
+                # this is a sequential thread identifier used for GPU-wide
+                # purposes
+                unique_thread_id=thread_id + starting_unique_thread_id,
+                target_id=target_id,
+                parent_kernel=self,
+                start_time=start_time,
+                stop_time=stop_time,
+                total_time=total_time,
+                )
             threads[target_id] = thread
         return threads
 
 
 # thread descriptor class
 class ThreadDescriptor(typing.NamedTuple):
-    thread_id: int
+    # this id is local to the kernel
+    kernel_thread_id: int
+    # this id is global to the GPU
+    unique_thread_id: int
+    # the id of the target component where this thread will run
     target_id: int
+    # the object with the parent kernel
     parent_kernel: Kernel
+    # start, stop and total time taken for running the thread
     start_time: float
     stop_time: float
     total_time: float
@@ -439,8 +445,17 @@ SAMPLE_HIERARCHY = [
         'subcomponents': [],
     }),
 ]
+SMALL_SAMPLE_HIERARCHY = list(map(
+    lambda x: GPUComponentHierarchy(**{**x.__dict__,
+                                       'number_of_components_per_parent': 1}),
+    SAMPLE_HIERARCHY))
 SAMPLE_HIERARCHY_JSON = json.dumps(
     SAMPLE_HIERARCHY,
+    cls=JSONConverter,
+    indent=4,
+)
+SMALL_SAMPLE_HIERARCHY_JSON = json.dumps(
+    SMALL_SAMPLE_HIERARCHY,
     cls=JSONConverter,
     indent=4,
 )
@@ -557,6 +572,10 @@ class HardwareModel(object):
         target_components = math.ceil(
                                 self._count_number_of_components_per_device(
                                     self._hierarchy, target))
+        # we initialize the scheduling dict with all the components to an
+        # empty list
+        for target_component_id in range(target_components):
+            schedule_dict[target_component_id] = []
 
         # first of all, we need to go through the list of the kernels to be
         # processed, to create the corresponding list of kernels with threads
@@ -575,6 +594,7 @@ class HardwareModel(object):
                             weight_size=layer.weight_size,
                             bias_size=layer.bias_size,
                             thread_output_size=(1, ),
+                            raw_layer_info=layer,
                             )
             kernels[layer] = kernel
 
@@ -584,14 +604,25 @@ class HardwareModel(object):
         # at the beginning we set all the target ids to be free
         free_target_operators = {}  # timestamp: list of target id
         free_target_operators[0.0] = list(range(target_components))
+
+        # this variable is used to count the number of threads for giving
+        # a progressive numbering
+        # FIXME: improve progressive numbering of threads
+        n_threads = 0
+
+        # the current implementation resets the time index for each kernel,
+        # leading to incorrect data dependency
+        # the solution is to keep the time index constant across all
+        # hence we have to initialize the time index before the loops, and keep
+        # it coherent across the duration
+        # we initialize the current time index to 0, the first key in the
+        # dict
+        current_time_index = 0
         for layer, kernel in kernels.items():
             # we get the number of required operators, which is the same as
             # the number of threads to be run in the kernel
             n_required_operators = kernel.n_threads
 
-            # we initialize the current time index to 0, the first key in the
-            # dict
-            current_time_index = 0
             # we update the current time to current index
             current_time = list(free_target_operators.keys())[
                                                         current_time_index]
@@ -618,11 +649,6 @@ class HardwareModel(object):
             # with no memory conflicts
             execution_time = total_execution_time \
                 * layer.relative_execution_time
-
-            # this variable is used to count the number of threads for giving
-            # a progressive numbering
-            # FIXME: improve progressive numbering of threads
-            n_threads = 0
 
             while n_required_operators > n_selected_operators:
                 # we get the number of operators from the current free
@@ -662,22 +688,46 @@ class HardwareModel(object):
                     total_time=execution_time,
                     # we can use directly the number of threads as we start
                     # the numbering from 0
-                    starting_thread_id=n_threads)
+                    starting_unique_thread_id=n_threads)
                 n_threads += len(threads)
                 for target_id, thread_desc in threads.items():
-                    if target_id not in schedule_dict:
-                        schedule_dict[target_id] = []
                     schedule_dict[target_id].append(thread_desc)
 
                 # we update the count of the selected operators
                 n_selected_operators += len(selected_operators)
                 # we add the new threads on the list
-                # we update the current time index
-                current_time_index += 1
+                # we update the current time index if there are no more free
+                # operators left, so that we can access a new list in the next
+                # kernel
+                # otherwise we keep the current time index, but we update the
+                # number of free operators
+                if not free_target_operators[current_time]:
+                    print(current_time_index)
+                    current_time_index += 1
                 # we update all the current time pointers
                 current_time = list(
                     free_target_operators.keys())[current_time_index]
                 current_free_operators = free_target_operators[current_time]
+            # before starting a new kernel, we need to update the time index to
+            # match the first available point when **ALL** the threads from the
+            # current kernel are done
+            # to check, we simply check when the number of available targets is
+            # the same as the total number, so when all of them are free
+            # FIXME: in this way we lose some concurrency, but in the future
+            # this could be fixed by splitting the thread dependencies, e.g.
+            # we know how many of the previous threads must have finished to
+            # start the new ones, based on number of inputs required for the
+            # new threads and outputs produced by old ones
+            for curr_time_idx, curr_free_operators in enumerate(
+                    free_target_operators.values()
+            ):
+                if len(curr_free_operators) == target_components:
+                    current_time_index = curr_time_idx
+
+
+        # pprint.pprint(current_free_operators, indent=4)
+        # pprint.pprint(free_target_operators, indent=4)
+        # pprint.pprint(current_time, indent=4)
         # once done we return the final scheduling
         return schedule_dict
 

@@ -151,9 +151,9 @@ class Summary(object):
 
         self._torchinfo_summary = summary
 
-        layers = [l
-                  for l in self._torchinfo_summary.summary_list
-                  if not l.inner_layers]
+        layers = [layer
+                  for layer in self._torchinfo_summary.summary_list
+                  if not layer.inner_layers]
 
         # we set up the layer profiling results, each key is the summary of the
         # layer, while the item is the profiling result itself
@@ -190,7 +190,7 @@ class Summary(object):
             for e in subevent_list)
 
         # remember it's in microseconds, so we convert to seconds
-        self._total_execution_time = total_execution_time * 10 ** 6
+        self._total_execution_time = total_execution_time * 10 ** (-6)
 
         # now we have to make the data easily accessible
         for i, (lsummary, lprof) in enumerate(
@@ -232,7 +232,7 @@ class Summary(object):
                 bias_size=bias_size,
                 relative_execution_time=relative_execution_time,
                 # convert the original time to seconds
-                original_absolute_execution_time=execution_time * 10 ** 6,
+                original_absolute_execution_time=execution_time * 10 ** (-6),
                 )
 
             # we append it to the stats list
