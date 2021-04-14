@@ -702,7 +702,6 @@ class HardwareModel(object):
                 # otherwise we keep the current time index, but we update the
                 # number of free operators
                 if not free_target_operators[current_time]:
-                    print(current_time_index)
                     current_time_index += 1
                 # we update all the current time pointers
                 current_time = list(
