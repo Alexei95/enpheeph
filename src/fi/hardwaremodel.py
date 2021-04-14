@@ -15,6 +15,8 @@ import math
 import operator
 import typing
 
+import src.fi.summary
+
 
 # https://stackoverflow.com/a/24482806
 # we need a specialized parser for saving and loading the enumerations
@@ -75,8 +77,9 @@ class JSONConverter(json.JSONEncoder):
             return d
 
 
-# FIXME: implement a basic serialization for standard __dict__ cases
 class JSONSerializableABC(object):
+    # NOTE: when not implemented we need to raise NotImplementedError in
+    # abstract methods
     @classmethod
     @abc.abstractmethod
     def to_json(cls, obj):
@@ -167,12 +170,17 @@ class GPUComponent(JSONSerializableDictClass):
     component_type: NvidiaGPUComponentEnum
 
 
-# FIXME: implement all kernels
+# FIXME: implement all kernels, after the interface is well defined
 @dataclasses.dataclass(init=True, repr=True)
 class Kernel(object):
     # for Nvidia A100, we have 32 threads per warp
     THREADS_PER_WARP = 32
 
+    # kernel type, used to define some sizes if they are not defined in the
+    # init
+    kernel_type: src.fi.summary.MainLayerFunctionEnum
+    # extra arguments, they are kernel dependent
+    extra_args: typing.Dict[str, typing.Any]
     # input and output sizes have a tuple containing dimension tuples
     input_size: typing.Tuple[int, ...]
     # output can be only one, but size can change
@@ -181,14 +189,30 @@ class Kernel(object):
     weight_size: typing.Tuple[int, ...]
     # bias size, only one
     bias_size: typing.Tuple[int, ...]
-    # similar but for each thread
-    thread_input_size: typing.Tuple[int, ...]
     # output can be only one, but size can have multiple dimensions
     thread_output_size: typing.Tuple[int, ...]
+    # input thread sizes can be optional, as they can change depending on the
+    # kernel type and total size of the operation
     # similar but for each thread
-    thread_weight_size: typing.Tuple[int, ...]
+    thread_input_size: typing.Optional[typing.Tuple[int, ...]] = None
+    # similar but for each thread
+    thread_weight_size: typing.Optional[typing.Tuple[int, ...]] = None
     # output can be only one, but size can have multiple dimensions
-    thread_bias_size: typing.Tuple[int, ...]
+    thread_bias_size: typing.Optional[typing.Tuple[int, ...]] = None
+
+    # BUG: complete the function for different layers
+    # given three parameters it returns the 4th one
+    @staticmethod
+    def conv_missing_size(input=None, kernel=None, stride=None, output=None):
+        pass
+
+    # BUG: the layer-wise input and bias and weight sizes can be defined later
+    # when taking into account memory and dataflow locks
+    def __post_init__(self):
+        # BUG: example of selection for dimensions
+        if self.kernel_type is src.fi.summary.MainLayerFunctionEnum.Conv2d:
+            pass
+        pass
 
     # number of threads required to compute the total result
     # computed dinamically as it depends on kernel and thread output sizes
@@ -215,17 +239,28 @@ class Kernel(object):
     # id and the corresponding thread to be run
     # it takes care of creating the thread descriptors with the correct
     # parameters and saving all of them
-    def make_threads(self, target_ids: typing.Tuple[int, ...],
-                     time_start: float, time_stop: float,
-                     total_time: float) -> typing.Dict[int, ThreadDescriptor]:
+    def make_threads(
+            self,
+            target_ids: typing.Tuple[int, ...],
+            start_time: float, stop_time: float,
+            total_time: float,
+            starting_thread_id: typing.Optional[int] = 0
+            ) -> typing.Dict[int, ThreadDescriptor]:
         threads = {}  # target id: thread
-        for target_id, thread_id in zip(target_ids, range(self.n_threads)):
+        # we generate the range for the thread_ids, starting from a custom
+        # starting thread id, which is useful to give threads a continuous
+        # numbering, but by default it is set to 0
+        thread_ids = range(
+                starting_thread_id,
+                starting_thread_id + self.n_threads
+                )
+        for target_id, thread_id in zip(target_ids, thread_ids):
             thread = ThreadDescriptor(
                                       thread_id=thread_id,
                                       target_id=target_id,
                                       parent_kernel=self,
-                                      time_start=time_start,
-                                      time_stop=time_stop,
+                                      start_time=start_time,
+                                      stop_time=stop_time,
                                       total_time=total_time,
                                       )
             threads[target_id] = thread
@@ -237,8 +272,8 @@ class ThreadDescriptor(typing.NamedTuple):
     thread_id: int
     target_id: int
     parent_kernel: Kernel
-    time_start: float
-    time_stop: float
+    start_time: float
+    stop_time: float
     total_time: float
 
 
@@ -507,7 +542,7 @@ class HardwareModel(object):
     # and we also assume their number is contiguous
     def schedule_model_inference_run(
             self,
-            summary_: 'summary.Summary',
+            model_summary: src.fi.summary.Summary,
             target: NvidiaGPUComponentEnum,
             ) -> typing.Dict[
                 int,
@@ -528,19 +563,18 @@ class HardwareModel(object):
         # information
         # this is required as kernel times are relative, this value is in
         # seconds
-        total_execution_time = summary_.total_execution_time
+        total_execution_time = model_summary.total_execution_time
 
         kernels = {}  # layer summary: kernel
-        for layer in summary_.layer_stats:
+        for layer in model_summary.layer_stats:
             kernel = Kernel(
+                            kernel_type=layer.kernel_type,
+                            extra_args=layer.parsed_representation,
                             input_size=layer.input_size,
                             output_size=layer.output_size,
                             weight_size=layer.weight_size,
                             bias_size=layer.bias_size,
                             thread_output_size=(1, ),
-                            # the following ones are not used for now
-                            thread_weight_size=tuple(),
-                            thread_bias_size=tuple(),
                             )
             kernels[layer] = kernel
 
@@ -582,7 +616,13 @@ class HardwareModel(object):
             # we compute the execution time for the threads, we assume a thread
             # takes the whole kernel time as they are all executed in parallel,
             # with no memory conflicts
-            execution_time = total_execution_time * layer.relative_execution_time
+            execution_time = total_execution_time \
+                * layer.relative_execution_time
+
+            # this variable is used to count the number of threads for giving
+            # a progressive numbering
+            # FIXME: improve progressive numbering of threads
+            n_threads = 0
 
             while n_required_operators > n_selected_operators:
                 # we get the number of operators from the current free
@@ -590,10 +630,12 @@ class HardwareModel(object):
                 # in Python, if we overflow the end of the list splice, we get
                 # all the elements until the end, so there are no IndexErrors
                 # however we must check this number before continuing
-                selected_operators = current_free_operators[:(n_required_operators - n_selected_operators)]
+                selected_operators = current_free_operators[
+                    :(n_required_operators - n_selected_operators)]
                 # we update the set of current free operators, by removing the
                 # selected ones
-                free_target_operators[current_time] = current_free_operators[(n_required_operators - n_selected_operators):]
+                free_target_operators[current_time] = current_free_operators[
+                    (n_required_operators - n_selected_operators):]
                 # we update the future free target operators, so we take the
                 # current existing list of operators and we add the operators
                 # which will free when the execution of the current threads is
@@ -601,19 +643,28 @@ class HardwareModel(object):
                 # if the time does not exist, then we set all of them to be
                 # free, as it means no other scheduling has occurred yet
                 if current_time + execution_time not in free_target_operators:
-                    free_target_operators[current_time + execution_time] = list(range(target_components))
+                    free_target_operators[
+                        current_time + execution_time] = list(
+                            range(target_components))
                 # otherwise we append the free operators and we sort them
                 else:
-                    free_target_operators[current_time + execution_time].extend(selected_operators)
+                    free_target_operators[
+                        current_time + execution_time].extend(
+                            selected_operators)
                     free_target_operators[current_time + execution_time].sort()
 
                 # we create the threads and we insert them in the schedule dict
                 # to be returned
-                threads = kernel.make_threads(target_ids=selected_operators,
-                                              start_time=current_time,
-                                              stop_time=current_time + execution_time,
-                                              total_time=execution_time)
-                for target_id, thread_desc in threads.values():
+                threads = kernel.make_threads(
+                    target_ids=selected_operators,
+                    start_time=current_time,
+                    stop_time=current_time + execution_time,
+                    total_time=execution_time,
+                    # we can use directly the number of threads as we start
+                    # the numbering from 0
+                    starting_thread_id=n_threads)
+                n_threads += len(threads)
+                for target_id, thread_desc in threads.items():
                     if target_id not in schedule_dict:
                         schedule_dict[target_id] = []
                     schedule_dict[target_id].append(thread_desc)
@@ -624,7 +675,8 @@ class HardwareModel(object):
                 # we update the current time index
                 current_time_index += 1
                 # we update all the current time pointers
-                current_time = list(free_target_operators.keys())[current_time_index]
+                current_time = list(
+                    free_target_operators.keys())[current_time_index]
                 current_free_operators = free_target_operators[current_time]
         # once done we return the final scheduling
         return schedule_dict

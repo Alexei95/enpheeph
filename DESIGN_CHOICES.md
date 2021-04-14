@@ -57,6 +57,11 @@ Here we analyze the different design choices that have been made when building t
         - [Hardware Model Implementation](#hardware-model-implementation-11)
     - [2021/04/08](#20210408)
         - [Hardware Model Implementation](#hardware-model-implementation-12)
+    - [2021/04/13](#20210413)
+        - [Summary Implementation](#summary-implementation-1)
+        - [Hardware Model Implementation](#hardware-model-implementation-13)
+    - [2021/03/14](#20210314)
+        - [Hardware Model Implementation](#hardware-model-implementation-14)
 
 # Model summary for fault injection
 
@@ -442,3 +447,36 @@ This update will be very useful in the future when adding more Enums and classes
 Also, there is now a property returning the hierarchy JSON, as the internal representation is not a list of components as for the input hierarchy JSON, but instead it is a dict matching the enum as key with the component as value, for access efficiency.
 
 All the properties have also been converted to functools.cached_property, given the high cost in terms of computation time, which may be useful in future for repetitive access.
+
+
+## 2021/04/13
+
+In the last few days there has been a deep redesign of many sections of the DNN and hardware models, which are covered in the following sections.
+
+This redesign stems from issues found when trying to schedule operations, as we need kernel numbers which must be deduced from the layer which we are trying to model. Hence, there is the need for extra information, such as an Enum type for layer information, which will be extended with different main kernels depending on situations, as well as a rewriting of the Enum-to-JSON conversion, which is now universal as long a encoder/decoder are chosen.
+
+While this information is important, it is not necessary for the basic functioning of the model, as we only require the number of threads used for each output element. However, this information **MUST** be defined in the future to take into account memory/dataflow locks in the GPU, which are ever so important for big models.
+
+### Summary Implementation
+
+Here the redesign covers mostly the type of information we are saving in the LayerInfo class.
+
+We have added a new Enum type to cover for the different types of main kernel in each layer. This enum list will be expanded over time, to cover for new kernel types as well. A new property is the original execution time, obtained from the GPU profiling. Also, the LayerInfo class is now a dataclass, so that it is more flexible in handling arguments and extra methods. Currently it supports all the layers defined in AlexNet. In addition it provides a ```from_string``` class method, which is used to convert the string obtained from the layer profiling to a value from the Enum.
+
+Regarding new LayerInfo methods, we have added a parse_representation static method, which is used to get the arguments of a call from its string representation. An example in this sense can be ```Conv2d(32, 64, kernel=(3, 3), stride=(1, 1))```, which would return ```{'__args__': [32, 64], 'kernel': (3, 3), 'stride': (1, 1)}```. This function is used in the ```__post_init__``` method to initialize a new property called parsed_representation. This property is used as new property extra_args in Kernel, which is parsed further to determine the sizes for thread input, weight and bias.
+
+### Hardware Model Implementation
+
+Here there have been the most changes: the whole JSON conversion system has been completely redesigned, leading to a class implementing a custom encoder and decoder mechanism. The encoder is a method, as it requires a JSONEncoder inheritance to work, while the decoder is a a classmethod.
+
+While it could have been a static method as well, we have chosen the class method to implement a registering system for the encodable objects. In this way, each object can register its own encoder/decoder which will then be saved in a dictionary using the class name as the key, and be called when needed for JSON conversion. We have also implemented a decorator for automatically registering classes which implement a ```to_json``` and a ```from_json``` functions.
+
+The JSON representation revolves around having a key in the output JSON dict called ```___cls___```, which contains the name of the class, together with an expanded dict representation of the object provided by the object encoder itself. For decoding, a similar procedure is followed, by calling the corresponding decoder with the dict-encoded object representation.
+
+For helping in expanding the list of compatible objects, we have also defined a new abstract base class, defining the ```to_json``` and ```from_json``` methods as abstract ones, and therefore forcing the child classes to implement them. Some basic classes, like enumerations, dataclasses or dict-based classes are covered in two custom classes, ```JSONSerializableDictClass``` and ```JSONSerializableEnum```, which can be easily subclassed. These base classes help in accelerating future development, as it is as easy as inherit from these classes and use the registering decorator to be able to serialize a JSON object.
+
+Other improvements cover the conversion of NamedTuple to dataclasses, to be able to implement methods for JSON conversion, as well as reorganizing the sample hierarchy and map. Also, small adjustments to names of some parameters and variable names have been made.
+
+## 2021/03/14
+
+### Hardware Model Implementation
