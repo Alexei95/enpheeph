@@ -58,11 +58,11 @@ class LeNet5(torch.nn.Module):
 
 
 # model
-# model = torchvision.models.AlexNet()
-model = LeNet5(original=False)
+model = torchvision.models.AlexNet()
+# model = LeNet5(original=False)
 # input size
-# model_input_size = torch.Size([1, 3, 224, 224])
-model_input_size = torch.Size([1, 1, 28, 28])
+model_input_size = torch.Size([1, 3, 224, 224])
+# model_input_size = torch.Size([1, 1, 28, 28])
 
 model_summary = src.fi.summary.Summary(model, model_input_size)
 

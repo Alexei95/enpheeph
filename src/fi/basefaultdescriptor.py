@@ -35,4 +35,4 @@ class BaseFaultDescriptor(object):
 
     @staticmethod
     def bit_index_from_slice(self, slice_: slice):
-        return tuple(range(*slice.indices(slice.stop)))
+        return tuple(range(*slice_.indices(slice_.stop)))

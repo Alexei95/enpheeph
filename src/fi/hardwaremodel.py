@@ -730,6 +730,18 @@ class HardwareModel(object):
         # once done we return the final scheduling
         return schedule_dict
 
+    def inject_fault(
+            self,
+            # we need to pass a schedule dict containing the ids of the targets
+            # together with a list of the thread which are running
+            schedule: typing.Dict[int, typing.List[ThreadDescriptor, ...]],
+            # this argument represents the type of targets for the scheduling
+            target: NvidiaGPUComponentEnum,
+            # now we pass the fault description
+            fault
+    ):
+        pass
+
     # FIXME: add return type annotation
     @functools.cached_property
     def hierarchy(self) -> typing.Dict[enum.Enum, GPUComponentHierarchy]:

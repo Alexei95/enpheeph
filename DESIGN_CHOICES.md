@@ -64,6 +64,15 @@ Here we analyze the different design choices that have been made when building t
         - [Hardware Model Implementation](#hardware-model-implementation-14)
         - [Summary Bugfixes](#summary-bugfixes)
         - [Future Features](#future-features)
+    - [2021/04/15](#20210415)
+        - [Future Features](#future-features-1)
+    - [2021/04/16](#20210416)
+        - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021)
+    - [2021/04/17](#20210417)
+        - [Hardware Model Implementation](#hardware-model-implementation-15)
+        - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021-1)
+    - [2021/04/19](#20210419)
+        - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021-2)
 
 # Model summary for fault injection
 
@@ -503,3 +512,53 @@ Another aspect is the actual control time spent by the GPU in-between executions
 Currently, we are able to support basic data dependencies, but in the future we will require a more detailed algorithm, as many threads can start earlier than when all the previous ones have finished, depending on the amount of input data required and given the locality of the data.
 
 This implementation may be delegated to each kernel, providing a base algorithm for checking the required amount of data to have been produced/loaded, as well as adding the proper representation of loading/unloading data in form of kernels. This implementation may have high priority as soon as the basic fault injection on system is implemented.
+
+## 2021/04/15
+
+### Future Features
+
+When delegating the implementation to each kernel, we can have a basic behaviour for all the kernels, and we can create subclasses which register themselves for more complex behaviour, e.g. convolutions: in this way we are able to fix the issue of data dependency as well, as we need each kernel to be able to determine when it can start running.
+
+This could be implemented with a linked list, providing first the data flow dependency, and then they could be mapped to the hardware using specific times and respecting memory limitations.
+
+All of this could be handled by a Scheduling class, containing all the scheduling info as well as as the dependencies.
+
+## 2021/04/16
+
+### Idea Pivoting for ICCAD 2021
+
+After a discussion, the issue with the current idea was that it was supposed to incorporate much new material, for which a huge framework and models are required, and it may take many months to properly build and have all the gears moving together in the same direction. Hence, there is the possibility of splitting the current idea into 2 main topics, discussed in the following day.
+
+## 2021/04/17
+
+### Hardware Model Implementation
+
+Possible scheduling packages:
+
+- pyschedule looks interesting, as it covers resource-constrained problems with priorities, but it may be inefficient for 10k elements as in a GPU, however it provide solvers for reaching an optimal schedule
+- pycpa is implementing a good task model, mostly for automotive applications, but it is not much Pythonic to use
+- ProcessScheduler is similar to pyschedule, but the main issue with these packages is maintainability on the long term as well as support for very big scheduling problems
+- CVXPY implements convex problem optimization, but it requires to convert task scheduling to a matrix problem, which may be non trivial
+- python-MIP covers already some mixed-linear integer programming problems such as resource-constrained task scheduling, and it may be the best bet
+
+The best one seems to be Python-MIP, but it would require a wrapper to pass the information from the hardware model into a format comprehensible by Python-MIP.
+
+### Idea Pivoting for ICCAD 2021
+
+- Fault Injection and Resiliency Analysis for Pruned/Sparse/Quantized Networks, taking into account weights and memory structure
+    - This part would cover all the "compressed" network types which are much used on edge scenarios, where full FP32 multiplication are a waste of memory and power
+    - Experiments would cover different networks (AlexNet, ResNet, YoloTiny, DarkNet), both compressed and non, together with different datasets (ImageNet, CIFAR100, COCO, GTRSB) and applications (image classification, image segmentation)
+- Hardware-Aware Fault Injection
+    - This part would cover the current work on the GPU model, which would need refinements on scheduling (using an external library) and particle interaction (still to iron out)
+
+Regarding the first part, there are some works done on fault resiliency analysis for pruned networks (cfr. [Reliability Evaluation of Pruned Neural Networks against Errors on Parameters](https://ieeexplore.ieee.org/document/9250812)), for quantized networks (cfr. [Evaluating Fault Resiliency of Compressed Deep Neural Networks](https://ieeexplore.ieee.org/document/8782505), [Resiliency of Deep Neural Networks under Quantization](http://arxiv.org/abs/1511.06488)).
+
+Overall, there are very little studies on the reliability of pruned and quantized networks, especially as they mostly focus on the resiliency of the software model itself, and not the way the model actually is represented in memory.
+
+Hence, a possible idea could cover fault injection but the error occurs on the memory representation of the model, hence interesting both activations/outputs as well as weights. Especially for sparse networks, which are not covered, this may be something quite new, as there could be issues along the lines of indexes and values for the sparse weights.
+
+## 2021/04/19
+
+### Idea Pivoting for ICCAD 2021
+
+Unfortunately upon closer inspection, there are already studies covering the resiliency of sparse-encodeded DNNs. This limits the applicability of the new idea per se, but it may open the way to new works in this direction, to cover in an engineering way
