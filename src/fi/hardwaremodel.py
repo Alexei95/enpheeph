@@ -78,7 +78,7 @@ class JSONConverter(json.JSONEncoder):
             return d
 
 
-class JSONSerializableABC(object):
+class JSONSerializableABC(abc.ABC):
     # NOTE: when not implemented we need to raise NotImplementedError in
     # abstract methods
     @classmethod
@@ -105,6 +105,13 @@ class JSONSerializableDictClass(JSONSerializableABC):
         return cls(**d_)
 
 
+# we require this metaclass to avoid conflicts between EnumMeta and ABCMeta
+# so we need to use this as metaclass for covering both ABC subclasses and
+# Enum subclasses
+class JSONSerializableEnumMeta(abc.ABCMeta, enum.EnumMeta):
+    pass
+
+
 class JSONSerializableEnum(JSONSerializableABC):
     @classmethod
     def to_json(cls, obj):
@@ -117,7 +124,10 @@ class JSONSerializableEnum(JSONSerializableABC):
 
 
 @JSONConverter.register_class_decorator
-class NvidiaGPUComponentEnum(JSONSerializableEnum, enum.Enum):
+class NvidiaGPUComponentEnum(
+        JSONSerializableEnum,
+        enum.Enum,
+        metaclass=JSONSerializableEnumMeta):
     NONE = enum.auto()
     GraphicProcessingCluster = enum.auto()
     RasterEngine = enum.auto()
