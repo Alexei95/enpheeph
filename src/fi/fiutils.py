@@ -3,7 +3,7 @@ import copy
 import numpy
 import torch
 
-from . import basefaultdescriptor
+import src.fi.basefaultdescriptor
 
 # uint to avoid double sign repetition
 DATA_CONVERSION_MAPPING = {numpy.dtype('float16'): numpy.uint16,
@@ -50,17 +50,24 @@ def pytorch_element_to_binary(value: torch.Tensor) -> str:
 
 
 def inject_fault_binary(binary: str,
-                        fault: basefaultdescriptor.BaseFaultDescriptor,
+                        fault: src.fi.basefaultdescriptor.BaseFaultDescriptor,
                         sampler: torch.Generator = None) -> str:
-    injected_binary = copy.deepcopy(binary)
+    # we need to convert the binary string into a list of characters
+    # otherwise we cannot update the values
+    injected_binary = list(copy.deepcopy(binary))
     for index in fault.bit_index:
-        if fault.bit_value == basefaultdescriptor.BitValue.One:
+        # if we are using little endian we invert the index, as the LSB is
+        # at the end of the list
+        if fault.endianness == fault.endianness.Little:
+            index = (len(injected_binary) - 1) - index
+
+        if fault.bit_value == src.fi.basefaultdescriptor.BitValue.StuckAtOne:
             injected_binary[index] = "1"
-        elif fault.bit_value == basefaultdescriptor.BitValue.Zero:
+        elif fault.bit_value == src.fi.basefaultdescriptor.BitValue.StuckAtZero:
             injected_binary[index] = "0"
-        elif fault.bit_value == basefaultdescriptor.BitValue.BitFlip:
+        elif fault.bit_value == src.fi.basefaultdescriptor.BitValue.BitFlip:
             injected_binary[index] = str(int(injected_binary[index]) ^ 1)
-        elif fault.bit_value == basefaultdescriptor.BitValue.Random:
+        elif fault.bit_value == src.fi.basefaultdescriptor.BitValue.Random:
             # if we do not have a sampler
             if sampler is None:
                 raise ValueError("A sampler must be passed when using random bit-flips")
@@ -69,7 +76,7 @@ def inject_fault_binary(binary: str,
                 # sampler.manual_seed(SAMPLER_SEED)
             random_bit = torch.randint(0, 2, size=(), generator=sampler)
             injected_binary[index] = str(random_bit.item())
-    return injected_binary
+    return ''.join(injected_binary)
 
 
 # original_value is used only for device and datatype conversion
@@ -92,9 +99,57 @@ def binary_to_pytorch_element(binary: str, original_value: torch.Tensor) -> torc
 
 
 def inject_fault_pytorch(tensor: torch.Tensor,
-                         fault: basefaultdescriptor.BaseFaultDescriptor,
+                         fault: src.fi.basefaultdescriptor.BaseFaultDescriptor,
                          sampler: torch.Generator = None) -> torch.Tensor:
-    binary = pytorch_to_binary(tensor)
+    binary = pytorch_element_to_binary(tensor)
     injected_binary = inject_fault_binary(binary, fault, sampler)
-    injected_tensor = binary_to_pytorch_element(binary, tensor)
+    injected_tensor = binary_to_pytorch_element(injected_binary, tensor)
     return injected_tensor
+
+
+def inject_tensor_fault_pytorch(
+        tensor: torch.Tensor,
+        fault: src.fi.basefaultdescriptor.BaseFaultDescriptor,
+        sampler: torch.Generator = None) -> torch.Tensor:
+    # we deepcopy the tensor to avoid modifying the original one
+    tensor = copy.deepcopy(tensor)
+    # we get the tensor value to be injected
+    # first we convert the fault tensor index to a proper tensor index for the
+    # tensor case
+    original_tensor = tensor[
+            fault.to_tensor_slice(
+                    fault.tensor_index,
+                    tensor.size()
+            )
+    ]
+    # to inject the values, we need to flatten the tensor
+    flattened_tensor = original_tensor.flatten()
+    # then we need to process them one by one, by injecting the faults
+    # the returned elements are tensors
+    injected_flattened_tensor_list = []
+    for element in flattened_tensor:
+        injected_flattened_tensor_list.append(
+                src.fi.fiutils.inject_fault_pytorch(element, fault))
+    # # we create a list with the injected data, converting back to tensors
+    # injected_flattened_tensor_list = []
+    # for injected_binary, original_binary in zip(
+    #         injected_flattened_bit_tensor, flattened_tensor):
+    #     injected_flattened_tensor_list.append(
+    #             src.fi.fiutils.binary_to_pytorch_element(
+    #                     injected_binary, original_binary))
+    # print(injected_flattened_tensor_list)
+    # we create a tensor from the list, moving it to the same device as the
+    # original one
+    injected_flattened_tensor = torch.Tensor(
+            injected_flattened_tensor_list).to(flattened_tensor)
+    # we reshape the tensor to the original one
+    injected_tensor = injected_flattened_tensor.reshape(original_tensor.size())
+    # we update the tensor to the new value
+    tensor[fault.to_tensor_slice(
+            fault.tensor_index,
+            tensor.size()
+    )] = injected_tensor
+
+    # add copy.deepcopy for more redundancy, to avoid modifying the original
+    # one
+    return copy.deepcopy(tensor)
