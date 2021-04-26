@@ -73,6 +73,10 @@ Here we analyze the different design choices that have been made when building t
         - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021-1)
     - [2021/04/19](#20210419)
         - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021-2)
+    - [2021/04/22](#20210422)
+        - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021-3)
+    - [2021/04/23](#20210423)
+        - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021-4)
 
 # Model summary for fault injection
 
@@ -562,3 +566,28 @@ Hence, a possible idea could cover fault injection but the error occurs on the m
 ### Idea Pivoting for ICCAD 2021
 
 Unfortunately upon closer inspection, there are already studies covering the resiliency of sparse-encodeded DNNs. This limits the applicability of the new idea per se, but it may open the way to new works in this direction, to cover in an engineering way
+
+## 2021/04/22
+
+### Idea Pivoting for ICCAD 2021
+
+After discovering that the resiliency analysis and mitigation already exists for sparse networks (cfr. [MaxNVM: Maximizing DNN Storage Density and Inference Efficiency with Sparse Encoding and Error Mitigation](https://doi.org/10.1145/3352460.3358258)), there are many other ideas which can be followed, but they seem like engineering:
+
+- Test resiliency of different networks (transformers for vision, object detection, speech, video)
+- Test resiliency of sparse binary networks
+- Implement a framework for easy injection runs
+
+A real possibility may be a resiliency analysis of compressed networks (sparse + quantized), together with the development of a fault-aware training procedure, so that we can retrain the network and learn better weights for possible faults.
+
+This idea could be good, but it requires some time testing different implementations and comparing them, so maybe it is not ok for ICCAD 2021.
+
+It could also be applied to SNN, depending on the way the accelerator is implemented, so having consideration for the hardware.
+
+Consider **saliency** for choosing which weights to target with the faults.
+
+A similar work to this idea for quantized neural networks has already been done (cfr. [FTT-NAS: Discovering Fault-Tolerant Convolutional Neural Architecture](https://doi.org/10/gjr9jg)), but it looks like it is new for sparse networks.
+
+## 2021/04/23
+
+Hence, the conclusion may be to develop a special pruning algorithm which changes the pruning structure/coverage depending on the resiliency we want to keep from the original network, regarding soft error and not permanent faults, as these have already been covered (cfr. [Analyzing and mitigating the impact of permanent faults on a systolic array based neural network accelerator](https://doi.org/10.1109/VTS.2018.8368656))
+### Idea Pivoting for ICCAD 2021
