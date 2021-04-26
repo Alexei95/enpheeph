@@ -170,7 +170,7 @@ class GPUComponentHierarchy(JSONSerializableDictClass):
     number_of_components_per_parent: typing.Union[int, float]
     component_type: NvidiaGPUComponentEnum
     parent: NvidiaGPUComponentEnum
-    subcomponents: typing.List[NvidiaGPUComponentEnum, ...]
+    subcomponents: typing.Sequence[NvidiaGPUComponentEnum, ...]
 
 
 @JSONConverter.register_class_decorator
@@ -571,7 +571,7 @@ class HardwareModel(object):
             target: NvidiaGPUComponentEnum,
             ) -> typing.Dict[
                 int,
-                typing.List[ThreadDescriptor, ...]]:
+                typing.Sequence[ThreadDescriptor]]:
         # NOTE: we assume that defaultdict is ordered, so Python 3.7+
         # first we compute the list of all the possible CUDA cores for
         # scheduling
