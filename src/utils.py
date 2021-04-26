@@ -9,7 +9,7 @@ import sys
 # PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent
 # if str(PROJECT_DIR) not in sys.path:
 #     sys.path.append(str(PROJECT_DIR))
-from .common import DEFAULT_PRNG_SEED, DEFAULT_TIME_FORMAT
+from src.common import DEFAULT_PRNG_SEED, DEFAULT_TIME_FORMAT
 
 
 ### time handling functions ###
@@ -74,6 +74,10 @@ def enable_determinism(seed=DEFAULT_PRNG_SEED):
         torch.cuda.manual_seed_all(seed)
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
+        try:
+            torch.use_deterministic_algorithms(True)
+        except AttributeError:
+            pass
 
 # this function gather objects from different files in the same directory
 # these objects are squashed together with the update_function, starting from a
