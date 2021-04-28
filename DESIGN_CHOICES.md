@@ -2,83 +2,82 @@
 
 Here we analyze the different design choices that have been made when building the different aspects of the application/framework.
 
-# Table of Contents
+## Table of Contents
 
 - [Design Choices](#design-choices)
-- [Table of Contents](#table-of-contents)
-- [Model summary for fault injection](#model-summary-for-fault-injection)
-    - [2021/03/10](#20210310)
-    - [2021/03/26](#20210326)
-- [Hardware Model](#hardware-model)
-    - [2021/03/07](#20210307)
-    - [2021/03/08](#20210308)
-    - [2021/03/09](#20210309)
-    - [2021/03/11](#20210311)
-        - [GPU Characteristic and Structure](#gpu-characteristic-and-structure)
-        - [GPU Internal Working and API](#gpu-internal-working-and-api)
-    - [2021/03/12](#20210312)
-        - [CUDA C++ Programming Guide Analysis](#cuda-c-programming-guide-analysis)
-            - [**Kernel, Thread, Block and Grid**](#kernel-thread-block-and-grid)
-            - [**Memory**](#memory)
-            - [**Hardware Implementation**](#hardware-implementation)
-            - [**Kernel/Thread Limits**](#kernelthread-limits)
-        - [cuDNN Developer Manual Analysis](#cudnn-developer-manual-analysis)
-            - [Memory Layout](#memory-layout)
-    - [2021/03/15](#20210315)
-    - [2021/03/16](#20210316)
-        - [Warp Scheduling and Thread-CUDA Core Mapping](#warp-scheduling-and-thread-cuda-core-mapping)
-    - [2021/03/17](#20210317)
-        - [Hardware Model Decisions](#hardware-model-decisions)
-        - [Hardware Model Implementation](#hardware-model-implementation)
-    - [2021/03/18](#20210318)
-        - [Hardware Model Implementation](#hardware-model-implementation-1)
-    - [2021/03/19](#20210319)
-        - [Hardware Model Implementation](#hardware-model-implementation-2)
-    - [2021/03/22](#20210322)
-        - [Hardware Model Implementation](#hardware-model-implementation-3)
-    - [2021/03/23](#20210323)
-        - [Hardware Model Implementation](#hardware-model-implementation-4)
-    - [2021/03/26](#20210326-1)
-        - [GPU API](#gpu-api)
-        - [Hardware Model Implementation](#hardware-model-implementation-5)
-    - [2021/03/28](#20210328)
-        - [Hardware Model Implementation](#hardware-model-implementation-6)
-    - [2021/03/29](#20210329)
-        - [Hardware Model Implementation](#hardware-model-implementation-7)
-    - [2021/03/31](#20210331)
-        - [Hardware Model Implementation](#hardware-model-implementation-8)
-    - [2021/04/01](#20210401)
-        - [Summary Implementation](#summary-implementation)
-    - [2021/04/05](#20210405)
-        - [Hardware Model Implementation](#hardware-model-implementation-9)
-    - [2021/04/06](#20210406)
-        - [Hardware Model Implementation](#hardware-model-implementation-10)
-    - [2021/04/07](#20210407)
-        - [Hardware Model Implementation](#hardware-model-implementation-11)
-    - [2021/04/08](#20210408)
-        - [Hardware Model Implementation](#hardware-model-implementation-12)
-    - [2021/04/13](#20210413)
-        - [Summary Implementation](#summary-implementation-1)
-        - [Hardware Model Implementation](#hardware-model-implementation-13)
-    - [2021/03/14](#20210314)
-        - [Hardware Model Implementation](#hardware-model-implementation-14)
-        - [Summary Bugfixes](#summary-bugfixes)
-        - [Future Features](#future-features)
-    - [2021/04/15](#20210415)
-        - [Future Features](#future-features-1)
-    - [2021/04/16](#20210416)
-        - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021)
-    - [2021/04/17](#20210417)
-        - [Hardware Model Implementation](#hardware-model-implementation-15)
-        - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021-1)
-    - [2021/04/19](#20210419)
-        - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021-2)
-    - [2021/04/22](#20210422)
-        - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021-3)
-    - [2021/04/23](#20210423)
-        - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021-4)
+    - [Table of Contents](#table-of-contents)
+    - [Model summary for fault injection](#model-summary-for-fault-injection)
+        - [2021/03/10](#20210310)
+        - [2021/03/26](#20210326)
+        - [2021/04/13](#20210413)
+        - [2021/04/14](#20210414)
+    - [Hardware Model](#hardware-model)
+        - [2021/03/07](#20210307)
+        - [2021/03/08](#20210308)
+        - [2021/03/09](#20210309)
+        - [2021/03/11](#20210311)
+            - [GPU Characteristic and Structure](#gpu-characteristic-and-structure)
+            - [GPU Internal Working and API](#gpu-internal-working-and-api)
+        - [2021/03/12](#20210312)
+            - [CUDA C++ Programming Guide Analysis](#cuda-c-programming-guide-analysis)
+                - [**Kernel, Thread, Block and Grid**](#kernel-thread-block-and-grid)
+                - [**Memory**](#memory)
+                - [**Hardware Implementation**](#hardware-implementation)
+                - [**Kernel/Thread Limits**](#kernelthread-limits)
+            - [cuDNN Developer Manual Analysis](#cudnn-developer-manual-analysis)
+                - [Memory Layout](#memory-layout)
+        - [2021/03/15](#20210315)
+        - [2021/03/16](#20210316)
+            - [Warp Scheduling and Thread-CUDA Core Mapping](#warp-scheduling-and-thread-cuda-core-mapping)
+        - [2021/03/17](#20210317)
+            - [Hardware Model Decisions](#hardware-model-decisions)
+            - [Hardware Model Implementation](#hardware-model-implementation)
+        - [2021/03/18](#20210318)
+            - [Hardware Model Implementation](#hardware-model-implementation-1)
+        - [2021/03/19](#20210319)
+            - [Hardware Model Implementation](#hardware-model-implementation-2)
+        - [2021/03/22](#20210322)
+            - [Hardware Model Implementation](#hardware-model-implementation-3)
+        - [2021/03/23](#20210323)
+            - [Hardware Model Implementation](#hardware-model-implementation-4)
+        - [2021/03/26](#20210326-1)
+            - [GPU API](#gpu-api)
+            - [Hardware Model Implementation](#hardware-model-implementation-5)
+        - [2021/03/28](#20210328)
+            - [Hardware Model Implementation](#hardware-model-implementation-6)
+        - [2021/03/29](#20210329)
+            - [Hardware Model Implementation](#hardware-model-implementation-7)
+        - [2021/03/31](#20210331)
+            - [Hardware Model Implementation](#hardware-model-implementation-8)
+        - [2021/04/01](#20210401)
+            - [Summary Implementation](#summary-implementation)
+        - [2021/04/05](#20210405)
+            - [Hardware Model Implementation](#hardware-model-implementation-9)
+        - [2021/04/06](#20210406)
+            - [Hardware Model Implementation](#hardware-model-implementation-10)
+        - [2021/04/07](#20210407)
+            - [Hardware Model Implementation](#hardware-model-implementation-11)
+        - [2021/04/08](#20210408)
+            - [Hardware Model Implementation](#hardware-model-implementation-12)
+        - [2021/04/13](#20210413-1)
+            - [Hardware Model Implementation](#hardware-model-implementation-13)
+        - [2021/03/14](#20210314)
+            - [Hardware Model Implementation](#hardware-model-implementation-14)
+            - [Future Features](#future-features)
+        - [2021/04/15](#20210415)
+            - [Future Features](#future-features-1)
+        - [2021/04/17](#20210417)
+            - [Hardware Model Implementation](#hardware-model-implementation-15)
+    - [Idea Pivoting for ICCAD 2021](#idea-pivoting-for-iccad-2021)
+        - [2021/04/16](#20210416)
+        - [2021/04/17](#20210417-1)
+        - [2021/04/19](#20210419)
+        - [2021/04/22](#20210422)
+        - [2021/04/23](#20210423)
+    - [Fault-Injection Interface](#fault-injection-interface)
+        - [2021/04/27](#20210427)
 
-# Model summary for fault injection
+## Model summary for fault injection
 
 There are different ways of implementing the summary, depending on the required information:
 
@@ -107,7 +106,7 @@ A possible solution could be to use ```top_level_events_only``` in ```torch.auto
 
 Self-time is not directly available via the FunctionEvents in torchprof, and even using the raw interface to the torch profiler does not provide direct access. Therefore, the only way is recursively accessing the ```cpu_children``` attribute in each FunctionEvent, and subtract the children time from the parent's, to get the self-time. However, accessing each trace, the EventList itself, containing all of the FunctionEvents, contains also CPU and CUDA total self-time, and hence it can be used for implementation.
 
-## 2021/03/10
+### 2021/03/10
 
 Torchprof and torchinfo summaries are not directly matchable, as they may use different copies of the model, impossible to give equality checks across different modules.
 
@@ -119,13 +118,25 @@ The point is to compute the summary of the model, and profile each leaf layer in
 
 Final implementation has layer summaries associated with raw profiling results, and a specialized list with all the required info for each layer.
 
-## 2021/03/26
+### 2021/03/26
 
 PyTorch has released version 1.8.1 with the new profiler, which provides better interface and customizability. However, it does not provide any automatic grouping as in torchprof, therefore we will stick to torchprof to maintain automatic grouping capabilities, while they update the interface to support new functionalities.
 
-# Hardware Model
+### 2021/04/13
 
-## 2021/03/07
+Here the redesign covers mostly the type of information we are saving in the LayerInfo class.
+
+We have added a new Enum type to cover for the different types of main kernel in each layer. This enum list will be expanded over time, to cover for new kernel types as well. A new property is the original execution time, obtained from the GPU profiling. Also, the LayerInfo class is now a dataclass, so that it is more flexible in handling arguments and extra methods. Currently it supports all the layers defined in AlexNet. In addition it provides a ```from_string``` class method, which is used to convert the string obtained from the layer profiling to a value from the Enum.
+
+Regarding new LayerInfo methods, we have added a parse_representation static method, which is used to get the arguments of a call from its string representation. An example in this sense can be ```Conv2d(32, 64, kernel=(3, 3), stride=(1, 1))```, which would return ```{'__args__': [32, 64], 'kernel': (3, 3), 'stride': (1, 1)}```. This function is used in the ```__post_init__``` method to initialize a new property called parsed_representation. This property is used as new property extra_args in Kernel, which is parsed further to determine the sizes for thread input, weight and bias.
+
+### 2021/04/14
+
+We fixed the wrong multiplier used for converting from microseconds to seconds in layer times.
+
+## Hardware Model
+
+### 2021/03/07
 
 The current idea for hardware model is to have a set of classes, maybe with a common base class (Kernel), which are used to model the behaviour of a kernel when a particle hits.
 
@@ -148,13 +159,13 @@ After propagating the fault from the particle strike to the kernel, it is a matt
     2. We could simulate some kernels using other injection tools ([NVBitFI](https://github.com/NVlabs/nvbitfi), on a side note, it could be useful for integrating ISA-level fault injections on PyTorch code, by converting PyTorch to TorchScript (C++) and using NVBitFI on it), however it could be time-expensive, better suited for a journal version
 2. Directly executing the script to propagate the fault, which could be feasible on open-source GPUs, where the execution path is known, but it is an issue per se on closed-source GPUs.
 
-## 2021/03/08
+### 2021/03/08
 
 We may need a higher-level model of the GPU, as there are some high-level properties, such as control and memory sections, together with shared instruction info, scheduling, interconnections. It can be modeled similarly to a single kernel, being split in subcomponents (Interconnections, Control, Memory, ...). A possibility is to have place-holder slots for Kernels, which are filled based on the time.
 
 Using kernel slots, we need to limit the processing sizes, so that we can map the correct number of operations, i.e. a conv2d with 100x100 to cover requires more operations than a 10x10, and this must be taken into account.
 
-## 2021/03/09
+### 2021/03/09
 
 Kernel slots should be used to fill the operations, however the number of operations and the timings are not to be considered exact as they are, given that we only need an estimate of the associations.
 
@@ -164,9 +175,9 @@ Each slot, given the input/output capabilities of the kernel, is used to address
 
 Currently, Summary provides a dict containing the info for layer and execution time. However, it can be improved by using only the layer index and adding info such as input/output size, execution time, name of the kernel.
 
-## 2021/03/11
+### 2021/03/11
 
-### GPU Characteristic and Structure
+#### GPU Characteristic and Structure
 
 We will base our model on the GA102 GPU, which is the biggest available version of the [Ampere Architecture by Nvidia](https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf). This chip is used in the Nvidia RTX A6000, RTX A40 and RTX 3090 FE (actually the RTX 3090 has only 41 TPCs, instead of the theoretical maximum of 42).
 
@@ -206,7 +217,7 @@ Total characteristics:
 - 628.44 mm2 Die Size
 - 28.3 Billion Transistors
 
-### GPU Internal Working and API
+#### GPU Internal Working and API
 
 This part is important to understand the way the GPU processes the instructions and the data.
 
@@ -227,11 +238,11 @@ Some documentation exists:
         - The developer manual seems useful for memory accessing patterns, as there are descriptions of data layouts, accesses and operations when executing this specific functions
 
 
-## 2021/03/12
+### 2021/03/12
 
-### [CUDA C++ Programming Guide](https://docs.nvidia.com/cuda/pdf/CUDA_C_Programming_Guide.pdf) Analysis
+#### [CUDA C++ Programming Guide](https://docs.nvidia.com/cuda/pdf/CUDA_C_Programming_Guide.pdf) Analysis
 
-#### **Kernel, Thread, Block and Grid**
+##### **Kernel, Thread, Block and Grid**
 
 Kernels are C++ functions, which are executed N times in parallel by N different CUDA threads. Each thread is given a specific ID, which relates to an index in the corresponding _thread block_, which is up to 3-dimensional. The ID can be computed from the index, by using ```x + y * Dx + z * Dx * Dy```, with (Dx, Dy, Dz) being the dimensions of the thread block. Each kernel can be executed across thread blocks, to overcome the limit of 1024 threads per thread block, which are further organized in structures called _grids_. There are similar block IDs and indices as thread indices.
 
@@ -240,11 +251,11 @@ Kernels are C++ functions, which are executed N times in parallel by N different
 MatAdd<<<numBlocks, threadsPerBlock>>>(A, B, C);
 ```
 
-#### **Memory**
+##### **Memory**
 
 Memory is local for each thread, it is shared across threads in the same block, while across grids and blocks it is required to access global memory.
 
-#### **Hardware Implementation**
+##### **Hardware Implementation**
 
 Instructions are pipelined in each CUDA core, they are issued and executed in order, so there is no speculative execution and no branch prediction.
 
@@ -254,14 +265,14 @@ Each block is split in warps by the warp scheduler, using increasing thread IDs,
 
 The warp executes only common instructions, so the execution path must be the same for all the threads. If any of them branches, all the possible branches are executed in sequence, disabling the other threads until the warp reaches again a common point. For instructions on common memory, there are limits on the serialization if the instructions are non-atomic, if atomic they are all serialized by the warp but execute in non-deterministic order.
 
-#### **Kernel/Thread Limits**
+##### **Kernel/Thread Limits**
 
 * Maximum Number of Threads per Thread Block: 1024
 
 
-### [cuDNN Developer Manual](https://docs.nvidia.com/deeplearning/cudnn/pdf/cuDNN-Developer-Guide.pdf) Analysis
+#### [cuDNN Developer Manual](https://docs.nvidia.com/deeplearning/cudnn/pdf/cuDNN-Developer-Guide.pdf) Analysis
 
-#### Memory Layout
+##### Memory Layout
 
 There are different memory layouts which are used by the cuDNN library. N refers to the batch size, C to the channels (features), H to the height of the kernel and W to the width:
 
@@ -269,13 +280,13 @@ There are different memory layouts which are used by the cuDNN library. N refers
 - **NHWC**
 - **NC/xHWx**, where all the channels are grouped into groups with _x_ elements, where all the first elements are taken from the first _x_ groups, then these channels are run through, to start with the following _x_ elements
 
-## 2021/03/15
+### 2021/03/15
 
 The previous description should be comprehensive enough to cover most of the design choices required at the beginning of the design phase.
 
-## 2021/03/16
+### 2021/03/16
 
-### Warp Scheduling and Thread-CUDA Core Mapping
+#### Warp Scheduling and Thread-CUDA Core Mapping
 
 There are few pieces of information regarding the way the warp scheduler works.
 
@@ -311,22 +322,22 @@ Here is a list of good references:
         - This forces the accesses to become sequential, losing performance
         - Otherwise they work in parallel
 
-## 2021/03/17
+### 2021/03/17
 
-### Hardware Model Decisions
+#### Hardware Model Decisions
 
 Given all the previous information, we can make educated decisions on how to model the GPU:
 
 - First of all, there will be the need for having a list of numbers, covering the overall technical specifications
     - This can be configured as a dataclass, so that it can be changed in the future without breaking compatibility, by simply providing as base class a certain set of properties
         - Examples
-            - \# of SMs
-            - \# of GPCs
-            - \# of TPCs
-            - \# of CUDA cores
-        - These numbers can also be converted into relative ones, e.g. \# of SMs per TPC, and give one absolute number to convert them all
+            - \## of SMs
+            - \## of GPCs
+            - \## of TPCs
+            - \## of CUDA cores
+        - These numbers can also be converted into relative ones, e.g. \## of SMs per TPC, and give one absolute number to convert them all
     - Then, we need to have some software-level info, like
-        - \# of threads in a warp
+        - \## of threads in a warp
         - This is useful for scheduling and knowing the timeline of the different kernels being run in the GPU
     - The GPU model should also contain a scheduling list of all the warps, together with their physical positioning for injecting the faults
 - After the general model with the info, we need a base Kernel class, which covers all the info required to run a kernel
@@ -334,7 +345,7 @@ Given all the previous information, we can make educated decisions on how to mod
     - It should also cover some essential information on the memory and the operations which are run inside each CUDA core
 - The interaction between the different parts is that the GPU model has a timeline of kernels, and the instantiated objects from the base class Kernel are used to populate the low-level timeline, which is then used to compare with physical particle interaction
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 To implement the actual hardware representation, we are developing
 
@@ -351,9 +362,9 @@ To implement the actual hardware representation, we are developing
         - This JSON file should be structured with concatenated lists, where each element is a list, with the Enum flag corresponding to the component, followed by the maximum number, and by a list of sub-components, example
             - ```{'component': {'__enum__': 'NvidiaGPUComponentEnum.StreamingMultiprocessor'}, 'max': 24, 'subcomponents': [...]}```
 
-## 2021/03/18
+### 2021/03/18
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 As an update to the previous implementation, we decided to trade off the compact representation in the JSON for an easier representation to parse
 
@@ -361,32 +372,32 @@ We use a dict of components, having the enumeration value as key and the compone
 
 In addition, each component has also a parent, to allow back-tracking. This is useful when going from leaves to the root, e.g. when computing the number of total subcomponents. This parameter could be a list, but it does not make much sense as a single subcomponent cannot have multiple parents, as they need to have a certain hierarchy
 
-## 2021/03/19
+### 2021/03/19
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 - Kernel output size must contain a single element, otherwise we may have trouble compiling the total size
     - Same for thread output size
 
 
-## 2021/03/22
+### 2021/03/22
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 - Compute number of threads based on output size for kernel and for thread
     - We compute the number of threads from the number of elements of the output, divived by the number of elements processed by each thread
 
-## 2021/03/23
+### 2021/03/23
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
-## 2021/03/26
+### 2021/03/26
 
-### GPU API
+#### GPU API
 
 CUDA Streams are used to issue operations in-order on GPUs: all the instructions in a stream are issued in order, however instructions can be executed in parallel using multiple streams, if they do not block each other, e.g. a computation on data which has already been loaded.
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 We need to model each different kernel, and provide the number of threads and some more details on them.
 
@@ -394,9 +405,9 @@ As a starting point, we can implement the conv2d algorithm. In our case, we will
 
 - **There is no description of the actual algorithm implementations**: while different algorithms can be chosen (Winograd, GEMM, direct, FTT, ...), there is no direct description of the implemented algorithm. This limits the modelling capabilities, as we cannot know how many threads are required.
 
-## 2021/03/28
+### 2021/03/28
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 Several references are available describing how to choose the number of threads for each CUDA operation. However, none of them represents the official cuDNN implementation, which is the one used also by PyTorch and most high-level Deep Learning libraries.
 
@@ -409,9 +420,9 @@ Therefore, we will analyze the different implementations and choose the optimal 
 
 Final decision is to assume **1 thread per output pixel**, and obtaining the total runtime from that.
 
-## 2021/03/29
+### 2021/03/29
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 We added extra fields for the Kernel class, being the base class from which we can derive all the kernels.
 
@@ -419,41 +430,41 @@ Now, we have input, weight, bias and output sizes, each of them being a single t
 
 For scheduling, there will be a dict using the CUDA core identifiers (since we run **each thread in a single CUDA core**)
 
-## 2021/03/31
+### 2021/03/31
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 To consider the scheduling issue, we have to include a new ThreadDescriptor class, which contains start, stop and length times, as well as thread "id", which is a sequential integer for the kernel, a link to the parent kernel and to the CUDA core id.
 
-## 2021/04/01
+### 2021/04/01
 
-### Summary Implementation
+#### Summary Implementation
 
 Updated the total execution time to be in seconds instead of microseconds, to have a standard value. Relative conversion stays the same as it is in microseconds all the time.
 
-## 2021/04/05
+### 2021/04/05
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 For scheduling properly, and maximizing the utilization of the GPU, we need to select multiple subsets of the free operators, until all of them are exhausted.
 
-## 2021/04/06
+### 2021/04/06
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 We don't need object-wide variables for free and scheduled operators, as these dicts will be handled on a per-run basis.
 
-## 2021/04/07
+### 2021/04/07
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 We standardize the way we count the number of components, being it expressed in a per-parent basis, using an explicit variable for mentioning it.
 
 Removed the target IDs argument when scheduling, now we assume that they are all contiguously numbered from ```0``` to ```n_components - 1```.
 
-## 2021/04/08
+### 2021/04/08
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 There has been a slight redesign in the JSON import/export, now the model uses a registering process for saving the methods for encoding/decoding the corresponding classes. It has been implemented using a decorator, to make it easier, together with base classes implementing the methods for Enum and standard \_\_dict\_\_-based classes.
 
@@ -464,7 +475,7 @@ Also, there is now a property returning the hierarchy JSON, as the internal repr
 All the properties have also been converted to functools.cached_property, given the high cost in terms of computation time, which may be useful in future for repetitive access.
 
 
-## 2021/04/13
+### 2021/04/13
 
 In the last few days there has been a deep redesign of many sections of the DNN and hardware models, which are covered in the following sections.
 
@@ -472,15 +483,7 @@ This redesign stems from issues found when trying to schedule operations, as we 
 
 While this information is important, it is not necessary for the basic functioning of the model, as we only require the number of threads used for each output element. However, this information **MUST** be defined in the future to take into account memory/dataflow locks in the GPU, which are ever so important for big models.
 
-### Summary Implementation
-
-Here the redesign covers mostly the type of information we are saving in the LayerInfo class.
-
-We have added a new Enum type to cover for the different types of main kernel in each layer. This enum list will be expanded over time, to cover for new kernel types as well. A new property is the original execution time, obtained from the GPU profiling. Also, the LayerInfo class is now a dataclass, so that it is more flexible in handling arguments and extra methods. Currently it supports all the layers defined in AlexNet. In addition it provides a ```from_string``` class method, which is used to convert the string obtained from the layer profiling to a value from the Enum.
-
-Regarding new LayerInfo methods, we have added a parse_representation static method, which is used to get the arguments of a call from its string representation. An example in this sense can be ```Conv2d(32, 64, kernel=(3, 3), stride=(1, 1))```, which would return ```{'__args__': [32, 64], 'kernel': (3, 3), 'stride': (1, 1)}```. This function is used in the ```__post_init__``` method to initialize a new property called parsed_representation. This property is used as new property extra_args in Kernel, which is parsed further to determine the sizes for thread input, weight and bias.
-
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 Here there have been the most changes: the whole JSON conversion system has been completely redesigned, leading to a class implementing a custom encoder and decoder mechanism. The encoder is a method, as it requires a JSONEncoder inheritance to work, while the decoder is a a classmethod.
 
@@ -492,20 +495,15 @@ For helping in expanding the list of compatible objects, we have also defined a 
 
 Other improvements cover the conversion of NamedTuple to dataclasses, to be able to implement methods for JSON conversion, as well as reorganizing the sample hierarchy and map. Also, small adjustments to names of some parameters and variable names have been made.
 
-## 2021/03/14
+### 2021/03/14
 
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 We have added the original layer info in the kernel, to provide more info if required.
 
 Fixed some nasty bugs regarding the way kernels are scheduled, not respecting sequential operations and data dependency. Now we are limiting the parallelism of the GPU, as we are forcing all kernels to execute in sequence, when all the previous threads of the kernel have finished.
 
-
-### Summary Bugfixes
-
-We fixed the wrong multiplier used for converting from microseconds to seconds in layer times.
-
-### Future Features
+#### Future Features
 
 To improve the hardware modeling, there are many aspects which should be taken into account: the first one is dataflows and memory concurrency.
 
@@ -517,9 +515,9 @@ Currently, we are able to support basic data dependencies, but in the future we 
 
 This implementation may be delegated to each kernel, providing a base algorithm for checking the required amount of data to have been produced/loaded, as well as adding the proper representation of loading/unloading data in form of kernels. This implementation may have high priority as soon as the basic fault injection on system is implemented.
 
-## 2021/04/15
+### 2021/04/15
 
-### Future Features
+#### Future Features
 
 When delegating the implementation to each kernel, we can have a basic behaviour for all the kernels, and we can create subclasses which register themselves for more complex behaviour, e.g. convolutions: in this way we are able to fix the issue of data dependency as well, as we need each kernel to be able to determine when it can start running.
 
@@ -527,15 +525,9 @@ This could be implemented with a linked list, providing first the data flow depe
 
 All of this could be handled by a Scheduling class, containing all the scheduling info as well as as the dependencies.
 
-## 2021/04/16
+### 2021/04/17
 
-### Idea Pivoting for ICCAD 2021
-
-After a discussion, the issue with the current idea was that it was supposed to incorporate much new material, for which a huge framework and models are required, and it may take many months to properly build and have all the gears moving together in the same direction. Hence, there is the possibility of splitting the current idea into 2 main topics, discussed in the following day.
-
-## 2021/04/17
-
-### Hardware Model Implementation
+#### Hardware Model Implementation
 
 Possible scheduling packages:
 
@@ -547,7 +539,14 @@ Possible scheduling packages:
 
 The best one seems to be Python-MIP, but it would require a wrapper to pass the information from the hardware model into a format comprehensible by Python-MIP.
 
-### Idea Pivoting for ICCAD 2021
+
+## Idea Pivoting for ICCAD 2021
+
+### 2021/04/16
+
+After a discussion, the issue with the current idea was that it was supposed to incorporate much new material, for which a huge framework and models are required, and it may take many months to properly build and have all the gears moving together in the same direction. Hence, there is the possibility of splitting the current idea into 2 main topics, discussed in the following day.
+
+### 2021/04/17
 
 - Fault Injection and Resiliency Analysis for Pruned/Sparse/Quantized Networks, taking into account weights and memory structure
     - This part would cover all the "compressed" network types which are much used on edge scenarios, where full FP32 multiplication are a waste of memory and power
@@ -561,15 +560,11 @@ Overall, there are very little studies on the reliability of pruned and quantize
 
 Hence, a possible idea could cover fault injection but the error occurs on the memory representation of the model, hence interesting both activations/outputs as well as weights. Especially for sparse networks, which are not covered, this may be something quite new, as there could be issues along the lines of indexes and values for the sparse weights.
 
-## 2021/04/19
-
-### Idea Pivoting for ICCAD 2021
+### 2021/04/19
 
 Unfortunately upon closer inspection, there are already studies covering the resiliency of sparse-encodeded DNNs. This limits the applicability of the new idea per se, but it may open the way to new works in this direction, to cover in an engineering way
 
-## 2021/04/22
-
-### Idea Pivoting for ICCAD 2021
+### 2021/04/22
 
 After discovering that the resiliency analysis and mitigation already exists for sparse networks (cfr. [MaxNVM: Maximizing DNN Storage Density and Inference Efficiency with Sparse Encoding and Error Mitigation](https://doi.org/10.1145/3352460.3358258)), there are many other ideas which can be followed, but they seem like engineering:
 
@@ -587,7 +582,12 @@ Consider **saliency** for choosing which weights to target with the faults.
 
 A similar work to this idea for quantized neural networks has already been done (cfr. [FTT-NAS: Discovering Fault-Tolerant Convolutional Neural Architecture](https://doi.org/10/gjr9jg)), but it looks like it is new for sparse networks.
 
-## 2021/04/23
+### 2021/04/23
 
 Hence, the conclusion may be to develop a special pruning algorithm which changes the pruning structure/coverage depending on the resiliency we want to keep from the original network, regarding soft error and not permanent faults, as these have already been covered (cfr. [Analyzing and mitigating the impact of permanent faults on a systolic array based neural network accelerator](https://doi.org/10.1109/VTS.2018.8368656))
-### Idea Pivoting for ICCAD 2021
+
+## Fault-Injection Interface
+
+### 2021/04/27
+
+Now, Ellipsis (...) is used in a non-greey way to cover for missing/unknown dimensions, trying to cover as few dimensions as possible. In numpy instead, it is greedy, trying to cover as many dimensions as possible. While this behaviour may be optimal, in our approach the user who instantiates the fault should also have direct access to the model to be processed, hence it would be easy to access it and check the dimension for the number of ... to use. Therefore, this is the go-to choice, to leave for more flexibility while still being strict about its interpretation.
