@@ -32,7 +32,8 @@ TEMPLATE_STRING = '{{:0{}b}}'
 
 # gets the binary value from a PyTorch element
 def pytorch_element_to_binary(value: torch.Tensor) -> str:
-    # required because shapes (1, ) and () are considered different and we need ()
+    # required because shapes (1, ) and () are considered different and we need
+    # ()
     if value.size() != tuple():
         value = value[0]
 
@@ -43,8 +44,15 @@ def pytorch_element_to_binary(value: torch.Tensor) -> str:
     new_dtype = DATA_CONVERSION_MAPPING[dtype]
     # we need the witdth of the new data type
     width = DATA_WIDTH_MAPPING[dtype]
-    # we view the number with a different datatype (int) so we can extract the bits
-    str_bin_value = TEMPLATE_STRING.format(width).format(numpy_value.view(new_dtype))
+    # we view the number with a different datatype (int) so we can extract the
+    # bits
+    str_bin_value = TEMPLATE_STRING.format(
+            width
+    ).format(
+            numpy_value.view(
+                    new_dtype
+            )
+    )
 
     return str_bin_value
 
@@ -73,7 +81,10 @@ def inject_fault_binary(binary: str,
         elif fault.bit_value == src.fi.faultdescriptor.BitValue.Random:
             # if we do not have a sampler
             if sampler is None:
-                raise ValueError("A sampler must be passed when using random bit-flips")
+                raise ValueError(
+                        "A sampler must be passed "
+                        "when using random bit-flips"
+                )
                 # SAMPLER_SEED = 2147483647
                 # sampler = torch.Generator(device='cpu')
                 # sampler.manual_seed(SAMPLER_SEED)
