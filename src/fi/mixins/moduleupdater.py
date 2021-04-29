@@ -1,14 +1,14 @@
 import copy
 import typing
 
-import torch
-
 
 class ModuleUpdater(object):
     @staticmethod
     def update_module_from_module_list(
-            target_module: torch.nn.Module,
-            module_list: typing.Dict[str, torch.nn.Module],
+            target_module: 'torch.nn.Module',
+            module_list: typing.Dict[
+                    str,
+                    'torch.nn.Module'],
             in_place: bool = True,
             ):
         # if in place we modify the module with all the list elements
@@ -39,7 +39,7 @@ class ModuleUpdater(object):
     @staticmethod
     def get_module(
             target_module_name: str,
-            module: torch.nn.Module,
+            module: 'torch.nn.Module',
             ):
         dest_module = module
         for submodule in target_module_name.split('.'):

@@ -3,7 +3,7 @@ import copy
 import numpy
 import torch
 
-import src.fi.basefaultdescriptor
+import src.fi.faultdescriptor
 
 # uint to avoid double sign repetition
 DATA_CONVERSION_MAPPING = {numpy.dtype('float16'): numpy.uint16,
@@ -50,24 +50,27 @@ def pytorch_element_to_binary(value: torch.Tensor) -> str:
 
 
 def inject_fault_binary(binary: str,
-                        fault: src.fi.basefaultdescriptor.BaseFaultDescriptor,
+                        fault: src.fi.faultdescriptor.FaultDescriptor,
                         sampler: torch.Generator = None) -> str:
     # we need to convert the binary string into a list of characters
     # otherwise we cannot update the values
     injected_binary = list(copy.deepcopy(binary))
-    for index in fault.bit_index:
+    for index in fault.bit_index_conversion(
+            bit_index=fault.bit_index,
+            bit_width=len(injected_binary),
+            ):
         # if we are using little endian we invert the index, as the LSB is
         # at the end of the list
         if fault.endianness == fault.endianness.Little:
             index = (len(injected_binary) - 1) - index
 
-        if fault.bit_value == src.fi.basefaultdescriptor.BitValue.StuckAtOne:
+        if fault.bit_value == src.fi.faultdescriptor.BitValue.StuckAtOne:
             injected_binary[index] = "1"
-        elif fault.bit_value == src.fi.basefaultdescriptor.BitValue.StuckAtZero:
+        elif fault.bit_value == src.fi.faultdescriptor.BitValue.StuckAtZero:
             injected_binary[index] = "0"
-        elif fault.bit_value == src.fi.basefaultdescriptor.BitValue.BitFlip:
+        elif fault.bit_value == src.fi.faultdescriptor.BitValue.BitFlip:
             injected_binary[index] = str(int(injected_binary[index]) ^ 1)
-        elif fault.bit_value == src.fi.basefaultdescriptor.BitValue.Random:
+        elif fault.bit_value == src.fi.faultdescriptor.BitValue.Random:
             # if we do not have a sampler
             if sampler is None:
                 raise ValueError("A sampler must be passed when using random bit-flips")
@@ -99,7 +102,7 @@ def binary_to_pytorch_element(binary: str, original_value: torch.Tensor) -> torc
 
 
 def inject_fault_pytorch(tensor: torch.Tensor,
-                         fault: src.fi.basefaultdescriptor.BaseFaultDescriptor,
+                         fault: src.fi.faultdescriptor.FaultDescriptor,
                          sampler: torch.Generator = None) -> torch.Tensor:
     binary = pytorch_element_to_binary(tensor)
     injected_binary = inject_fault_binary(binary, fault, sampler)
@@ -109,7 +112,7 @@ def inject_fault_pytorch(tensor: torch.Tensor,
 
 def inject_tensor_fault_pytorch(
         tensor: torch.Tensor,
-        fault: src.fi.basefaultdescriptor.BaseFaultDescriptor,
+        fault: src.fi.faultdescriptor.FaultDescriptor,
         sampler: torch.Generator = None) -> torch.Tensor:
     # we deepcopy the tensor to avoid modifying the original one
     tensor = copy.deepcopy(tensor)
@@ -117,9 +120,9 @@ def inject_tensor_fault_pytorch(
     # first we convert the fault tensor index to a proper tensor index for the
     # tensor case
     original_tensor = tensor[
-            fault.to_tensor_slice(
-                    fault.tensor_index,
-                    tensor.size()
+            fault.tensor_index_conversion(
+                    tensor_index=fault.tensor_index,
+                    tensor_shape=tensor.size()
             )
     ]
     # to inject the values, we need to flatten the tensor
@@ -145,7 +148,7 @@ def inject_tensor_fault_pytorch(
     # we reshape the tensor to the original one
     injected_tensor = injected_flattened_tensor.reshape(original_tensor.size())
     # we update the tensor to the new value
-    tensor[fault.to_tensor_slice(
+    tensor[fault.tensor_index_conversion(
             fault.tensor_index,
             tensor.size()
     )] = injected_tensor

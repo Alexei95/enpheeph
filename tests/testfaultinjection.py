@@ -21,7 +21,7 @@ DATASET_DIR = (CURRENT_DIR / '../data').resolve()
 
 sys.path.append(str(SRC_PARENT_DIR))
 
-import src.fi.baseinjectioncallback
+import src.fi.injectioncallback
 import src.utils
 
 sys.path.append(str(DATA_DIR))
@@ -77,26 +77,51 @@ wrapper = PLWrapper(
         vgg11_bn,
         functools.partial(torch.nn.functional.softmax, dim=1),
         torch.nn.functional.cross_entropy)
+# we used the pytorch_lightning CIFAR 10 datamodule
 datamodule = pl_bolts.datamodules.CIFAR10DataModule(
         data_dir=str(DATASET_DIR),
         )
 
-faults = [
-    src.fi.basefaultdescriptor.BaseFaultDescriptor(
-        module_name='model.classifier.6',
-        parameter_type=src.fi.basefaultdescriptor.ParameterType.Weight,
-        tensor_index=...,
-        bit_index=slice(0, 30),
-        bit_value=src.fi.basefaultdescriptor.BitValue.StuckAtZero,
+# here we define our faults to be tested
+faults = []
+
+# this is the weight fault, setting all the weights in the last fully-connected
+# layer to zero, covering all the bits
+weight_fault = src.fi.faultdescriptor.FaultDescriptor(
+        module_name='model.classifier.0',
+        parameter_type=src.fi.faultdescriptor.ParameterType.Weight,
+        tensor_index=[slice(0, 1000), slice(0, 6)],
+        bit_index=[31],
+        bit_value=src.fi.faultdescriptor.BitValue.StuckAtZero,
         # default parameter name for weight injection
         parameter_name='weight',
-    ),
-]
-callback = src.fi.baseinjectioncallback.BaseInjectionCallback(
+        # default endianness, little, so 31 is MSB
+        endianness=src.fi.faultdescriptor.Endianness.Little,
+)
+
+# here we have the activation fault on the first conv layer output
+activation_fault = src.fi.faultdescriptor.FaultDescriptor(
+        module_name='model.features.0',
+        parameter_type=src.fi.faultdescriptor.ParameterType.Activation,
+        tensor_index=...,
+        bit_index=[0, 10, 32],
+        bit_value=src.fi.faultdescriptor.BitValue.BitFlip,
+        # we don't need any parameter_name, as we use the whole tensor for
+        # the output
+        #parameter_name=None,
+        # default endianness, little, so 31 is MSB
+        endianness=src.fi.faultdescriptor.Endianness.Little,
+)
+
+faults.append(weight_fault)
+faults.append(activation_fault)
+
+callback = src.fi.injectioncallback.InjectionCallback(
         fault_descriptor_list=faults,
         enabled=False,
         auto_model_init_on_test_start=True,
-        )
+        enabled_faults=[],
+)
 
 # not required as we auto init the model on test start
 # callback.init_model(wrapper)
@@ -104,20 +129,40 @@ callback = src.fi.baseinjectioncallback.BaseInjectionCallback(
 trainer = pytorch_lightning.Trainer(
     callbacks=[callback],
     deterministic=DETERMINISTIC_FLAG,
-    gpus=[0],
+    # with GPU it is very slow due to the memory transfers
+    #gpus=[0],
     )
 
-# we use this as baseline
+print('\n\nBaseline, no injection\n')
+# we use this as baseline, no injections
 trainer.test(wrapper, datamodule=datamodule)
 
 # we enable the callback now
 callback.enable()
+# we enable the weight injection
+callback.enable_faults([weight_fault])
+print('\n\nOnly weight injection\n')
 
-# we test again
+# we test again, only weight injection
+trainer.test(wrapper, datamodule=datamodule)
+
+# we enable the activation injection
+callback.enable_faults([activation_fault])
+print('\n\nWeight + activation injection\n')
+
+# we test again, weight + activation injection
+trainer.test(wrapper, datamodule=datamodule)
+
+# we disable the weight injection, only activation
+callback.disable_faults([weight_fault])
+print('\n\nOnly activation injection\n')
+
+# we test again, activation injection
 trainer.test(wrapper, datamodule=datamodule)
 
 # we disable the callback
 callback.disable()
+print('\n\nBaseline again, no injection\n')
 
 # we test again to reach same results as before injection
 trainer.test(wrapper, datamodule=datamodule)

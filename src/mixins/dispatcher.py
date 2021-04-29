@@ -8,7 +8,7 @@ import typing
 # callable
 # dispatching is actually used for overloaded functions with different
 # signatures, but I think this term may be used also in this way
-class DispatcherABC(abc.ABC):
+class Dispatcher(object):
     _dispatching_dict: typing.Dict[typing.Any, typing.Callable]
 
     # the solution was to use a method to return a copy of the dispatching dict

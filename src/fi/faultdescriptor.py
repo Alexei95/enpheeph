@@ -36,8 +36,10 @@ class BitValue(enum.Enum):
 # should be injected
 # each fault descriptor covers a single bit-flip (or stuck-at)
 # we need unsafe hash for using it as a dictonary key
-@dataclasses.dataclass(init=True, repr=True, unsafe_hash=True)
-class BaseFaultDescriptor(object):
+@dataclasses.dataclass(
+        init=True, repr=True, unsafe_hash=True, eq=True
+)
+class FaultDescriptor(object):
     # name of the module to inject
     module_name: str
     # type of parameter to inject, weight, activation, ...
@@ -46,11 +48,27 @@ class BaseFaultDescriptor(object):
     tensor_index: typing.Union[
             type(Ellipsis),
             typing.Sequence[typing.Union[int, slice, type(Ellipsis)]]
-    ]
+    ] = dataclasses.field(
+            init=True,
+            repr=True,
+            hash=False
+    )
+    # the following is a representation of the tensor index, used for
+    # hashing purposes
+    _tensor_index_repr: str = dataclasses.field(
+            init=False, repr=False, compare=False, hash=True
+    )
     # index of the bit to be injected
     # even if it is a slice, it must be converted to indices
     # just use tuple(range(*slice.indices(slice.stop)))
-    bit_index: typing.Union[typing.Sequence[int], slice]
+    # we support also the ellipsis meaning all the bits
+    bit_index: typing.Union[
+            typing.Sequence[int], slice, type(Ellipsis)
+    ] = dataclasses.field(
+            init=True,
+            repr=True,
+            hash=False
+    )
     # type of bit injection to be carried out
     bit_value: BitValue
     # way to interpret the binary representation, as big endian or little
@@ -59,11 +77,12 @@ class BaseFaultDescriptor(object):
     # little endian means the bit index 0 is instead mapped to the LSB
     # by default we use little endian, as this is the most common
     # representation
-    endianness: Endianness = Endianness.Little
+    endianness: Endianness = dataclasses.field(
+            init=True, repr=True, default=Endianness.Little)
     # name of the parameter, if the module is a base module (conv, fc),
     # it generally coincides with 'weight' for weight injection
     # not required for activation injection
-    parameter_name: str = None
+    parameter_name: str = dataclasses.field(init=True, repr=True, default=None)
 
     def __post_init__(self):
         # FIXME: here there should be some checks on the values
@@ -75,33 +94,71 @@ class BaseFaultDescriptor(object):
             raise ValueError('Please provide a parameter_name from which '
                     'to gather the values of the tensor to be injected')
 
+        # NOTE: for hashability, slice is unhashable, but we use an internal
+        # representation to make them hashable
+
         # we convert the tensor index to a tuple, otherwise the descriptor
         # remains unhashable
         # first we have to check if it is a MutableSequence
         if isinstance(self.tensor_index, collections.abc.MutableSequence):
             self.tensor_index = tuple(self.tensor_index)
+        # we set the internal representation for hashability
+        self._tensor_index_repr = repr(self.tensor_index)
 
-        # if the bit index is a slice, we convert it to indices
-        if isinstance(self.bit_index, slice):
-            self.bit_index = self.bit_index_from_slice(self.bit_index)
-
-    @staticmethod
-    def bit_index_from_slice(slice_: slice) -> typing.Tuple[int, ...]:
-        # we use slice.indices to get back the indices of the slice
-        # we must pass a stop as it requires a stop value, taken from the slice
-        # itself
-        # in this way we can return all of the affected indices in a tuple
-        return tuple(range(*slice_.indices(slice_.stop)))
+        # if the bit_index is a ordered container
+        # we need to save it as tuple to allow for hashability
+        if isinstance(self.bit_index, collections.abc.MutableSequence):
+            self.bit_index = tuple(self.bit_index)
+        # we set the internal representation for hashability
+        self._bit_index_repr = repr(self.tensor_index)
 
     @staticmethod
-    def to_tensor_slice(
+    def bit_index_conversion(
+                bit_index: typing.Union[
+                        typing.Sequence[int], slice, type(Ellipsis)],
+                bit_width: int,
+                ) -> typing.Tuple[int, ...]:
+        # if the bit_slice is an Ellipsis, we return a tuple covering all the
+        # bits
+        if isinstance(bit_index, type(Ellipsis)):
+            return tuple(range(bit_width))
+        # else we check whether it is a slice
+        # in this case we convert the slice to a tuple
+        elif isinstance(bit_index, slice):
+            # we use slice.indices to get back the indices of the slice
+            # we must pass a stop as it requires a stop value, taken from the
+            # bitwidth, as the slice chooses the smallest of the internal
+            # stop value and from the argument one
+            # in this way we can return all of the affected indices in a tuple
+            return tuple(range(*bit_index.indices(bit_width)))
+        # if instead it is a sequence
+        elif isinstance(bit_index, collections.abc.Sequence):
+            # we remove all duplicates by constructing a set
+            # we sort the list
+            # we filter it to be between 0 (included) and the bit_width
+            # (excluded)
+            return tuple(
+                    i
+                    for i in sorted(set(bit_index))
+                    if 0 <= i < bit_width
+            )
+
+    # NOTE: in our case here, Ellipsis (...) is used as non-greedy, so you need
+    # one ... per dimension you want to skip. In numpy instead ... is greedy,
+    # so it tries to cover as many dimensions as possible. While this behaviour
+    # may be nicer, the user of this function should still know or be able to
+    # access the information regarding the tensor shape, hence a greedy
+    # behaviour may limit customizability in the fault. Therefore, for now the
+    # behaviour will remain non-greedy
+    @staticmethod
+    def tensor_index_conversion(
                 tensor_index: typing.Union[
                         type(Ellipsis),
                         typing.Sequence[
                                 typing.Union[
                                         int, slice, type(Ellipsis)]]],
                 tensor_shape: typing.Sequence[int],
-            ) -> typing.Sequence[typing.Union[int, slice]]:
+                ) -> typing.Sequence[typing.Union[int, slice]]:
         # if we have a single ellipsis, without any container, we have a slice
         # covering the whole tensor shape
         if isinstance(tensor_index, type(Ellipsis)):
@@ -132,4 +189,5 @@ class BaseFaultDescriptor(object):
             else:
                 raise ValueError('Wrong index value, use slice, int or ...')
             new_tensor_index.append(new_index)
+        # we always return a tuple
         return tuple(new_tensor_index)
