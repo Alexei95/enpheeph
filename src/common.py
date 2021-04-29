@@ -7,7 +7,10 @@ import torch.cuda
 # CUDA PyTorch settings
 CUDA_IS_AVAILABLE = torch.cuda.is_available()
 USE_CUDA = True and CUDA_IS_AVAILABLE
-DEFAULT_TORCH_DEVICE = torch.device('cuda') if USE_CUDA else torch.device('cpu')
+if USE_CUDA:
+    DEFAULT_TORCH_DEVICE = torch.device('cuda')
+else:
+    DEFAULT_TORCH_DEVICE = torch.device('cpu')
 DEFAULT_TORCH_DTYPE = torch.float32
 
 # default settings for numpy prng
