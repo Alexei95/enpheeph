@@ -11,8 +11,8 @@ SRC_PARENT_DIR = (CURRENT_DIR / '..').resolve()
 
 sys.path.append(str(SRC_PARENT_DIR))
 
-import src.fi.hardwaremodel
-import src.fi.summary
+import src.fi.model.hardwaremodel
+import src.fi.modeling.nnmodelsummary
 
 
 # we implement a test model which is suitable for our small test case
@@ -64,17 +64,17 @@ model = torchvision.models.AlexNet()
 model_input_size = torch.Size([1, 3, 224, 224])
 # model_input_size = torch.Size([1, 1, 28, 28])
 
-model_summary = src.fi.summary.Summary(model, model_input_size)
+model_summary = src.fi.modeling.nnmodelsummary.NNModelSummary(model, model_input_size)
 
 # pprint.pprint(model_summary, indent=4)
 # pprint.pprint(model_summary.layer_stats, indent=4)
 
-# print(src.fi.hardwaremodel.SAMPLE_HIERARCHY_JSON, indent=4)
-# print(src.fi.hardwaremodel.SAMPLE_MAP_JSON, indent=4)
+# print(src.fi.model.hardwaremodel.SAMPLE_HIERARCHY_JSON, indent=4)
+# print(src.fi.model.hardwaremodel.SAMPLE_MAP_JSON, indent=4)
 
-hwmodel = src.fi.hardwaremodel.HardwareModel(
-    json_hierarchy_string=src.fi.hardwaremodel.SAMPLE_HIERARCHY_JSON,
-    json_map_string=src.fi.hardwaremodel.SAMPLE_MAP_JSON)
+hwmodel = src.fi.model.hardwaremodel.HardwareModel(
+    json_hierarchy_string=src.fi.model.hardwaremodel.SAMPLE_HIERARCHY_JSON,
+    json_map_string=src.fi.model.hardwaremodel.SAMPLE_MAP_JSON)
 
 # pprint.pprint(hwmodel.hierarchy, indent=4)
 # print(hwmodel.hierarchy_json)
@@ -86,7 +86,7 @@ hwmodel = src.fi.hardwaremodel.HardwareModel(
 
 schedule = hwmodel.schedule_model_inference_run(
                 model_summary=model_summary,
-                target=src.fi.hardwaremodel.NvidiaGPUComponentEnum.CUDACore,
+                target=src.fi.model.hardwaremodel.NvidiaGPUComponentEnum.CUDACore,
                 )
 
 # pprint.pprint(schedule, indent=4)

@@ -5,29 +5,33 @@ import torch
 
 import src.fi.injection.faultdescriptor
 
-# uint to avoid double sign repetition
-DATA_CONVERSION_MAPPING = {numpy.dtype('float16'): numpy.uint16,
-                           numpy.dtype('float32'): numpy.uint32,
-                           numpy.dtype('float64'): numpy.uint64,
-                           numpy.dtype('uint8'): numpy.uint8,
-                           numpy.dtype('int8'): numpy.uint8,
-                           numpy.dtype('int16'): numpy.uint16,
-                           numpy.dtype('int32'): numpy.uint32,
-                           numpy.dtype('int64'): numpy.uint64,
-                           }
-DATA_WIDTH_MAPPING = {numpy.dtype('float16'): '16',
-                      numpy.dtype('float32'): '32',
-                      numpy.dtype('float64'): '64',
-                      numpy.dtype('uint8'): '8',
-                      numpy.dtype('int8'): '8',
-                      numpy.dtype('int16'): '16',
-                      numpy.dtype('int32'): '32',
-                      numpy.dtype('int64'): '64',
-                      }
-# this template first requires the width (the single {}) and then it can
-# convert a number to a binary view using that width and filling the extra
-# on the left with 0s
-TEMPLATE_STRING = '{{:0{}b}}'
+
+class BinaryHandler(object):
+    # uint to avoid double sign repetition
+    DATA_CONVERSION_MAPPING = {
+            numpy.dtype('float16'): numpy.uint16,
+            numpy.dtype('float32'): numpy.uint32,
+            numpy.dtype('float64'): numpy.uint64,
+            numpy.dtype('uint8'): numpy.uint8,
+            numpy.dtype('int8'): numpy.uint8,
+            numpy.dtype('int16'): numpy.uint16,
+            numpy.dtype('int32'): numpy.uint32,
+            numpy.dtype('int64'): numpy.uint64,
+    }
+    DATA_WIDTH_MAPPING = {
+            numpy.dtype('float16'): '16',
+            numpy.dtype('float32'): '32',
+            numpy.dtype('float64'): '64',
+            numpy.dtype('uint8'): '8',
+            numpy.dtype('int8'): '8',
+            numpy.dtype('int16'): '16',
+            numpy.dtype('int32'): '32',
+            numpy.dtype('int64'): '64',
+    }
+    # this template first requires the width (the single {}) and then it can
+    # convert a number to a binary view using that width and filling the extra
+    # on the left with 0s
+    TEMPLATE_STRING = '{{:0{}b}}'
 
 
 # gets the binary value from a PyTorch element

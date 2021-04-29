@@ -6,7 +6,7 @@ import typing
 import pytorch_lightning
 import torch
 
-import src.dispatcherabc
+import src.utils.mixins.dispatcher
 import src.fi.injection.faultdescriptor
 import src.fi.fiutils
 import src.fi.utils.mixins.moduleupdater

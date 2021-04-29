@@ -16,7 +16,7 @@ import operator
 import pprint
 import typing
 
-import src.fi.summary
+import src.fi.modeling.nnmodelsummary
 
 
 # https://stackoverflow.com/a/24482806
@@ -189,7 +189,7 @@ class Kernel(object):
 
     # kernel type, used to define some sizes if they are not defined in the
     # init
-    kernel_type: src.fi.summary.MainLayerFunctionEnum
+    kernel_type: src.fi.modeling.nnmodelsummary.MainLayerFunctionEnum
     # extra arguments, they are kernel dependent
     extra_args: typing.Dict[str, typing.Any]
     # input and output sizes have a tuple containing dimension tuples
@@ -211,7 +211,7 @@ class Kernel(object):
     # output can be only one, but size can have multiple dimensions
     thread_bias_size: typing.Optional[typing.Tuple[int, ...]] = None
     # here we can save the corresponding layer info of the kernel
-    raw_layer_info: typing.Optional[src.fi.summary.LayerInfo] = None
+    raw_layer_info: typing.Optional[src.fi.modeling.nnmodelsummary.LayerInfo] = None
 
     # BUG: complete the function for different layers
     # given three parameters it returns the 4th one
@@ -223,7 +223,7 @@ class Kernel(object):
     # when taking into account memory and dataflow locks
     def __post_init__(self):
         # BUG: example of selection for dimensions
-        if self.kernel_type is src.fi.summary.MainLayerFunctionEnum.Conv2d:
+        if self.kernel_type is src.fi.modeling.nnmodelsummary.MainLayerFunctionEnum.Conv2d:
             pass
         pass
 
@@ -567,7 +567,7 @@ class HardwareModel(object):
     # and we also assume their number is contiguous
     def schedule_model_inference_run(
             self,
-            model_summary: src.fi.summary.Summary,
+            model_summary: src.fi.modeling.nnmodelsummary.NNModelSummary,
             target: NvidiaGPUComponentEnum,
             ) -> typing.Dict[
                 int,

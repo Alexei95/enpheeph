@@ -119,7 +119,7 @@ class LayerInfo(object):
 # we mostly need operation-wise execution time (which can be relaxed to
 # layer-wise, assuming one main operation per layer)
 @dataclasses.dataclass(init=True)
-class Summary(object):
+class NNModelSummary(object):
     model: torch.nn.Module
     # input size must have the first element as batch size, which can be also 1
     input_size: typing.Sequence[int, ...]

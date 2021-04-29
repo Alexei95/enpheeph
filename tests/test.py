@@ -15,7 +15,7 @@ import torchvision
 import pytorch_lightning
 import torchprof
 
-#from fi import faultdescriptor, injectioncallback
+#from fi import injection.faultdescriptor, injection.injectioncallback
 
 import vgg
 

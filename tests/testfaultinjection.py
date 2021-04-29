@@ -21,8 +21,8 @@ DATASET_DIR = (CURRENT_DIR / '../data').resolve()
 
 sys.path.append(str(SRC_PARENT_DIR))
 
-import src.fi.injectioncallback
-import src.utils
+import src.fi.injection.injectioncallback
+import src.utils.functions
 
 sys.path.append(str(DATA_DIR))
 
@@ -33,7 +33,7 @@ import vgg
 # this flag is used for determinism in PyTorch Lightning Trainer
 DETERMINISTIC_FLAG = True
 # we call this function to enable reproducibility
-src.utils.enable_determinism(DETERMINISTIC_FLAG)
+src.utils.functions.enable_determinism(DETERMINISTIC_FLAG)
 ### REPRODUCIBILITY
 
 
@@ -87,36 +87,36 @@ faults = []
 
 # this is the weight fault, setting all the weights in the last fully-connected
 # layer to zero, covering all the bits
-weight_fault = src.fi.faultdescriptor.FaultDescriptor(
+weight_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
         module_name='model.classifier.0',
-        parameter_type=src.fi.faultdescriptor.ParameterType.Weight,
+        parameter_type=src.fi.injection.faultdescriptor.ParameterType.Weight,
         tensor_index=[slice(0, 1000), slice(0, 6)],
         bit_index=[31],
-        bit_value=src.fi.faultdescriptor.BitValue.StuckAtZero,
+        bit_value=src.fi.injection.faultdescriptor.BitValue.StuckAtZero,
         # default parameter name for weight injection
         parameter_name='weight',
         # default endianness, little, so 31 is MSB
-        endianness=src.fi.faultdescriptor.Endianness.Little,
+        endianness=src.fi.injection.faultdescriptor.Endianness.Little,
 )
 
 # here we have the activation fault on the first conv layer output
-activation_fault = src.fi.faultdescriptor.FaultDescriptor(
+activation_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
         module_name='model.features.0',
-        parameter_type=src.fi.faultdescriptor.ParameterType.Activation,
+        parameter_type=src.fi.injection.faultdescriptor.ParameterType.Activation,
         tensor_index=...,
         bit_index=[0, 10, 32],
-        bit_value=src.fi.faultdescriptor.BitValue.BitFlip,
+        bit_value=src.fi.injection.faultdescriptor.BitValue.BitFlip,
         # we don't need any parameter_name, as we use the whole tensor for
         # the output
         #parameter_name=None,
         # default endianness, little, so 31 is MSB
-        endianness=src.fi.faultdescriptor.Endianness.Little,
+        endianness=src.fi.injection.faultdescriptor.Endianness.Little,
 )
 
 faults.append(weight_fault)
 faults.append(activation_fault)
 
-callback = src.fi.injectioncallback.InjectionCallback(
+callback = src.fi.injection.injectioncallback.InjectionCallback(
         fault_descriptor_list=faults,
         enabled=False,
         auto_model_init_on_test_start=True,
