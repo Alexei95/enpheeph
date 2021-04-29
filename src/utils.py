@@ -82,7 +82,16 @@ def enable_determinism(seed=DEFAULT_PRNG_SEED):
 # this function gather objects from different files in the same directory
 # these objects are squashed together with the update_function, starting from a
 # copy of the default_obj
-def gather_objects(*, path, filter_, package_name, obj_name, default_obj, update_function, glob):
+def gather_objects(
+        *,
+        path,
+        filter_,
+        package_name,
+        obj_name,
+        default_obj,
+        update_function,
+        glob,
+):
     res = copy.deepcopy(default_obj)
     # we update the result to contain all the name-class associations in the
     # package
@@ -99,11 +108,14 @@ def gather_objects(*, path, filter_, package_name, obj_name, default_obj, update
         module_name = '.'.join(m.relative_to(path).with_suffix('').parts)
         # we append the package of __init__ for the import
         # FIX: without this package we would be unable to reach the module using
-        # relative imports or relative imports inside the module would fail because
-        # the module would not know its parent package
+        # relative imports or relative imports inside the module would fail
+        # because the module would not know its parent package
         complete_module_name = package_name + '.' + module_name
         # we must also pass the package when importing
-        module = importlib.import_module(complete_module_name, package=package_name)
+        module = importlib.import_module(
+                complete_module_name,
+                package=package_name
+        )
         res = update_function(res, getattr(module, obj_name, default_obj))
         del module
     return res
