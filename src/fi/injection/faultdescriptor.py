@@ -1,35 +1,10 @@
 import collections.abc
 import dataclasses
-import enum
 import typing
 
-
-class Endianness(enum.Flag):
-    Little = enum.auto()
-    Big = enum.auto()
-
-    MSBAtIndexZero = Big
-    LSBAtIndexZero = Little
-
-
-class ParameterType(enum.Flag):
-    Weight = enum.auto()
-    Activation = enum.auto()
-    Sparse = enum.auto()
-    COO = enum.auto()
-    Index = enum.auto()
-    Value = enum.auto()
-    SparseWeightCOOIndex = Sparse | Weight | COO | Index
-    SparseWeightCOOValue = Sparse | Weight | COO | Value
-    SparseActivationCOOIndex = Sparse | Activation | COO | Index
-    SparseActivationCOOValue = Sparse | Activation | COO | Value
-
-
-class BitValue(enum.Enum):
-    Random = enum.auto()
-    StuckAtZero = enum.auto()
-    StuckAtOne = enum.auto()
-    BitFlip = enum.auto()
+import src.fi.utils.enums.bitvalue
+import src.fi.utils.enums.endianness
+import src.fi.utils.enums.parametertype
 
 
 # this is a container for the module name and the index for where the fault
@@ -43,7 +18,7 @@ class FaultDescriptor(object):
     # name of the module to inject
     module_name: str
     # type of parameter to inject, weight, activation, ...
-    parameter_type: ParameterType
+    parameter_type: src.fi.utils.enums.parametertype.ParameterType
     # index of the tensor to be injected, it will be converted to a tuple
     tensor_index: typing.Union[
             type(Ellipsis),
@@ -70,15 +45,17 @@ class FaultDescriptor(object):
             hash=False
     )
     # type of bit injection to be carried out
-    bit_value: BitValue
+    bit_value: src.fi.utils.enums.bitvalue.BitValue
     # way to interpret the binary representation, as big endian or little
     # endian
     # big endian means the bit index 0 is mapped to the MSB of the binary
     # little endian means the bit index 0 is instead mapped to the LSB
     # by default we use little endian, as this is the most common
     # representation
-    endianness: Endianness = dataclasses.field(
-            init=True, repr=True, default=Endianness.Little)
+    endianness: src.fi.utils.enums.endianness.Endianness = dataclasses.field(
+            init=True,
+            repr=True,
+            default=src.fi.utils.enums.endianness.Endianness.Little)
     # name of the parameter, if the module is a base module (conv, fc),
     # it generally coincides with 'weight' for weight injection
     # not required for activation injection

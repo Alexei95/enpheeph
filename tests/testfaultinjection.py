@@ -22,6 +22,9 @@ DATASET_DIR = (CURRENT_DIR / '../data').resolve()
 sys.path.append(str(SRC_PARENT_DIR))
 
 import src.fi.injection.injectioncallback
+import src.fi.utils.enums.bitvalue
+import src.fi.utils.enums.endianness
+import src.fi.utils.enums.parametertype
 import src.utils.functions
 
 sys.path.append(str(DATA_DIR))
@@ -89,28 +92,28 @@ faults = []
 # layer to zero, covering all the bits
 weight_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
         module_name='model.classifier.0',
-        parameter_type=src.fi.injection.faultdescriptor.ParameterType.Weight,
+        parameter_type=src.fi.utils.enums.parametertype.ParameterType.Weight,
         tensor_index=[slice(0, 1000), slice(0, 6)],
         bit_index=[31],
-        bit_value=src.fi.injection.faultdescriptor.BitValue.StuckAtZero,
+        bit_value=src.fi.utils.enums.bitvalue.BitValue.StuckAtZero,
         # default parameter name for weight injection
         parameter_name='weight',
         # default endianness, little, so 31 is MSB
-        endianness=src.fi.injection.faultdescriptor.Endianness.Little,
+        endianness=src.fi.utils.enums.endianness.Endianness.Little,
 )
 
 # here we have the activation fault on the first conv layer output
 activation_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
-        module_name='model.features.0',
-        parameter_type=src.fi.injection.faultdescriptor.ParameterType.Activation,
-        tensor_index=...,
-        bit_index=[0, 10, 32],
-        bit_value=src.fi.injection.faultdescriptor.BitValue.BitFlip,
-        # we don't need any parameter_name, as we use the whole tensor for
-        # the output
-        #parameter_name=None,
-        # default endianness, little, so 31 is MSB
-        endianness=src.fi.injection.faultdescriptor.Endianness.Little,
+    module_name='model.features.0',
+    parameter_type=src.fi.utils.enums.parametertype.ParameterType.Activation,
+    tensor_index=...,
+    bit_index=[0, 10, 32],
+    bit_value=src.fi.utils.enums.bitvalue.BitValue.BitFlip,
+    # we don't need any parameter_name, as we use the whole tensor for
+    # the output
+    # parameter_name=None,
+    # default endianness, little, so 31 is MSB
+    endianness=src.fi.utils.enums.endianness.Endianness.Little,
 )
 
 faults.append(weight_fault)

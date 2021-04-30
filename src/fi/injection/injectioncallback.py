@@ -1,6 +1,7 @@
 import collections
 import copy
 import dataclasses
+import pathlib
 import typing
 
 import pytorch_lightning
@@ -10,6 +11,7 @@ import src.utils.mixins.dispatcher
 import src.fi.injection.faultdescriptor
 import src.fi.fiutils
 import src.fi.utils.mixins.moduleupdater
+import src.utils.mixins.modulegatherer
 
 
 # we integrate both the basic injection callback together with the dispatcher
@@ -17,8 +19,21 @@ import src.fi.utils.mixins.moduleupdater
 class InjectionCallback(
         pytorch_lightning.Callback,
         src.utils.mixins.dispatcher.Dispatcher,
-        src.fi.utils.mixins.moduleupdater.ModuleUpdater
+        src.fi.utils.mixins.moduleupdater.ModuleUpdater,
+        src.utils.mixins.modulegatherer.ModuleGatherer
 ):
+    TYPES_PACKAGE = 'src.fi.injection.types'
+    # we define the root as the main folder before the current package
+    # hence we have to get the absolute path of the parent, split it into parts
+    # and remove all the elements which are present in the __name__, to have
+    # the original path
+    # then we fix it back by joining the parts
+    ROOT = pathlib.Path(
+            '/'.join(
+                    x for x in pathlib.Path(__file__).resolve().parent.parts
+                    if x not in __name__.split('.')
+            )
+    ).resolve()
 
     # list of all faults to be injected, do not use two active faults on the
     # same module
@@ -27,10 +42,6 @@ class InjectionCallback(
     ] = dataclasses.field(init=True, repr=True, default_factory=[])
     # enable/disable the injection, can be changed with the functions
     enabled: bool = dataclasses.field(init=True, repr=True, default=True)
-    # enable the automatic init of the top module during each on_test_start
-    auto_model_init_on_test_start: bool = dataclasses.field(
-            init=True, repr=True, default=True
-    )
     # enabled faults, if None at init then all the faults are enabled, and they
     # follow the general flag for the callback
     # otherwise it must be a valid sequence of faults
@@ -39,7 +50,16 @@ class InjectionCallback(
             typing.Sequence[
                     'src.fi.injection.faultdescriptor.FaultDescriptor'
             ],
-     ] = dataclasses.field(init=True, repr=False, default=...)
+    ] = dataclasses.field(init=True, repr=False, default=...)
+    # enable the automatic init of the top module during each on_test_start
+    auto_model_init_on_test_start: bool = dataclasses.field(
+            init=True, repr=True, default=True
+    )
+    # if the flag is true, we load the default injection types from the
+    # subfolder
+    auto_load_types: bool = dataclasses.field(
+            init=True, repr=True, default=True
+    )
     # internal flag for checking whether we have set up the modules for
     # injection
     _active: bool = dataclasses.field(init=False, repr=False, default=False)
@@ -62,6 +82,16 @@ class InjectionCallback(
             default_factory=dict)
 
     def __post_init__(self):
+        # before the check we complete the initialization
+        # if the flag is true we auto load all the injection types in the
+        # types subfolder
+        if self.auto_load_types:
+            self.import_submodules(
+                    package_name=self.TYPES_PACKAGE,
+                    package_path=self.TYPES_PACKAGE.replace('.', '/'),
+                    root=self.ROOT,
+            )
+
         # we check all the faults are mapped
         dispatching_dict = self.get_dispatching_dict()
         if not all(
@@ -244,55 +274,3 @@ class InjectionCallback(
             )
 
         return self.enabled_faults
-
-
-
-@InjectionCallback.register_decorator(
-        src.fi.injection.faultdescriptor.ParameterType.Weight
-)
-def init_weight(fault: 'src.fi.injection.faultdescriptor.FaultDescriptor',
-                module: 'torch.nn.Module') -> 'torch.nn.Module':
-    # we get the weights
-    weights = getattr(module, fault.parameter_name)
-    weights = src.fi.fiutils.inject_tensor_fault_pytorch(
-            tensor=weights,
-            fault=fault,
-    )
-    # we set the weights to the updated value
-    setattr(module, fault.parameter_name, weights)
-    # we return the new module
-    return module
-
-
-# we map the class to the activation injection
-@InjectionCallback.register_decorator(
-        src.fi.injection.faultdescriptor.ParameterType.Activation
-)
-# NOTE: we can only have one of the following module per layer, as the parsing
-# of the top module is done statically on the original structure, not on the
-# updated layers
-# NOTE: we cannot have dataclasses go with torch.nn.Module as Module.__init__
-# must be called before the dataclasses init
-# FIXME: implement also backward for fault-aware training
-class ActivationInjectionModule(torch.nn.Module):
-    def __init__(
-                self,
-                fault: 'src.fi.injection.faultdescriptor.FaultDescriptor',
-                module: 'torch.nn.Module'
-
-    ):
-        super().__init__()
-
-        self.fault = fault
-        self.module = module
-
-    def forward(self, x):
-        # we get the exact result from the previous module
-        y_temp = self.module(x)
-        # we inject the faults in the tensor
-        y = src.fi.fiutils.inject_tensor_fault_pytorch(
-                tensor=y_temp,
-                fault=self.fault,
-        )
-        # we return the fault-injected tensor
-        return y

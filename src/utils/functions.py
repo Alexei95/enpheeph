@@ -79,47 +79,6 @@ def enable_determinism(seed=DEFAULT_PRNG_SEED):
         except AttributeError:
             pass
 
-# this function gather objects from different files in the same directory
-# these objects are squashed together with the update_function, starting from a
-# copy of the default_obj
-def gather_objects(
-        *,
-        path,
-        filter_,
-        package_name,
-        obj_name,
-        default_obj,
-        update_function,
-        glob,
-):
-    res = copy.deepcopy(default_obj)
-    # we update the result to contain all the name-class associations in the
-    # package
-    # NOTE: depending on the glob pattern we can allow recursive exploration
-    for m in pathlib.Path(path).glob(glob):
-        # if the file is __init__.py or a directory we skip
-        if m.name in filter_ or m.is_dir():
-            continue
-        # we get the full name removing the suffix
-        # BUG: without relativeness consideration, if we have sub-directories
-        # we cannot import them as we consider only the latest script name
-        # FIX: use relative_to(path) and '.'.join(parts) to get the total name
-        # for the module, which must be still reachable via __init__ imports
-        module_name = '.'.join(m.relative_to(path).with_suffix('').parts)
-        # we append the package of __init__ for the import
-        # FIX: without this package we would be unable to reach the module using
-        # relative imports or relative imports inside the module would fail
-        # because the module would not know its parent package
-        complete_module_name = package_name + '.' + module_name
-        # we must also pass the package when importing
-        module = importlib.import_module(
-                complete_module_name,
-                package=package_name
-        )
-        res = update_function(res, getattr(module, obj_name, default_obj))
-        del module
-    return res
-
 
 # this function is used as an external function for joining dict copies
 # together, it is even compatible with Python 2
