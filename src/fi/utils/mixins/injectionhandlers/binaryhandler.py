@@ -8,7 +8,7 @@ import src.fi.utils.enums.endianness
 # this class is the base as it handles the injection on a binary string
 class BinaryHandler(object):
     @classmethod
-    def inject_fault(
+    def inject_fault_single(
             cls,
             binary: str,
             bit_index: typing.Sequence[int],
@@ -35,5 +35,18 @@ class BinaryHandler(object):
         return ''.join(injected_binary)
 
     @classmethod
-    def generate_fault_mask(cls):
-        pass
+    def inject_fault_multi(cls,
+            binaries: typing.Sequence[str],
+            bit_index: typing.Sequence[int],
+            endianness: src.fi.utils.enums.endianness.Endianness,
+            bit_value: src.fi.utils.enums.bitvalue.BitValue,
+    ) -> str:
+        injected_binaries = []
+        for binary in binaries:
+            injected_binaries.append(cls.inject_fault_single(
+                    binary=binary,
+                    bit_index=bit_index,
+                    endianness=endianness,
+                    bit_value=bit_value,
+            ))
+        return injected_binaries

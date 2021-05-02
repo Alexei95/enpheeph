@@ -33,7 +33,7 @@ class NumpyBinaryConverter(object):
     TEMPLATE_STRING = '{{:0{}b}}'
 
     @classmethod
-    def numpy_to_binary(cls, element: numpy.ndarray):
+    def single_numpy_to_binary(cls, element: numpy.ndarray) -> str:
         # if we have different than 1 element, we raise ValueError
         if element.size != 1:
             # FIXME: check which error to raise
@@ -58,6 +58,14 @@ class NumpyBinaryConverter(object):
         )
 
         return str_bin_value
+
+    # the outcome will be flattened, to be compatible with Python lists
+    @classmethod
+    def numpy_to_binary(cls, element: numpy.ndarray) -> typing.List[str]:
+        binaries = []
+        for el in element.flatten():
+            binaries.append(cls.single_numpy_to_binary(el))
+        return binaries
 
     # we need the numpy dtype to return the data in
     # the returned array has () shape, it is a single element
