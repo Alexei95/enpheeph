@@ -2,9 +2,10 @@ import copy
 import typing
 
 
-class ModuleUpdater(object):
-    @staticmethod
+class PyTorchModuleUpdater(object):
+    @classmethod
     def update_module_from_module_list(
+            cls,
             target_module: 'torch.nn.Module',
             module_list: typing.Dict[
                     str,
@@ -22,7 +23,7 @@ class ModuleUpdater(object):
             module_to_be_updated = module_name.split('.')[-1]
             parent_module_name = '.'.join(module_name.split('.')[:-1])
 
-            parent_module = ModuleUpdater.get_module(
+            parent_module = cls.get_module(
                     parent_module_name,
                     target_module
             )
@@ -36,8 +37,9 @@ class ModuleUpdater(object):
 
     # this function is used to get a target module from its name, using as
     # root the module which is passed as argument
-    @staticmethod
+    @classmethod
     def get_module(
+            cls,
             target_module_name: str,
             module: 'torch.nn.Module',
             ):

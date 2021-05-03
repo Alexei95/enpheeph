@@ -9,7 +9,7 @@ import torch
 import src.dispatcherabc
 import src.fi.injection.faultdescriptor
 import src.fi.fiutils
-import src.fi.utils.mixins.moduleupdater
+import src.fi.utils.mixins.pytorchmoduleupdater
 
 
 # we integrate both the basic injection callback together with the dispatcher
@@ -17,7 +17,7 @@ import src.fi.utils.mixins.moduleupdater
 class InjectionCallback(
         pytorch_lightning.Callback,
         src.utils.mixins.dispatcher.Dispatcher,
-        src.fi.utils.mixins.moduleupdater.ModuleUpdater
+        src.fi.utils.mixins.pytorchmoduleupdater.PyTorchModuleUpdater
 ):
 
     # list of all faults to be injected, do not use two active faults on the
@@ -103,7 +103,7 @@ class InjectionCallback(
             # if we are set for auto-init, then we set up the model
             if self.auto_model_init_on_test_start:
                 self.init_model(pl_module)
-            # we use the ModuleUpdater static method to load all the fault
+            # we use the PyTorchModuleUpdater static method to load all the fault
             # injection modules in the current pl_module
             self.update_module_from_module_list(
                 pl_module,
@@ -122,7 +122,7 @@ class InjectionCallback(
     def on_test_end(self, trainer, pl_module):
         # if we are active
         if self._active:
-            # we use the ModuleUpdater static method to reload all the backup
+            # we use the PyTorchModuleUpdater static method to reload all the backup
             # modules in the current pl_module
             self.update_module_from_module_list(
                 pl_module,
@@ -143,7 +143,7 @@ class InjectionCallback(
         # recursive list to avoid going through a double for loop
         # we consider only enabled faults
         for fault in self.enabled_faults:
-            # we use the get_module function from the ModuleUpdater class
+            # we use the get_module function from the PyTorchModuleUpdater class
             module = self.get_module(fault.module_name, top_module)
             self.init_module(fault, module)
 

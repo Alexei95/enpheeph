@@ -135,7 +135,7 @@ class FaultDescriptor(object):
                                 typing.Union[
                                         int, slice, type(Ellipsis)]]],
                 tensor_shape: typing.Sequence[int],
-                ) -> typing.Sequence[typing.Union[int, slice]]:
+                ) -> typing.Tuple[typing.Union[int, slice]]:
         # if we have a single ellipsis, without any container, we have a slice
         # covering the whole tensor shape
         if isinstance(tensor_index, type(Ellipsis)):
