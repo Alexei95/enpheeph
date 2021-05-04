@@ -107,7 +107,7 @@ class NumpyConverter(object):
         # we set the indices to the actual numpy_binary value
         # this works as setting a slice of a tensor with a single value
         # broadcasts it onto the whole slice
-        array[index] = fill_value
+        array[index] = numpy_binary
 
         return array
 
