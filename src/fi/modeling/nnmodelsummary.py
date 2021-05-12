@@ -33,8 +33,9 @@ class MainLayerFunctionEnum(enum.Enum):
         try:
             return cls.__members__[string]
         except KeyError:
+            # use qualname instead of name for classes, to allow nested classes
             raise ValueError(
-                    f'{string} is not a valid {cls.__name__} enum value'
+                    f'{string} is not a valid {cls.__qualname__} enum value'
                     )
 
 

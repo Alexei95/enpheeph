@@ -93,8 +93,8 @@ faults = []
 weight_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
         module_name='model.classifier.0',
         parameter_type=src.fi.utils.enums.parametertype.ParameterType.Weight,
-        tensor_index=[slice(0, 1000), slice(0, 6)],
-        bit_index=[31],
+        tensor_index=[0, 0],
+        bit_index=[0],
         bit_value=src.fi.utils.enums.bitvalue.BitValue.StuckAtZero,
         # default parameter name for weight injection
         parameter_name='weight',

@@ -64,10 +64,13 @@ class BinaryHandler(object):
         # if we are using little endian we invert the index, as the LSB is
         # at the end of the list
         if endianness == endianness.Little:
-            index = (len(injected_binary) - 1) - index
+            bit_index = [
+                    (bit_width - 1) - index
+                    for index in bit_index
+            ]
 
         if bit_value in (bit_value.StuckAtOne, bit_value.BitFlip):
-            binary_mask = '0' * bit_width
+            binary_mask = ['0'] * bit_width
             for index in bit_index:
                 binary_mask[index] = '1'
             if bit_value == bit_value.StuckAtOne:
@@ -77,14 +80,14 @@ class BinaryHandler(object):
                 binary_mask_op = src.fi.utils.enums.\
                         binaryfaultmaskop.BinaryFaultMaskOp.XOR
         elif bit_value == bit_value.StuckAtZero:
-            binary_mask = '1' * bit_width
+            binary_mask = ['1'] * bit_width
             for index in bit_index:
                 binary_mask[index] = '0'
             binary_mask_op = \
-                    src.fi.utils.enums.binaryfaultmaskop.BinaryFaultMaskOp.OR
+                    src.fi.utils.enums.binaryfaultmaskop.BinaryFaultMaskOp.AND
         else:
             raise ValueError('Unsupported injection type.')
         return src.fi.utils.dataclasses.binaryfaultmask.BinaryFaultMask(
-            mask=binary_mask,
+            mask=''.join(binary_mask),
             operation=binary_mask_op,
         )

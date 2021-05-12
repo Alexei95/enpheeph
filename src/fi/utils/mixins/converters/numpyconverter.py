@@ -95,8 +95,10 @@ class NumpyConverter(object):
             index: typing.Sequence[typing.Union[int, slice]],
             shape: typing.Sequence[int],
             fill_value: numpy.ndarray = numpy.array(0),
+            # device is required to match the same interface as cupy
+            device: typing.Any = None,
     ):
-        # we convert the fill_value to the correct dtype
+        # we convert the fill_value to a numpy array with the correct dtype
         fill_value = numpy.array(fill_value, dtype=dtype)
 
         # we convert the mask to a numpy value
@@ -118,3 +120,46 @@ class NumpyConverter(object):
     @classmethod
     def get_numpy_dtype(cls, element: numpy.ndarray) -> numpy.dtype:
         return element.dtype
+
+    @classmethod
+    def expand_bit_to_numpy_dtype(
+            cls,
+            bit: bool,
+            dtype: numpy.dtype,
+            # device is required to match the same interface as cupy
+            device: typing.Any = None,
+    ) -> numpy.ndarray:
+        # we transform the bit into an integer, after checking its boolean
+        # value
+        bit = int(bool(bit))
+
+        # we get the bitwidth
+        bitwidth = int(cls.NUMPY_DATA_WIDTH_MAPPING[dtype])
+        # we need the unsigned dtype over integers
+        binary_dtype = cls.NUMPY_DATA_CONVERSION_MAPPING[dtype]
+
+        # we create the binary array with a different dtype, from the
+        # conversion list, so that we can set the bits properly using
+        # Python integers
+        # here the array is initialized to all 1s or 0s
+        binary_array = numpy.array(bit * 2 ** bitwidth - 1, dtype=binary_dtype)
+
+        # we view it with the final dtype before returning it
+        return binary_array.view(dtype)
+
+    # we need this class to convert a numpy array to an array which can be
+    # OR/AND/XOR in a bitwise manner, which is a uint representation
+    @classmethod
+    def numpy_dtype_to_bitwise_numpy(cls, element: numpy.ndarray):
+        dtype = cls.get_numpy_dtype(element)
+        return element.view(cls.NUMPY_DATA_CONVERSION_MAPPING[dtype])
+
+    # we need this class to convert a numpy array to an array which can be
+    # OR/AND/XOR in a bitwise manner, which is a uint representation
+    @classmethod
+    def bitwise_numpy_to_numpy_dtype(
+            cls,
+            element: numpy.ndarray,
+            dtype: numpy.dtype,
+    ):
+        return element.view(dtype)

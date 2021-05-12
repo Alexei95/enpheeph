@@ -40,8 +40,10 @@ class JSONConverter(json.JSONEncoder):
     @classmethod
     def register_class(cls, class_, encode_func, decode_func):
         cls.EncoderList[class_] = encode_func
-        cls.DecoderList[class_.__name__] = decode_func
-        cls.ClassNameAssociation[class_] = class_.__name__
+        # use qualname instead of name for classes, to allow nested classes
+        cls.DecoderList[class_.__qualname__] = decode_func
+        # use qualname instead of name for classes, to allow nested classes
+        cls.ClassNameAssociation[class_] = class_.__qualname__
 
     # this function can be used as a wrapper on the class, assuming there are
     # two methods to_json and from_json to convert it
@@ -53,7 +55,8 @@ class JSONConverter(json.JSONEncoder):
     @classmethod
     def deregister_class(cls, class_):
         del cls.EncoderList[class_]
-        del cls.DecoderList[class_.__name__]
+        # use qualname instead of name for classes, to allow nested classes
+        del cls.DecoderList[class_.__qualname__]
         del cls.ClassNameAssociation[class_]
 
     # this is the encoder, to map correctly the registered classes
@@ -65,7 +68,8 @@ class JSONConverter(json.JSONEncoder):
             # since we are working with instances, we get the class defining
             # the object and we get its name, which should provide correct
             # results for both Enums and standard classes
-            return {"__cls__": obj.__class__.__name__, **encoded_obj}
+            # use qualname instead of name for classes, to allow nested classes
+            return {"__cls__": obj.__class__.__qualname__, **encoded_obj}
         return json.JSONEncoder.default(self, obj)
 
     # this is the decoder, to convert back into Python objects

@@ -1,6 +1,7 @@
 import abc
 import copy
 import functools
+import inspect
 import typing
 
 
@@ -29,9 +30,10 @@ class Dispatcher(object):
 
     # this is the static method to get the name of the callable
     # it is a fallback if the overloading of the virtual method is not done
+    # use qualname instead of name for classes, to allow nested classes
     @staticmethod
     def callable_name_fallback(callable_: typing.Callable):
-        return callable_.__name__
+        return callable_.__qualname__
 
     # this method should be overloaded to customize the dispatcher
     @staticmethod
