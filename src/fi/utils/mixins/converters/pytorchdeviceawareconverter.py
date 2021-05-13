@@ -91,3 +91,8 @@ class PyTorchDeviceAwareConverter(
         cls._deregister_libraries()
 
         return out
+
+    # we can use this method for checking the availability of CUDA
+    @classmethod
+    def cuda_support(cls):
+        return cls.GPU_DEVICE is not None
