@@ -11,11 +11,17 @@ class PyTorchDeviceAwareConverter(
         src.utils.mixins.dispatcher.Dispatcher,
         src.fi.utils.mixins.converters.pytorchconverter.PyTorchConverter,
 ):
-    GPU_DEVICE = torch.device('cuda')
+    # if cuda is not available we set the devices to a null value
+    if torch.cuda.is_avalaible():
+        GPU_DEVICE = torch.device('cuda')
+        CUPY_DEVICE = GPU_DEVICE.type
+    else:
+        GPU_DEVICE = None
+        CUPY_DEVICE = None
+
     CPU_DEVICE = torch.device('cpu')
 
     NUMPY_DEVICE = CPU_DEVICE.type
-    CUPY_DEVICE = GPU_DEVICE.type
 
     NUMPY_STRING = 'numpy'
     CUPY_STRING = 'cupy'
