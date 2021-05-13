@@ -3,11 +3,13 @@ import typing
 
 import torch
 
+import src.utils.mixins.classutils
 import src.utils.mixins.dispatcher
 import src.fi.utils.mixins.converters.pytorchconverter
 
 
 class PyTorchDeviceAwareConverter(
+        src.utils.mixins.classutils.ClassUtils,
         src.utils.mixins.dispatcher.Dispatcher,
         src.fi.utils.mixins.converters.pytorchconverter.PyTorchConverter,
 ):
@@ -26,6 +28,7 @@ class PyTorchDeviceAwareConverter(
     NUMPY_STRING = 'numpy'
     CUPY_STRING = 'cupy'
 
+    # FIXME: check whether these methods can be moved
     # this method is used to remove all the associations after calling a
     # classmethod
     # in our case we cover the gpu and cpu devices
@@ -40,14 +43,6 @@ class PyTorchDeviceAwareConverter(
     def _deregister_libraries(cls):
         cls.deregister(cls.NUMPY_STRING)
         cls.deregister(cls.CUPY_STRING)
-
-    # FIXME: check where to put this
-    # this method returns the main library (the first module) associated to an
-    # object, by going through its class, the module and then returning the
-    # first module name
-    @classmethod
-    def get_main_library_from_object(cls, object: typing.Any):
-        return object.__class__.__module__.split('.')[0]
 
     # this method converts to a numpy-like library a PyTorch tensor
     # it takes into account the device, and forces it to be in-place
