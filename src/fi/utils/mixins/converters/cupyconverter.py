@@ -131,7 +131,7 @@ class CupyConverter(object):
 
     @classmethod
     def get_cupy_bitwidth(cls, element: cupy.ndarray) -> int:
-        return int(cls.CUPY_DATA_WIDTH_MAPPING[element.dtype])
+        return int(cls.CUPY_DATA_WIDTH_MAPPING[cls.get_cupy_dtype(element)])
 
     @classmethod
     def get_cupy_dtype(cls, element: cupy.ndarray) -> cupy.dtype:
@@ -190,3 +190,8 @@ class CupyConverter(object):
             dtype: cupy.dtype,
     ):
         return element.view(dtype)
+
+    # we can use this method for checking the availability of CUDA
+    @classmethod
+    def cuda_support(cls):
+        return cupy is not None and cupy.cuda.is_available()

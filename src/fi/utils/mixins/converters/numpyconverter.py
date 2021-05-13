@@ -71,7 +71,13 @@ class NumpyConverter(object):
     # we need the numpy dtype to return the data in
     # the returned array has () shape, it is a single element
     @classmethod
-    def binary_to_numpy(cls, binary: str, dtype: numpy.dtype) -> numpy.ndarray:
+    def binary_to_numpy(
+            cls,
+            binary: str,
+            dtype: numpy.dtype,
+            # for compatibility with cupy interface
+            device: typing.Any = None,
+    ) -> numpy.ndarray:
         # we need the converted data type, to convert it back to the original
         conv_dtype = cls.NUMPY_DATA_CONVERSION_MAPPING[dtype]
 
@@ -115,7 +121,7 @@ class NumpyConverter(object):
 
     @classmethod
     def get_numpy_bitwidth(cls, element: numpy.ndarray) -> int:
-        return int(cls.NUMPY_DATA_WIDTH_MAPPING[element.dtype])
+        return int(cls.NUMPY_DATA_WIDTH_MAPPING[cls.get_numpy_dtype(element)])
 
     @classmethod
     def get_numpy_dtype(cls, element: numpy.ndarray) -> numpy.dtype:
