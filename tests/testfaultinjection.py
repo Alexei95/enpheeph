@@ -133,7 +133,7 @@ trainer = pytorch_lightning.Trainer(
     callbacks=[callback],
     deterministic=DETERMINISTIC_FLAG,
     # with GPU it is very slow due to the memory transfers
-    #gpus=[0],
+    gpus=[0],
     )
 
 print('\n\nBaseline, no injection\n')

@@ -14,7 +14,7 @@ class PyTorchDeviceAwareConverter(
         src.fi.utils.mixins.converters.pytorchconverter.PyTorchConverter,
 ):
     # if cuda is not available we set the devices to a null value
-    if torch.cuda.is_avalaible():
+    if torch.cuda.is_available():
         GPU_DEVICE = torch.device('cuda')
         CUPY_DEVICE = GPU_DEVICE.type
     else:
@@ -87,7 +87,37 @@ class PyTorchDeviceAwareConverter(
 
         return out
 
+    # this method converts the device, returning 'cpu' if it is not on CUDA
+    @classmethod
+    def pytorch_device_to_numpy_like_device(
+            cls,
+            device: torch.device
+    ) -> typing.Union['cupy.device.Device', str]:
+        if device == cls.CPU_DEVICE:
+            return 'cpu'
+        else:
+            return cls.pytorch_device_to_cupy_device(device)
+
     # we can use this method for checking the availability of CUDA
     @classmethod
     def cuda_support(cls):
         return cls.GPU_DEVICE is not None
+
+    @classmethod
+    def pytorch_dtype_to_numpy_like_dtype(
+            cls,
+            dtype: torch.dtype,
+            library: str,
+    ) -> typing.Union['numpy.dtype', 'cupy.dtype']:
+        cls.register(cls.CUPY_STRING, cls.pytorch_dtype_to_cupy_dtype)
+        cls.register(cls.NUMPY_STRING, cls.pytorch_dtype_to_numpy_dtype)
+
+        # we dispatch the conversion to the correct handler
+        out = cls.dispatch_call(
+                library,
+                dtype=dtype,
+        )
+
+        cls._deregister_libraries()
+
+        return out

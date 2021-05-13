@@ -7,8 +7,7 @@ import src.fi.injection.injectioncallback
 import src.fi.utils.enums.parametertype
 import src.fi.utils.enums.binaryfaultmaskop
 import src.fi.utils.mixins.injectionhandlers.binaryhandler
-import src.fi.utils.mixins.converters.cupyconverter
-import src.fi.utils.mixins.converters.numpyconverter
+import src.fi.utils.mixins.converters.numpylikeconverter
 import src.fi.utils.mixins.converters.pytorchdeviceawareconverter
 
 
@@ -17,8 +16,7 @@ class WeightInjection(
         # get MRO error
         # src.utils.mixins.dispatcher.Dispatcher,
         src.fi.utils.mixins.injectionhandlers.binaryhandler.BinaryHandler,
-        src.fi.utils.mixins.converters.cupyconverter.CupyConverter,
-        src.fi.utils.mixins.converters.numpyconverter.NumpyConverter,
+        src.fi.utils.mixins.converters.numpylikeconverter.NumpyLikeConverter,
         src.fi.utils.mixins.converters.
                 pytorchdeviceawareconverter.PyTorchDeviceAwareConverter,
 ):
@@ -30,6 +28,18 @@ class WeightInjection(
         # we get the weights
         weights = getattr(module, fault.parameter_name)
 
+        # we convert the weights to numpy-like
+        numpy_like_weights = cls.pytorch_to_numpy_like(weights)
+        # we need the associated info
+        numpy_like_weights_dtype = cls.get_numpy_like_dtype(
+                element=numpy_like_weights,
+        )
+        # we convert the dtypes to uint... to have bitwise operations
+        numpy_like_weights_bitwise = \
+            cls.numpy_like_dtype_to_bitwise_numpy_like(
+                    element=numpy_like_weights,
+            )
+
         # we generate the mask for the weights
         # here we only need the tensor shape, the dtype and the bitwidth
         tensor_shape = cls.get_pytorch_shape(weights)
@@ -37,6 +47,19 @@ class WeightInjection(
         bitwidth = cls.get_pytorch_bitwidth(weights)
         device = cls.get_pytorch_device(weights)
         device_type = cls.get_pytorch_device_type(device)
+
+        # we convert the previous data to numpy-like objects, for use with the
+        # mask
+        numpy_like_string = cls.get_numpy_like_string(
+                object_=numpy_like_weights,
+        )
+        numpy_like_dtype = cls.pytorch_dtype_to_numpy_like_dtype(
+                dtype=dtype,
+                library=numpy_like_string,
+        )
+        numpy_like_device = cls.pytorch_device_to_numpy_like_device(
+                device=device,
+        )
 
         # then we create the masks from the bit index
         binary_mask = cls.generate_fault_mask(
@@ -48,41 +71,8 @@ class WeightInjection(
                 endianness=fault.endianness,
                 bit_value=fault.bit_value,
         )
-
-        # we convert it into a numpy-like object mask
-        # using the correct fill_value
-        # to automatically do this depending on the device, we use the
-        # classmethods inherited from PyTorchDeviceAwareConverter
-        # first we use the call to get the converted dtype for the intermediate
-        # library
-        cls.register(cls.CUPY_DEVICE, cls.pytorch_dtype_to_cupy_dtype)
-        cls.register(cls.NUMPY_DEVICE, cls.pytorch_dtype_to_numpy_dtype)
-        # we dispatch the call
-        numpy_like_dtype = cls.dispatch_call(
-                device_type,
-                dtype=dtype,
-        )
-        # we clear the associations
-        cls._deregister_devices()
-
-        # we need a dispatcher for the device conversion
-        # here we do not use Numpy, so it will be a lambda returning the input
-        # as the output will not be used
-        cls.register(cls.CUPY_DEVICE, cls.pytorch_device_to_cupy_device)
-        cls.register(cls.NUMPY_DEVICE, lambda x: x)
-        # the device is required to create the array in the correct position
-        # so that it can be converted to PyTorch on the correct GPU, without
-        # memory transfers
-        numpy_like_device = cls.dispatch_call(device_type, device)
-        # we clear the associations
-        cls._deregister_devices()
-
-        # we create a new dispatcher for the binary mask broadcast
-        cls.register(cls.CUPY_DEVICE, cls.binary_to_cupy_broadcast)
-        cls.register(cls.NUMPY_DEVICE, cls.binary_to_numpy_broadcast)
-        # we call the dispatcher with the current device
-        numpy_like_mask = cls.dispatch_call(
-                device_type,
+        # we convert the mask to numpy and we get the required info
+        numpy_like_mask = cls.binary_to_numpy_like_broadcast(
                 binary=binary_mask.mask,
                 dtype=numpy_like_dtype,
                 index=fault.tensor_index_conversion(
@@ -90,45 +80,16 @@ class WeightInjection(
                         tensor_shape=tensor_shape,
                 ),
                 shape=tensor_shape,
+                library=numpy_like_string,
                 fill_value=binary_mask.fill_value,
                 device=numpy_like_device,
         )
-        # we clear the associations
-        cls._deregister_devices()
-
-        # we convert the weights to numpy-like
-        numpy_like_weights = cls.pytorch_to_numpy_like(weights)
-
-        # we need the original dtypes for both the numpy-like weights and mask
-        # register classes
-        cls.register(cls.CUPY_DEVICE, cls.get_cupy_dtype)
-        cls.register(cls.NUMPY_DEVICE, cls.get_numpy_dtype)
-        # we get the dtypes
-        numpy_like_weights_dtype = cls.dispatch_call(
-                device_type,
-                element=numpy_like_weights,
-        )
-        numpy_like_mask_dtype = cls.dispatch_call(
-                device_type,
+        numpy_like_mask_dtype = cls.get_numpy_like_dtype(
                 element=numpy_like_mask,
         )
-        # we clear the associations
-        cls._deregister_devices()
-
-        # we register the classes for converting the numpy-like weights
-        cls.register(cls.CUPY_DEVICE, cls.cupy_dtype_to_bitwise_cupy)
-        cls.register(cls.NUMPY_DEVICE, cls.numpy_dtype_to_bitwise_numpy)
-        # we convert the dtypes to uint... to have bitwise operations
-        numpy_like_weights_bitwise = cls.dispatch_call(
-                device_type,
-                element=numpy_like_weights,
-        )
-        numpy_like_mask_bitwise = cls.dispatch_call(
-                device_type,
+        numpy_like_mask_bitwise = cls.numpy_like_dtype_to_bitwise_numpy_like(
                 element=numpy_like_mask,
         )
-        # we clear the associations
-        cls._deregister_devices()
 
         # we use the mask in the other backend, as otherwise we would get
         # reinterpreted with PyTorch
@@ -154,33 +115,33 @@ class WeightInjection(
                 in_place=True,
         )
         # we clear the associations
-        cls._deregister_mask_types()
+        cls.deregister(
+                src.fi.utils.enums.binaryfaultmaskop.BinaryFaultMaskOp.AND
+        )
+        cls.deregister(
+                src.fi.utils.enums.binaryfaultmaskop.BinaryFaultMaskOp.OR
+        )
+        cls.deregister(
+                src.fi.utils.enums.binaryfaultmaskop.BinaryFaultMaskOp.XOR
+        )
 
-        # now we convert back to the original dtypes and finally to PyTorch
-        # we register the classes for converting the numpy-like weights
-        cls.register(cls.CUPY_DEVICE, cls.bitwise_cupy_to_cupy_dtype)
-        cls.register(cls.NUMPY_DEVICE, cls.bitwise_numpy_to_numpy_dtype)
         # we convert back
         # also for the injected ones
         # even though most probably it is in the same memory area as the
         # original weights
-        injected_numpy_like_weights = cls.dispatch_call(
-                device_type,
+        injected_numpy_like_weights = \
+            cls.bitwise_numpy_like_to_numpy_like_dtype(
                 element=injected_numpy_like_weights_bitwise,
                 dtype=numpy_like_weights_dtype,
-        )
-        numpy_like_weights = cls.dispatch_call(
-                device_type,
+            )
+        numpy_like_weights = cls.bitwise_numpy_like_to_numpy_like_dtype(
                 element=numpy_like_weights_bitwise,
                 dtype=numpy_like_weights_dtype,
         )
-        numpy_like_mask = cls.dispatch_call(
-                device_type,
+        numpy_like_mask = cls.bitwise_numpy_like_to_numpy_like_dtype(
                 element=numpy_like_mask_bitwise,
                 dtype=numpy_like_mask_dtype
         )
-        # we clear the associations
-        cls._deregister_devices()
 
         # conversion from numpy-like to PyTorch
         injected_weights = cls.numpy_like_to_pytorch(
@@ -192,18 +153,6 @@ class WeightInjection(
         setattr(module, fault.parameter_name, torch.nn.Parameter(injected_weights))
         # we return the new module
         return module
-
-    @classmethod
-    def _deregister_mask_types(cls):
-        cls.deregister(
-                src.fi.utils.enums.binaryfaultmaskop.BinaryFaultMaskOp.AND
-        )
-        cls.deregister(
-                src.fi.utils.enums.binaryfaultmaskop.BinaryFaultMaskOp.OR
-        )
-        cls.deregister(
-                src.fi.utils.enums.binaryfaultmaskop.BinaryFaultMaskOp.XOR
-        )
 
     @classmethod
     def numpy_like_and_mask_injection(

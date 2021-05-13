@@ -16,7 +16,12 @@ class NumpyLikeConverter(
         src.fi.utils.mixins.converters.cupyconverter.CupyConverter,
 ):
     NUMPY_STRING = 'numpy'
-    CUPY_STRING = 'cupy' if cls.cuda_support() else None
+    CUPY_STRING = (
+            'cupy'
+            if src.fi.utils.mixins.converters.cupyconverter.
+                    CupyConverter.cuda_support()
+            else None
+    )
 
     # FIXME: check whether these methods can be moved
     # this method is used to remove all the associations after calling a
@@ -92,7 +97,7 @@ class NumpyLikeConverter(
     # given also the overall tensor shape
     # fill_value is used to fill the non-selected values in the tensor
     @classmethod
-    def binary_to_numpy_broadcast(
+    def binary_to_numpy_like_broadcast(
             cls,
             binary: str,
             dtype: typing.Union['numpy.dtype', 'cupy.dtype'],
@@ -102,7 +107,7 @@ class NumpyLikeConverter(
             # here we use an integer but a custom ndarray may preserve more
             # information
             fill_value: typing.Union['numpy.ndarray', 'cupy.ndarray'] = 0,
-            device: cupy.cuda.Device = None,
+            device: 'cupy.cuda.Device' = None,
     ):
         cls.register(cls.NUMPY_STRING, cls.binary_to_numpy_broadcast)
         cls.register(cls.CUPY_STRING, cls.binary_to_cupy_broadcast)
@@ -204,9 +209,7 @@ class NumpyLikeConverter(
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
                 cls.get_main_library_from_object(element),
-                bit=bit,
-                dtype=dtype,
-                device=device,
+                element=element,
         )
 
         cls._deregister_libraries()
@@ -229,6 +232,25 @@ class NumpyLikeConverter(
                 cls.get_main_library_from_object(element),
                 element=element,
                 dtype=dtype,
+        )
+
+        cls._deregister_libraries()
+
+        return out
+
+    # this method takes an object from numpy/cupy and returns the corresponding
+    # string, which is defined from NUMPY_STRING or CUPY_STRING
+    # NOTE: this method could be substituted with get_main_library_from_object,
+    # but in this case it is more generic, at least for now
+    @classmethod
+    def get_numpy_like_string(cls, object_: typing.Any) -> str:
+        cls.register(cls.NUMPY_STRING, lambda x: cls.NUMPY_STRING)
+        cls.register(cls.CUPY_STRING, lambda x: cls.CUPY_STRING)
+
+        # we dispatch the conversion to the correct handler
+        out = cls.dispatch_call(
+                cls.get_main_library_from_object(object_),
+                object_,
         )
 
         cls._deregister_libraries()
