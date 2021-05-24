@@ -92,7 +92,7 @@ class PyTorchDeviceAwareConverter(
     def pytorch_device_to_numpy_like_device(
             cls,
             device: torch.device
-    ) -> typing.Union['cupy.device.Device', str]:
+    ) -> typing.Union['cupy.cuda.Device', str]:
         if device == cls.CPU_DEVICE:
             return 'cpu'
         else:

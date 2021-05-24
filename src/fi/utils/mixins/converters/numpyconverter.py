@@ -100,10 +100,10 @@ class NumpyConverter(object):
             dtype: numpy.dtype,
             index: typing.Sequence[typing.Union[int, slice]],
             shape: typing.Sequence[int],
-            fill_value: numpy.ndarray = numpy.array(0),
+            fill_value: numpy.ndarray = 0,
             # device is required to match the same interface as cupy
             device: typing.Any = None,
-    ):
+    ) -> numpy.ndarray:
         # we convert the fill_value to a numpy array with the correct dtype
         fill_value = numpy.array(fill_value, dtype=dtype)
 
@@ -111,7 +111,7 @@ class NumpyConverter(object):
         numpy_binary = cls.binary_to_numpy(binary=binary, dtype=dtype)
 
         # we create a new tensor using the given shape and the fill_value
-        array = numpy.full(shape, fill_value=fill_value)
+        array = numpy.full(shape, dtype=dtype, fill_value=fill_value)
         # we set the indices to the actual numpy_binary value
         # this works as setting a slice of a tensor with a single value
         # broadcasts it onto the whole slice
@@ -169,3 +169,42 @@ class NumpyConverter(object):
             dtype: numpy.dtype,
     ):
         return element.view(dtype)
+
+    # this method gets the bitwidth associated to the dtype
+    @classmethod
+    def get_numpy_bitwidth_from_dtype(cls, dtype: numpy.dtype) -> int:
+        return int(cls.NUMPY_DATA_WIDTH_MAPPING[dtype])
+
+    # this classmethod tries to convert a generic element to an array of a
+    # specified type
+    @classmethod
+    def to_numpy_array(
+            cls,
+            element: typing.Any,
+            dtype: numpy.dtype,
+            # for compatibility with cupy
+            device = None,
+    ) -> numpy.ndarray:
+        if isinstance(element, numpy.ndarray):
+            return element.view(dtype)
+        else:
+            return numpy.array(element, dtype=dtype)
+
+    # here we can broadcast a value in single-shaped array to a full shape
+    # covering the non-indexed values with a determined fill_value
+    @classmethod
+    def numpy_broadcast(
+            element: numpy.ndarray,
+            index: typing.Sequence[typing.Union[int, slice]],
+            shape: typing.Sequence[int],
+            fill_value: numpy.ndarray = 0,
+    ) -> numpy.ndarray:
+        dtype = cls.get_numpy_dtype(element)
+        # we create a new tensor using the given shape and the fill_value
+        array = numpy.full(shape, dtype=dtype, fill_value=fill_value)
+        # we set the indices to the actual numpy_binary value
+        # this works as setting a slice of a tensor with a single value
+        # broadcasts it onto the whole slice
+        array[index] = element
+
+        return array

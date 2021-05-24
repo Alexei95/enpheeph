@@ -1,7 +1,7 @@
 import enum
 
 
-class BinaryFaultMaskOp(enum.Enum):
+class FaultMaskOp(enum.Enum):
     XOR = enum.auto()
     AND = enum.auto()
     OR = enum.auto()

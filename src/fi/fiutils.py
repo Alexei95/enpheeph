@@ -72,13 +72,13 @@ def inject_fault_binary(binary: str,
         if fault.endianness == fault.endianness.Little:
             index = (len(injected_binary) - 1) - index
 
-        if fault.bit_value == src.fi.injection.faultdescriptor.BitValue.StuckAtOne:
+        if fault.bit_value == fault.bit_value.StuckAtOne:
             injected_binary[index] = "1"
-        elif fault.bit_value == src.fi.injection.faultdescriptor.BitValue.StuckAtZero:
+        elif fault.bit_value == fault.bit_value.StuckAtZero:
             injected_binary[index] = "0"
-        elif fault.bit_value == src.fi.injection.faultdescriptor.BitValue.BitFlip:
+        elif fault.bit_value == fault.bit_value.BitFlip:
             injected_binary[index] = str(int(injected_binary[index]) ^ 1)
-        elif fault.bit_value == src.fi.injection.faultdescriptor.BitValue.Random:
+        elif fault.bit_value == fault.bit_value.Random:
             # if we do not have a sampler
             if sampler is None:
                 raise ValueError(

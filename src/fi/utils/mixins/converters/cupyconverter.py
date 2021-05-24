@@ -92,7 +92,7 @@ class CupyConverter(object):
         # then we view it back in the original type and convert it to PyTorch
         # square brackets are for creating a cupy.ndarray for PyTorch
         python_int = int(binary, base=2)
-        with device:
+        with cupy.cuda.Device(device):
             new_cupy_value = conv_dtype(python_int).view(dtype)
 
         return new_cupy_value
@@ -107,9 +107,9 @@ class CupyConverter(object):
             dtype: cupy.dtype,
             index: typing.Sequence[typing.Union[int, slice]],
             shape: typing.Sequence[int],
-            fill_value: cupy.ndarray = cupy.array(0),
+            fill_value: cupy.ndarray = 0,
             device: cupy.cuda.Device = None,
-    ):
+    ) -> cupy.ndarray:
         # we convert the fill_value to a numpy array with the correct dtype
         fill_value = cupy.array(fill_value, dtype=dtype)
 
@@ -120,8 +120,14 @@ class CupyConverter(object):
                 device=device
         )
 
-        # we create a new tensor using the given shape and the fill_value
-        array = cupy.full(shape, fill_value=fill_value)
+        # we use the context to change device
+        with cupy.cuda.Device(device):
+            # we create a new tensor using the given shape and the fill_value
+            array = cupy.full(
+                    shape,
+                    dtype=dtype,
+                    fill_value=fill_value
+            )
         # we set the indices to the actual cupy_binary value
         # this works as setting a slice of a tensor with a single value
         # broadcasts it onto the whole slice
@@ -165,7 +171,7 @@ class CupyConverter(object):
         # conversion list, so that we can set the bits properly using
         # Python integers
         # here the array is initialized to all 1s or 0s
-        with device:
+        with cupy.cuda.Device(device):
             binary_array = cupy.array(
                     bit * 2 ** bitwidth - 1,
                     dtype=binary_dtype,
@@ -195,3 +201,48 @@ class CupyConverter(object):
     @classmethod
     def cuda_support(cls):
         return cupy is not None and cupy.cuda.is_available()
+
+    # this method gets the bitwidth associated to the dtype
+    @classmethod
+    def get_cupy_bitwidth_from_dtype(cls, dtype: cupy.dtype) -> int:
+        return int(cls.CUPY_DATA_WIDTH_MAPPING[dtype])
+
+    # this classmethod tries to convert a generic element to an array of a
+    # specified type
+    @classmethod
+    def to_cupy_array(
+            cls,
+            element: typing.Any,
+            dtype: cupy.dtype,
+            device: cupy.cuda.Device = None,
+    ) -> cupy.ndarray:
+        if isinstance(element, cupy.ndarray):
+            return element.view(dtype)
+        else:
+            with cupy.cuda.Device(device):
+                return cupy.array(element, dtype=dtype)
+
+    # here we can broadcast a value in single-shaped array to a full shape
+    # covering the non-indexed values with a determined fill_value
+    @classmethod
+    def cupy_broadcast(
+            cls,
+            element: cupy.ndarray,
+            index: typing.Sequence[typing.Union[int, slice]],
+            shape: typing.Sequence[int],
+            fill_value: cupy.ndarray = 0,
+    ) -> cupy.ndarray:
+        dtype = cls.get_cupy_dtype(element)
+        device = cls.get_cupy_device(element)
+        with cupy.cuda.Device(device):
+            # we create a new tensor using the given shape and the fill_value
+            array = cupy.full(
+                    shape,
+                    dtype=dtype,
+                    fill_value=fill_value
+            )
+        # this works as setting a slice of a tensor with a single value
+        # broadcasts it onto the whole slice
+        array[index] = element
+
+        return array

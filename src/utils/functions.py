@@ -38,12 +38,24 @@ def time_string(datetime_obj, template=DEFAULT_TIME_FORMAT):
 
 ### end time handling functions ###
 
+
 # this function sets up the seed for PyTorch / numpy
 # if cuda is available it also enables cuDNN deterministic flags
 # this function is similar to pytorch_lightning.seed_everything, but they
 # don't set CUDA and cuDNN for determinism
 # CUDA and cuDNN determinism can be set from the Trainer class
 def enable_determinism(seed=DEFAULT_PRNG_SEED):
+    # if pytorch-lightning is available, we devolve the determinism to it
+    try:
+        import pytorch_lightning
+    except ImportError:
+        pass
+    else:
+        # we pass the seed and we enable also the deterministic
+        # initialization of the dataloader workers if required
+        pytorch_lightning.seed_everything(seed=seed, workers=True)
+        # since we have everything initialized here, we can quit
+        return
     # seed the Python hash generator
     os.environ['PYTHONHASHSEED'] = str(seed)
 

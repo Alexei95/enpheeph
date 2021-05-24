@@ -106,7 +106,7 @@ class NumpyLikeConverter(
             library: str,
             # here we use an integer but a custom ndarray may preserve more
             # information
-            fill_value: typing.Union['numpy.ndarray', 'cupy.ndarray'] = 0,
+            fill_value: typing.Union['numpy.ndarray', 'cupy.ndarray', int] = 0,
             device: 'cupy.cuda.Device' = None,
     ):
         cls.register(cls.NUMPY_STRING, cls.binary_to_numpy_broadcast)
@@ -251,6 +251,77 @@ class NumpyLikeConverter(
         out = cls.dispatch_call(
                 cls.get_main_library_from_object(object_),
                 object_,
+        )
+
+        cls._deregister_libraries()
+
+        return out
+
+    # this method gets the bitwidth associated to the dtype
+    @classmethod
+    def numpy_like_bitwidth_from_dtype(
+            cls,
+            dtype: typing.Union['numpy.dtype', 'cupy.dtype'],
+            library: str
+    ) -> int:
+        cls.register(cls.NUMPY_STRING, cls.get_numpy_bitwidth_from_dtype)
+        cls.register(cls.CUPY_STRING, cls.get_cupy_bitwidth_from_dtype)
+
+        # we dispatch the conversion to the correct handler
+        out = cls.dispatch_call(
+                library,
+                dtype=dtype,
+        )
+
+        cls._deregister_libraries()
+
+        return out
+
+    # this classmethod tries to convert a generic element to an array of a
+    # specified type
+    @classmethod
+    def to_numpy_like_array(
+            cls,
+            element: typing.Any,
+            dtype: typing.Union['numpy.dtype', 'cupy.dtype'],
+            library: str,
+            device: 'cupy.cuda.Device' = None,
+    ) -> typing.Union['numpy.ndarray', 'cupy.ndarray']:
+        cls.register(cls.NUMPY_STRING, cls.to_numpy_array)
+        cls.register(cls.CUPY_STRING, cls.to_cupy_array)
+
+        # we dispatch the conversion to the correct handler
+        out = cls.dispatch_call(
+                library,
+                element=element,
+                dtype=dtype,
+                device=device,
+        )
+
+        cls._deregister_libraries()
+
+        return out
+
+    # here we can broadcast a value in single-shaped array to a full shape
+    # covering the non-indexed values with a determined fill_value
+    @classmethod
+    def numpy_like_broadcast(
+            cls,
+            element: typing.Union['numpy.ndarray', 'cupy.ndarray'],
+            index: typing.Sequence[typing.Union[int, slice]],
+            shape: typing.Sequence[int],
+            fill_value: typing.Union['numpy.ndarray', 'cupy.ndarray', int] = 0,
+    ) -> typing.Union['numpy.ndarray', 'cupy.ndarray']:
+        cls.register(cls.NUMPY_STRING, cls.numpy_broadcast)
+        cls.register(cls.CUPY_STRING, cls.cupy_broadcast)
+
+        # we dispatch the conversion to the correct handler
+        out = cls.dispatch_call(
+                cls.get_main_library_from_object(element),
+                element=element,
+                index=index,
+                shape=shape,
+                fill_value=fill_value,
         )
 
         cls._deregister_libraries()
