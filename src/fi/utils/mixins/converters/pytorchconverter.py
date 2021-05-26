@@ -54,6 +54,8 @@ class PyTorchConverter(object):
             # boolean
             torch.bool: 1,
     }
+    # NOTE: here we assume there is no fallback option, so the correct one
+    # must be utilized from the beginning
     if numpy is not None:
         # generated using
         # for key in pytorch_dtype_list.keys():
@@ -94,9 +96,16 @@ class PyTorchConverter(object):
                 # boolean
                 torch.bool: numpy.dtype('bool'),
         }
+        PYTORCH_NUMPY_STRING = 'numpy'
+        PYTORCH_CPU_DEVICE = torch.device('cpu')
+        PYTORCH_NUMPY_DEVICE = PYTORCH_CPU_DEVICE.type
     else:
         PYTORCH_DTYPE_TO_NUMPY_DTYPE = {}
-    if cupy is not None:
+        PYTORCH_NUMPY_STRING = None
+        PYTORCH_CPU_DEVICE = None
+        PYTORCH_NUMPY_DEVICE = None
+    # if cupy or cuda are not available then we skip this part
+    if cupy is not None and torch.cuda.is_available():
         # generated using
         # for key in pytorch_dtype_list.keys():
         #     try:
@@ -138,8 +147,23 @@ class PyTorchConverter(object):
                 # boolean
                 torch.bool: cupy.dtype('bool'),
         }
+        PYTORCH_CUPY_STRING = 'cupy'
+        PYTORCH_GPU_DEVICE = torch.device('cuda')
+        PYTORCH_CUPY_DEVICE = PYTORCH_GPU_DEVICE.type
     else:
         PYTORCH_DTYPE_TO_CUPY_DTYPE = {}
+        PYTORCH_CUPY_STRING = None
+        PYTORCH_GPU_DEVICE = None
+        PYTORCH_CUPY_DEVICE = None
+
+    PYTORCH_STRINGS = (PYTORCH_CUPY_STRING, PYTORCH_NUMPY_STRING)
+    PYTORCH_SUPPORTED_STRINGS = tuple(
+            filter(lambda x: x is not None, PYTORCH_STRINGS)
+    )
+    PYTORCH_DEVICES = (PYTORCH_CUPY_DEVICE, PYTORCH_NUMPY_DEVICE)
+    PYTORCH_SUPPORTED_DEVICES = tuple(
+            filter(lambda x: x is not None, PYTORCH_DEVICES)
+    )
 
     @classmethod
     def pytorch_to_cupy(
@@ -148,7 +172,7 @@ class PyTorchConverter(object):
             # if in_place is True, the default, we do not copy the tensor
             in_place: bool = True,
     ) -> 'cupy.ndarray':
-        if cupy is None:
+        if cls.PYTORCH_CUPY_STRING is None:
             raise NotImplementedError(
                     'cupy is not available, '
                     'function not supported'
@@ -169,7 +193,7 @@ class PyTorchConverter(object):
             # if in_place is True, the default, we do not copy the tensor
             in_place: bool = True,
     ) -> 'numpy.ndarray':
-        if numpy is None:
+        if cls.PYTORCH_NUMPY_STRING is None:
             raise NotImplementedError(
                     'numpy is not available, '
                     'function not supported'
@@ -193,7 +217,7 @@ class PyTorchConverter(object):
             # object
             in_place: bool = True,
     ) -> torch.Tensor:
-        if numpy is None:
+        if cls.PYTORCH_NUMPY_STRING is None:
             raise NotImplementedError(
                     'numpy is not available, '
                     'function not supported'
@@ -217,7 +241,7 @@ class PyTorchConverter(object):
             # object
             in_place: bool = True,
     ) -> torch.Tensor:
-        if cupy is None:
+        if cls.PYTORCH_CUPY_STRING is None:
             raise NotImplementedError(
                     'cupy is not available, '
                     'function not supported'
@@ -240,6 +264,17 @@ class PyTorchConverter(object):
     @classmethod
     def get_pytorch_shape(cls, element: torch.Tensor) -> torch.Size:
         return element.size()
+
+    @classmethod
+    def remove_pytorch_batch_size_from_shape(
+            cls,
+            size: torch.Size
+    ) -> torch.Size:
+        # FIXME: this method should be able to remove a custom dimension
+        # or use other way to recognize the correct one to remove, e.g.
+        # named tensors or similar other tricks
+        # for now we only remove the first dimension
+        return size[1:]
 
     @classmethod
     def pytorch_dtype_to_numpy_dtype(cls, dtype: torch.dtype) -> 'numpy.dtype':
@@ -272,7 +307,7 @@ class PyTorchConverter(object):
             cls,
             device: torch.device
     ) -> 'cupy.cuda.Device':
-        if cupy is None:
+        if cls.PYTORCH_CUPY_STRING is None:
             raise NotImplementedError(
                     'cupy is not available, '
                     'function not supported'
@@ -285,7 +320,7 @@ class PyTorchConverter(object):
             cls,
             device: 'cupy.cuda.Device'
     ) -> torch.device:
-        if cupy is None:
+        if cls.PYTORCH_CUPY_STRING is None:
             raise NotImplementedError(
                     'cupy is not available, '
                     'function not supported'

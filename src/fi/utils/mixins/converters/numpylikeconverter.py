@@ -5,31 +5,55 @@ import typing
 
 import src.utils.mixins.classutils
 import src.utils.mixins.dispatcher
-import src.fi.utils.mixins.converters.numpyconverter
-import src.fi.utils.mixins.converters.cupyconverter
+
+# FIXME: check whether we can improve this
+# here we create a dict with all the base classes
+# each base class is added only if it is correctly imported, together with
+# extra checks for GPU availability for Cupy
+ConverterBaseClasses = {}
+try:
+    import src.fi.utils.mixins.converters.cupyconverter
+except ImportError:
+    CUPY_STRING = None
+else:
+    cuda_support = \
+        src.fi.utils.mixins.\
+        converters.cupyconverter.CupyConverter.cuda_support()
+    if cuda_support:
+        CUPY_STRING = 'cupy'
+        ConverterBaseClasses[CUPY_STRING] = \
+            src.fi.utils.mixins.converters.cupyconverter.CupyConverter
+    else:
+        CUPY_STRING = None
+try:
+    import src.fi.utils.mixins.converters.numpyconverter
+except ImportError:
+    NUMPY_STRING = None
+else:
+    NUMPY_STRING = 'numpy'
+    ConverterBaseClasses[NUMPY_STRING] = \
+        src.fi.utils.mixins.converters.numpyconverter.NumpyConverter
 
 
 class NumpyLikeConverter(
         src.utils.mixins.classutils.ClassUtils,
         src.utils.mixins.dispatcher.Dispatcher,
-        src.fi.utils.mixins.converters.numpyconverter.NumpyConverter,
-        src.fi.utils.mixins.converters.cupyconverter.CupyConverter,
+        # to unroll the base classes
+        *ConverterBaseClasses.values(),
 ):
-    NUMPY_STRING = 'numpy'
-    CUPY_STRING = (
-            'cupy'
-            if src.fi.utils.mixins.converters.cupyconverter.
-                    CupyConverter.cuda_support()
-            else None
-    )
+    CUPY_STRING = CUPY_STRING
+    NUMPY_STRING = NUMPY_STRING
+    STRINGS = (CUPY_STRING, NUMPY_STRING)
+    # we remove the strings which are None, i.e. not supported
+    SUPPORTED_STRINGS = tuple(filter(lambda x: x is not None, STRINGS))
 
     # FIXME: check whether these methods can be moved
     # this method is used to remove all the associations after calling a
     # classmethod, made especially for the libraries to Pytorch associations
     @classmethod
     def _deregister_libraries(cls):
-        cls.deregister(cls.NUMPY_STRING)
-        cls.deregister(cls.CUPY_STRING)
+        for string in cls.SUPPORTED_STRINGS:
+            cls.deregister(string)
 
     @classmethod
     def single_numpy_like_to_binary(
@@ -55,8 +79,13 @@ class NumpyLikeConverter(
             cls,
             element: typing.Union['numpy.ndarray', 'cupy.ndarray'],
     ) -> typing.List[str]:
-        cls.register(cls.NUMPY_STRING, cls.numpy_to_binary)
-        cls.register(cls.CUPY_STRING, cls.cupy_to_binary)
+        cls.register_string_methods(
+                cls,
+                '{}_to_binary',
+                string_list=cls.SUPPORTED_STRINGS,
+                name_list=cls.SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
@@ -78,8 +107,13 @@ class NumpyLikeConverter(
             library: str,
             device: 'cupy.cuda.Device' = None,
     ) -> typing.Union['numpy.ndarray', 'cupy.ndarray']:
-        cls.register(cls.NUMPY_STRING, cls.binary_to_numpy)
-        cls.register(cls.CUPY_STRING, cls.binary_to_cupy)
+        cls.register_string_methods(
+                cls,
+                'binary_to_{}',
+                string_list=cls.SUPPORTED_STRINGS,
+                name_list=cls.SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
@@ -109,8 +143,13 @@ class NumpyLikeConverter(
             fill_value: typing.Union['numpy.ndarray', 'cupy.ndarray', int] = 0,
             device: 'cupy.cuda.Device' = None,
     ):
-        cls.register(cls.NUMPY_STRING, cls.binary_to_numpy_broadcast)
-        cls.register(cls.CUPY_STRING, cls.binary_to_cupy_broadcast)
+        cls.register_string_methods(
+                cls,
+                'binary_to_{}_broadcast',
+                string_list=cls.SUPPORTED_STRINGS,
+                name_list=cls.SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
@@ -132,8 +171,13 @@ class NumpyLikeConverter(
             cls,
             element: typing.Union['numpy.ndarray', 'cupy.ndarray'],
     ) -> int:
-        cls.register(cls.NUMPY_STRING, cls.get_numpy_bitwidth)
-        cls.register(cls.CUPY_STRING, cls.get_cupy_bitwidth)
+        cls.register_string_methods(
+                cls,
+                'get_{}_bitwidth',
+                string_list=cls.SUPPORTED_STRINGS,
+                name_list=cls.SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
@@ -150,8 +194,13 @@ class NumpyLikeConverter(
             cls,
             element: typing.Union['numpy.ndarray', 'cupy.ndarray'],
     ) -> typing.Union['cupy.dtype', 'numpy.dtype']:
-        cls.register(cls.NUMPY_STRING, cls.get_numpy_dtype)
-        cls.register(cls.CUPY_STRING, cls.get_cupy_dtype)
+        cls.register_string_methods(
+                cls,
+                'get_{}_dtype',
+                string_list=cls.SUPPORTED_STRINGS,
+                name_list=cls.SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
@@ -168,7 +217,8 @@ class NumpyLikeConverter(
             cls,
             element: typing.Union['numpy.ndarray', 'cupy.ndarray'],
     ) -> typing.Union['cupy.cuda.Device', str]:
-        if cls.get_main_library_from_object(element) == cls.CUPY_STRING:
+        main_library = cls.get_main_library_from_object(element)
+        if cls.CUPY_STRING is not None and main_library == cls.CUPY_STRING:
             return cls.get_cupy_device(element)
         else:
             return 'cpu'
@@ -181,8 +231,13 @@ class NumpyLikeConverter(
             library: str,
             device: 'cupy.cuda.Device' = None,
     ) -> typing.Union['numpy.ndarray', 'cupy.ndarray']:
-        cls.register(cls.NUMPY_STRING, cls.expand_bit_to_numpy_dtype)
-        cls.register(cls.CUPY_STRING, cls.expand_bit_to_cupy_dtype)
+        cls.register_string_methods(
+                cls,
+                'expand_bit_to_{}_dtype',
+                string_list=cls.SUPPORTED_STRINGS,
+                name_list=cls.SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
@@ -203,8 +258,13 @@ class NumpyLikeConverter(
             cls,
             element: typing.Union['numpy.ndarray', 'cupy.ndarray'],
     ):
-        cls.register(cls.NUMPY_STRING, cls.numpy_dtype_to_bitwise_numpy)
-        cls.register(cls.CUPY_STRING, cls.cupy_dtype_to_bitwise_cupy)
+        cls.register_string_methods(
+                cls,
+                '{0}_dtype_to_bitwise_{0}',
+                string_list=cls.SUPPORTED_STRINGS,
+                name_list=cls.SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
@@ -224,8 +284,13 @@ class NumpyLikeConverter(
             element: typing.Union['numpy.ndarray', 'cupy.ndarray'],
             dtype: typing.Union['numpy.dtype', 'cupy.dtype'],
     ):
-        cls.register(cls.NUMPY_STRING, cls.bitwise_numpy_to_numpy_dtype)
-        cls.register(cls.CUPY_STRING, cls.bitwise_cupy_to_cupy_dtype)
+        cls.register_string_methods(
+                cls,
+                'bitwise_{0}_to_{0}_dtype',
+                string_list=cls.SUPPORTED_STRINGS,
+                name_list=cls.SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
@@ -244,8 +309,13 @@ class NumpyLikeConverter(
     # but in this case it is more generic, at least for now
     @classmethod
     def get_numpy_like_string(cls, object_: typing.Any) -> str:
-        cls.register(cls.NUMPY_STRING, lambda x: cls.NUMPY_STRING)
-        cls.register(cls.CUPY_STRING, lambda x: cls.CUPY_STRING)
+        for string in cls.SUPPORTED_STRINGS:
+            # we use string=string so that we can copy the value of the local
+            # variable, as local variables are evaluated at runtime for lambda
+            # functions
+            # by using the default argument we copy the value at definition
+            # time, hence allowing the local variable to change
+            cls.register(string, lambda x, string=string: string)
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
@@ -264,8 +334,13 @@ class NumpyLikeConverter(
             dtype: typing.Union['numpy.dtype', 'cupy.dtype'],
             library: str
     ) -> int:
-        cls.register(cls.NUMPY_STRING, cls.get_numpy_bitwidth_from_dtype)
-        cls.register(cls.CUPY_STRING, cls.get_cupy_bitwidth_from_dtype)
+        cls.register_string_methods(
+                cls,
+                'get_{}_bitwidth_from_dtype',
+                string_list=cls.SUPPORTED_STRINGS,
+                name_list=cls.SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
@@ -287,8 +362,13 @@ class NumpyLikeConverter(
             library: str,
             device: 'cupy.cuda.Device' = None,
     ) -> typing.Union['numpy.ndarray', 'cupy.ndarray']:
-        cls.register(cls.NUMPY_STRING, cls.to_numpy_array)
-        cls.register(cls.CUPY_STRING, cls.to_cupy_array)
+        cls.register_string_methods(
+                cls,
+                'to_{}_array',
+                string_list=cls.SUPPORTED_STRINGS,
+                name_list=cls.SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
@@ -312,8 +392,13 @@ class NumpyLikeConverter(
             shape: typing.Sequence[int],
             fill_value: typing.Union['numpy.ndarray', 'cupy.ndarray', int] = 0,
     ) -> typing.Union['numpy.ndarray', 'cupy.ndarray']:
-        cls.register(cls.NUMPY_STRING, cls.numpy_broadcast)
-        cls.register(cls.CUPY_STRING, cls.cupy_broadcast)
+        cls.register_string_methods(
+                cls,
+                '{}_broadcast',
+                string_list=cls.SUPPORTED_STRINGS,
+                name_list=cls.SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(

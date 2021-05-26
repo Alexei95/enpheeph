@@ -13,36 +13,21 @@ class PyTorchDeviceAwareConverter(
         src.utils.mixins.dispatcher.Dispatcher,
         src.fi.utils.mixins.converters.pytorchconverter.PyTorchConverter,
 ):
-    # if cuda is not available we set the devices to a null value
-    if torch.cuda.is_available():
-        GPU_DEVICE = torch.device('cuda')
-        CUPY_DEVICE = GPU_DEVICE.type
-    else:
-        GPU_DEVICE = None
-        CUPY_DEVICE = None
-
-    CPU_DEVICE = torch.device('cpu')
-
-    NUMPY_DEVICE = CPU_DEVICE.type
-
-    NUMPY_STRING = 'numpy'
-    CUPY_STRING = 'cupy'
-
     # FIXME: check whether these methods can be moved
     # this method is used to remove all the associations after calling a
     # classmethod
     # in our case we cover the gpu and cpu devices
     @classmethod
     def _deregister_devices(cls):
-        cls.deregister(cls.CUPY_DEVICE)
-        cls.deregister(cls.NUMPY_DEVICE)
+        for device in cls.PYTORCH_SUPPORTED_DEVICES:
+            cls.deregister(device)
 
     # this method is used to remove all the associations after calling a
     # classmethod, made especially for the libraries to Pytorch associations
     @classmethod
     def _deregister_libraries(cls):
-        cls.deregister(cls.NUMPY_STRING)
-        cls.deregister(cls.CUPY_STRING)
+        for string in cls.PYTORCH_SUPPORTED_STRINGS:
+            cls.deregister(string)
 
     # this method converts to a numpy-like library a PyTorch tensor
     # it takes into account the device, and forces it to be in-place
@@ -51,12 +36,17 @@ class PyTorchDeviceAwareConverter(
             cls,
             element: torch.Tensor,
     ) -> typing.Union['numpy.ndarray', 'cupy.ndarray']:
-        cls.register(cls.CUPY_DEVICE, cls.pytorch_to_cupy)
-        cls.register(cls.NUMPY_DEVICE, cls.pytorch_to_numpy)
+        cls.register_string_methods(
+                cls,
+                'pytorch_to_{}',
+                string_list=cls.PYTORCH_SUPPORTED_STRINGS,
+                name_list=cls.PYTORCH_SUPPORTED_DEVICES,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
-                cls.get_pytorch_device_type(element.device),
+                cls.get_pytorch_device_type(cls.get_pytorch_device(element)),
                 element=element,
                 in_place=True
         )
@@ -72,8 +62,13 @@ class PyTorchDeviceAwareConverter(
             element: typing.Union['numpy.ndarray', 'cupy.ndarray'],
             dtype: torch.dtype,
     ) -> torch.Tensor:
-        cls.register(cls.CUPY_STRING, cls.cupy_to_pytorch)
-        cls.register(cls.NUMPY_STRING, cls.numpy_to_pytorch)
+        cls.register_string_methods(
+                cls,
+                '{}_to_pytorch',
+                string_list=cls.PYTORCH_SUPPORTED_STRINGS,
+                name_list=cls.PYTORCH_SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(
@@ -93,15 +88,17 @@ class PyTorchDeviceAwareConverter(
             cls,
             device: torch.device
     ) -> typing.Union['cupy.cuda.Device', str]:
-        if device == cls.CPU_DEVICE:
+        if device == cls.PYTORCH_CPU_DEVICE:
             return 'cpu'
-        else:
+        elif cls.PYTORCH_CUPY_STRING is not None:
             return cls.pytorch_device_to_cupy_device(device)
+        else:
+            raise ValueError('cupy requested but not installed')
 
     # we can use this method for checking the availability of CUDA
     @classmethod
     def cuda_support(cls):
-        return cls.GPU_DEVICE is not None
+        return cls.PYTORCH_GPU_DEVICE is not None
 
     @classmethod
     def pytorch_dtype_to_numpy_like_dtype(
@@ -109,8 +106,13 @@ class PyTorchDeviceAwareConverter(
             dtype: torch.dtype,
             library: str,
     ) -> typing.Union['numpy.dtype', 'cupy.dtype']:
-        cls.register(cls.CUPY_STRING, cls.pytorch_dtype_to_cupy_dtype)
-        cls.register(cls.NUMPY_STRING, cls.pytorch_dtype_to_numpy_dtype)
+        cls.register_string_methods(
+                cls,
+                'pytorch_dtype_to_{}_dtype',
+                string_list=cls.PYTORCH_SUPPORTED_STRINGS,
+                name_list=cls.PYTORCH_SUPPORTED_STRINGS,
+                error_if_none=True,
+        )
 
         # we dispatch the conversion to the correct handler
         out = cls.dispatch_call(

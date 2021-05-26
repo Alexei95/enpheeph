@@ -194,6 +194,7 @@ class NumpyConverter(object):
     # covering the non-indexed values with a determined fill_value
     @classmethod
     def numpy_broadcast(
+            cls,
             element: numpy.ndarray,
             index: typing.Sequence[typing.Union[int, slice]],
             shape: typing.Sequence[int],

@@ -50,6 +50,11 @@ class ActivationInjectionModule(
 
         # we get the required info
         tensor_shape = self.get_pytorch_shape(output)
+        # we need to remove the batch size dimension, so that the mask is
+        # usable on all possible batch sizes
+        no_batch_size_tensor_shape = self.remove_pytorch_batch_size_from_shape(
+                tensor_shape,
+        )
         dtype = self.get_pytorch_dtype(output)
         bitwidth = self.get_pytorch_bitwidth(output)
         device = self.get_pytorch_device(output)
@@ -69,9 +74,9 @@ class ActivationInjectionModule(
             ),
             tensor_index=self.fault.tensor_index_conversion(
                     tensor_index=self.fault.tensor_index,
-                    tensor_shape=tensor_shape,
+                    tensor_shape=no_batch_size_tensor_shape,
             ),
-            tensor_shape=tensor_shape,
+            tensor_shape=no_batch_size_tensor_shape,
             endianness=self.fault.endianness,
             bit_value=self.fault.bit_value,
             library=library,
@@ -107,3 +112,6 @@ class ActivationInjectionModule(
         y = self.numpy_like_to_pytorch(
             numpy_like_y,
             dtype=self.get_pytorch_dtype(y_temp),
+        )
+        # we return the fault-injected tensor
+        return y

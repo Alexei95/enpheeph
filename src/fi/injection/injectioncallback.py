@@ -9,7 +9,6 @@ import torch
 
 import src.utils.mixins.dispatcher
 import src.fi.injection.faultdescriptor
-import src.fi.fiutils
 import src.fi.utils.mixins.pytorchmoduleupdater
 import src.utils.mixins.modulegatherer
 

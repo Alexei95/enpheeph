@@ -97,3 +97,27 @@ class Dispatcher(object):
         cls._init_dispatching_dict()
 
         return cls._dispatching_dict[name](*args, **kwargs)
+
+    # this method is used to register similar method names, based around
+    # the same template
+    @classmethod
+    def register_string_methods(
+            cls,
+            object_: typing.Any,
+            template_string: str,
+            string_list: typing.Sequence[str],
+            name_list: typing.Sequence[str],
+            # if the getattr returns None used as default value
+            # we raise an error if this flag is True
+            error_if_none: bool = False,
+    ):
+        # we assume the two lists contain the same number of elements
+        for name, string in zip(name_list, string_list):
+            method_string = template_string.format(string)
+            method = getattr(object_, method_string, None)
+            if method is None and error_if_none:
+                raise ValueError(
+                        f"'{method_string}' "
+                        "does not exist in the given object"
+                )
+            cls.register(name, method)

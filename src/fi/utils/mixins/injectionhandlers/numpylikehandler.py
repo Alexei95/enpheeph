@@ -109,7 +109,7 @@ class NumpyLikeHandler(
                 endianness=endianness,
                 bit_value=bit_value,
                 library=library,
-                device=device
+                device=device,
         )
 
         # we extend the single-element mask to a whole tensor, covering only

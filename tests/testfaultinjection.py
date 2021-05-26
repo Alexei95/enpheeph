@@ -41,12 +41,13 @@ src.utils.functions.enable_determinism(DETERMINISTIC_FLAG)
 
 
 class PLModelWrapper(pytorch_lightning.LightningModule):
-    def __init__(self, model, normalize_prob_func, loss):
+    def __init__(self, model, normalize_prob_func, loss, accuracy_func):
         super().__init__()
 
         self.model = model
         self.loss_func = loss
         self.normalize_func = normalize_prob_func
+        self.accuracy_func = accuracy_func
 
     def forward(self, input_):
         return self.model(input_)
@@ -55,7 +56,7 @@ class PLModelWrapper(pytorch_lightning.LightningModule):
         x, y = batch
         y_hat = self.normalize_func(self.model(x))
         loss = self.loss_func(y_hat, y)
-        acc = pytorch_lightning.metrics.functional.accuracy(y_hat, y)
+        acc = self.accuracy_func(y_hat, y)
 
         return {'acc': acc, 'loss': loss}
 
@@ -79,7 +80,9 @@ vgg11_bn = vgg.vgg11_bn(pretrained=True)
 wrapper = PLModelWrapper(
         vgg11_bn,
         functools.partial(torch.nn.functional.softmax, dim=1),
-        torch.nn.functional.cross_entropy)
+        torch.nn.functional.cross_entropy,
+        pytorch_lightning.metrics.Accuracy(),
+        )
 # we used the pytorch_lightning CIFAR 10 datamodule
 datamodule = pl_bolts.datamodules.CIFAR10DataModule(
         data_dir=str(DATASET_DIR),
@@ -106,7 +109,7 @@ weight_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
 activation_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
     module_name='model.features.0',
     parameter_type=src.fi.utils.enums.parametertype.ParameterType.Activation,
-    tensor_index=[0, 0, ..., ...],
+    tensor_index=[0, ..., ...],
     bit_index=[0, 10, 32],
     bit_value=src.fi.utils.enums.bitvalue.BitValue.BitFlip,
     # we don't need any parameter_name, as we use the whole tensor for
