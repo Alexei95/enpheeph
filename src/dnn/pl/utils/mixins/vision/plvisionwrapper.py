@@ -8,6 +8,8 @@ import torchmetrics
 # the default normalization function is softmax, and we compute it along the
 # last dimension as the first dimension is the batches, and we want the results
 # to be normalized across the elements in the batch
+DEFAULT_OPTIMIZER_CLASS = torch.optim.Adam
+DEFAULT_LEARNING_RATE = 1e-3
 DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION = torch.nn.Softmax(dim=-1)
 DEFAULT_LOSS_FUNCTION = torch.nn.CrossEntropyLoss()
 DEFAULT_ACCURACY_FUNCTION = torchmetrics.Accuracy()
@@ -17,15 +19,15 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
     def __init__(
             self,
             model: torch.nn.Module,
-            *,
             # this class should accept params and lr
             # if a custom implementation is required, i.e. a custom beta1 and
             # beta2 for Adam, use functools.partial
             optimizer_class: typing.Callable[
                     [typing.Iterable, float],
                     torch.optim.optimizer.Optimizer
-            ],
-            lr: float,
+            ] = DEFAULT_OPTIMIZER_CLASS,
+            lr: float = DEFAULT_LEARNING_RATE,
+            *,
             normalize_prob_func: typing.Callable[
                     torch.Tensor,
                     torch.Tensor,
@@ -109,5 +111,5 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
         # return metrics
 
     def configure_optimizer(self):
-        optimizer = self.optimizer_class(self.parameters(), lr=self.lr)
+        optimizer = self.optimizer_class(self.model.parameters(), lr=self.lr)
         return optimizer
