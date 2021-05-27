@@ -124,5 +124,5 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
         # return metrics
 
     def configure_optimizers(self):
-        optimizer = self.optimizer_class(self.model.parameters(), lr=self.lr)
+        optimizer = self.optimizer_class(self.parameters(), lr=self.lr)
         return optimizer

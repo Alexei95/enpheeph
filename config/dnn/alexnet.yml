@@ -18,6 +18,6 @@ model:
 data:
   class_path: pl_bolts.datamodules.ImagenetDataModule
   init_args:
-    data_dir: /shared/ml/datasets/ImageNet_2012
+    data_dir: /shared/ml/datasets/ImageNet_2012/
     shuffle: true
     pin_memory: true
