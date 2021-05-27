@@ -1,3 +1,10 @@
+### DEFAULT CUSTOM CONFIG ###
+seed_everything: 42
+
+trainer: custom_trainer_config.yml
+
+### END OF DEFAULT CUSTOM CONFIG ###
+
 model:
   class_path: src.dnn.pl.utils.mixins.vision.plvisionwrapper.PLVisionWrapper
   init_args:
