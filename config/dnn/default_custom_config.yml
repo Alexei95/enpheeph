@@ -2,12 +2,16 @@
 # reproducibility
 seed_everything: 42
 
-# this configuration goes into the dataloaders
-data:
-  train_transforms: null
-  val_transforms: null
-  test_transforms: null
-  dims: null
+# this configuration goes into the dataloaders, but this is extra configuration
+# which is defined due to the case class for datamodules being a
+# LightningDataModule
+# hence, we don't include this bit of configuration in our custom configuration
+# but we leave it commented here as reference
+# data:
+#   train_transforms: null
+#   val_transforms: null
+#   test_transforms: null
+#   dims: null
 
 trainer:
   # to select a distributed backend accelerator
@@ -44,12 +48,12 @@ trainer:
   amp_level: O0
   # to autoscale the batch size to the optimal depending on the memory
   # if None it is not done, otherwise it must be an algorithm like binsearch
-  # default None
+  # default None, but actually None is not allowed, only False
   # the result is saved in hparams.batch_size
   # the model or the datamodule must contain the name used for the parameter
   # NOTE: this passage is not done if we don't call Trainer.tune(), as it
   # happens with the LightningCli in PyTorch Lightning v1.3.2
-  auto_scale_batch_size: null
+  auto_scale_batch_size: false
   # to automatically choose the unoccupied GPUs
   auto_select_gpus: true
   # to find the optimal learning rate, if True it is saved in
@@ -67,10 +71,11 @@ trainer:
   # how many training epochs pass in-between runs of validation
   # default is 1
   check_val_every_n_epoch: 1
-  # this is the default checkpointing callback, which can be disabled with None
+  # this is the default checkpointing callback, which can be disabled with
+  # False
   # we disable it here as we have a custom checkpointing callback in callbacks
   # NOTE: it is unsupported since PyTorch Lightning v1.3
-  checkpoint_callback: null
+  checkpoint_callback: false
   # this flag forces the reproducibility flags to be turned on if True, but
   # it may make the system slower
   # default is False, but we want to ensure reproducibility so we set it to
@@ -99,7 +104,6 @@ trainer:
   # either int as number, list for selection, -1 to select all the available
   # ones
   # if None it runs on CPU, default is None
-  # to select all available GPUs
   gpus: -1
   # value to be used to clip gradients
   # if 0.0, the default, they are not clipped
@@ -417,7 +421,7 @@ trainer:
 
     # this is the default logger included in pytorch-lightning, check the docs
     # for different loggers
-    - class_path: pytorch_lightning.loggers.TensorboardLogger
+    - class_path: pytorch_lightning.loggers.TensorBoardLogger
       init_args:
         # the main directory for loggers
         save_dir: *root_dir

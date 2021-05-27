@@ -5,11 +5,11 @@ import torch
 import torchmetrics
 
 
+DEFAULT_OPTIMIZER_CLASS = torch.optim.Adam
+DEFAULT_LEARNING_RATE = 1e-3
 # the default normalization function is softmax, and we compute it along the
 # last dimension as the first dimension is the batches, and we want the results
 # to be normalized across the elements in the batch
-DEFAULT_OPTIMIZER_CLASS = torch.optim.Adam
-DEFAULT_LEARNING_RATE = 1e-3
 DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION = torch.nn.Softmax(dim=-1)
 DEFAULT_LOSS_FUNCTION = torch.nn.CrossEntropyLoss()
 DEFAULT_ACCURACY_FUNCTION = torchmetrics.Accuracy()
@@ -24,22 +24,25 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
             # beta2 for Adam, use functools.partial
             optimizer_class: typing.Callable[
                     [typing.Iterable, float],
-                    torch.optim.optimizer.Optimizer
+                    torch.optim.Optimizer
             ] = DEFAULT_OPTIMIZER_CLASS,
             lr: float = DEFAULT_LEARNING_RATE,
             *,
             normalize_prob_func: typing.Callable[
-                    torch.Tensor,
+                    [torch.Tensor],
                     torch.Tensor,
             ] = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION,
-            loss: typing.Callable[
+            loss_func: typing.Callable[
                     [torch.Tensor, torch.Tensor],
                     torch.Tensor,
             ] = DEFAULT_LOSS_FUNCTION,
-            accuracy: typing.Callable[
-                    [torch.Tensor, torch.Tensor],
-                    torch.Tensor,
-            ] = DEFAULT_ACCURACY_FUNCTION,
+            # accuracy_func: typing.Callable[
+            #         [torch.Tensor, torch.Tensor],
+            #         torch.Tensor,
+            # ] = DEFAULT_ACCURACY_FUNCTION,
+            # NOTE: fix an annoying bug with typing.Callable and jsonargparse
+            # we should use the typing.Callable type hint but it doesn't work
+            accuracy_func: typing.Any = DEFAULT_ACCURACY_FUNCTION,
     ):
         super().__init__()
 
@@ -48,8 +51,8 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
         # we keep lr in the model to allow for Trainer.tune
         # to run and determine the optimal ones
         self.lr = lr
-        self.accuracy_func = accuracy
-        self.loss_func = loss
+        self.accuracy_func = accuracy_func
+        self.loss_func = loss_func
         self.normalize_prob_func = normalize_prob_func
 
     def forward(self, input_):
@@ -59,7 +62,7 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
     # steps
     def inference_step(self, batch, batch_idx):
         x, y = batch
-        y_hat = self.normalize_prob_func(self.model(x))
+        y_hat = self.normalize_prob_func(self.forward(x))
         loss = self.loss_func(y_hat, y)
         acc = self.accuracy_func(y_hat, y)
 
