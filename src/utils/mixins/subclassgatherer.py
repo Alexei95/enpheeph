@@ -6,7 +6,7 @@ import types
 import typing
 
 
-class ModuleGatherer(object):
+class SubclassGatherer(object):
     MODULE_GLOB = '*.py'
     NOT_MODULE_FILTER = ['__init__.py']
 
