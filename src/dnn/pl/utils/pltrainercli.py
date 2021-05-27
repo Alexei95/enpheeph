@@ -28,9 +28,11 @@ if __name__ == '__main__':
             subclass_mode_data=True,
             # we pass a default config using the custom one, which can be
             # overriden by the --config flag
-            parser_kwargs={
-                    'default_config_files': [
-                            str(DEFAULT_CONFIGURATION_FILE)
-                    ],
-            },
+            # however for the way the CLI works, this config is overriden
+            # by the --config flag completely, without intersection
+            # parser_kwargs={
+            #         'default_config_files': [
+            #                 str(DEFAULT_CONFIGURATION_FILE)
+            #         ],
+            # },
 )

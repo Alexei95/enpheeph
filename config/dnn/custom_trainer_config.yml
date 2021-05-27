@@ -10,7 +10,9 @@
 # accelerator object
 # if some options need to be changed just switch this to None and
 # add the pytorch_lightning.plugins.DDPPlugin to the plugins list
-accelerator: ddp
+# NOTE: we are switching this to None to allow for find_unused_parameters to
+# be False, so that we gain in performance
+accelerator: null
 # number of batches to accumulate before propagating the gradients
 # in this way we multiply the effective batch size by this number
 # it can be also a dict mentioning the epoch at which a new accumulation
@@ -98,7 +100,8 @@ gradient_clip_val: 0.0
 # which algorithm to use for gradient clipping, value for clip_by_value,
 # norm for clip_by_norm
 # default is norm
-gradient_clip_algorithm: null
+# we cannot use None, we must use a valid string
+gradient_clip_algorithm: norm
 # to use only a percentage of the prediction set, float for percentage and
 # int for number of batches, default is 1.0
 limit_predict_batches: 1.0
@@ -433,4 +436,7 @@ logger:
 # flags
 # non-standard plugins may be more helpful in this sense, but there aren't
 # many available
-plugins: null
+plugins:
+  - class_path: pytorch_lightning.plugins.DDPPlugin
+    init_args:
+      find_unused_parameters: false
