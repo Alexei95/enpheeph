@@ -12,6 +12,7 @@ class SubclassGatherer(object):
 
     @classmethod
     def gather_subclasses(
+            cls,
             module: types.ModuleType,
             baseclass: type
     ) -> typing.Dict[str, type]:
