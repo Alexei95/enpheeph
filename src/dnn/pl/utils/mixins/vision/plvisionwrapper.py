@@ -4,30 +4,46 @@ import pytorch_lightning
 import torch
 import torchmetrics
 
+import src.utils.mixins.subclassgatherer
 
-class PLVisionWrapper(pytorch_lightning.LightningModule):
-    # we define the mapping for the optimizers
-    # the name is the __qualname__ of the class mapped to the class itself
-    # to get the correct optimizers, we search through the list of elements
-    # in torch.optim, checking that the ones that have mro its result contains
-    # torch.optim.Optimizer which is the base class for all optimizers
-    OPTIMIZERS_DICT = {
-            opt.__qualname__.lower(): opt
-            # the list of element is obtained from vars, otherwise we need to
-            # convert the string names into objects
-            # vars is a dict name: object, we are interested only in objects
-            for opt in vars(torch.optim).values()
-            if hasattr(opt, 'mro') and torch.optim.Optimizer in opt.mro()
-    }
+
+class PLVisionWrapper(
+        pytorch_lightning.LightningModule,
+        src.utils.mixins.subclassgatherer.SubclassGatherer
+):
+    OPTIMIZERS_DICT = src.utils.mixins.\
+    subclassgatherer.SubclassGatherer.gather_subclasses(
+            module=torch.optim,
+            baseclass=torch.optim.Optimizer,
+    )
+    NORMALIZATIONS_DICT = src.utils.mixins.\
+    subclassgatherer.SubclassGatherer.gather_subclasses(
+            module=torch.nn.modules.activation,
+            baseclass=torch.nn.Module,
+    )
+    LOSSES_DICT = src.utils.mixins.\
+    subclassgatherer.SubclassGatherer.gather_subclasses(
+            module=torch.nn.modules.loss,
+            baseclass=torch.nn.Module,
+    )
+    ACCURACIES_DICT = src.utils.mixins.\
+    subclassgatherer.SubclassGatherer.gather_subclasses(
+            module=torchmetrics,
+            baseclass=torchmetrics.metric.Metric,
+    )
+
     DEFAULT_OPTIMIZER_CLASS_NAME = 'adam'
     DEFAULT_OPTIMIZER_EXTRA_ARGS = {}
     DEFAULT_LEARNING_RATE = 1e-3
     # the default normalization function is softmax, and we compute it along
     # the last dimension as the first dimension is the batches, and we want
     # the results to be normalized across the elements in the batch
-    DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION = torch.nn.Softmax(dim=-1)
-    DEFAULT_LOSS_FUNCTION = torch.nn.CrossEntropyLoss()
-    DEFAULT_ACCURACY_FUNCTION = torchmetrics.Accuracy()
+    DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION_NAME = 'softmax'
+    DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION_EXTRA_ARGS = {'dim': -1}
+    DEFAULT_LOSS_FUNCTION_NAME = 'crossentropyloss'
+    DEFAULT_LOSS_FUNCTION_EXTRA_ARGS = {}
+    DEFAULT_ACCURACY_FUNCTION_NAME = 'accuracy'
+    DEFAULT_ACCURACY_FUNCTION_EXTRA_ARGS = {}
 
     def __init__(
             self,
@@ -35,34 +51,29 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
             # this class should accept params and lr
             optimizer_class_name: str = DEFAULT_OPTIMIZER_CLASS_NAME,
             # extra arguments for the optimizer
-            optimizer_extra_args:
-            typing.Optional[
+            optimizer_extra_args: typing.Optional[
                     typing.Dict[str, typing.Any]
             ] = DEFAULT_OPTIMIZER_EXTRA_ARGS,
             lr: float = DEFAULT_LEARNING_RATE,
             *,
-            # NOTE: fix an annoying bug with typing.Callable and jsonargparse
-            # we should use the typing.Callable type hint but it doesn't work
-            # normalize_prob_func: typing.Callable[
-            #         [torch.Tensor],
-            #         torch.Tensor,
-            # ] = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION,
-            normalize_prob_func:
-            typing.Any = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION,
-            # NOTE: fix an annoying bug with typing.Callable and jsonargparse
-            # we should use the typing.Callable type hint but it doesn't work
-            # loss_func: typing.Callable[
-            #         [torch.Tensor, torch.Tensor],
-            #         torch.Tensor,
-            # ] = DEFAULT_LOSS_FUNCTION,
-            loss_func: typing.Any = DEFAULT_LOSS_FUNCTION,
-            # NOTE: fix an annoying bug with typing.Callable and jsonargparse
-            # we should use the typing.Callable type hint but it doesn't work
-            # accuracy_func: typing.Callable[
-            #         [torch.Tensor, torch.Tensor],
-            #         torch.Tensor,
-            # ] = DEFAULT_ACCURACY_FUNCTION,
-            accuracy_func: typing.Any = DEFAULT_ACCURACY_FUNCTION,
+            normalize_prob_func_name:
+            str = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION_NAME,
+            # extra arguments for the normalization function
+            normalize_prob_func_extra_args: typing.Optional[
+                    typing.Dict[str, typing.Any]
+            ] = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION_EXTRA_ARGS,
+            loss_func_name:
+            str = DEFAULT_LOSS_FUNCTION_NAME,
+            # extra arguments for the loss function
+            loss_func_extra_args: typing.Optional[
+                    typing.Dict[str, typing.Any]
+            ] = DEFAULT_LOSS_FUNCTION_EXTRA_ARGS,
+            accuracy_func_name:
+            str = DEFAULT_ACCURACY_FUNCTION_NAME,
+            # extra arguments for the accuracy function
+            accuracy_func_extra_args: typing.Optional[
+                    typing.Dict[str, typing.Any]
+            ] = DEFAULT_ACCURACY_FUNCTION_EXTRA_ARGS,
     ):
         super().__init__()
 
@@ -70,7 +81,9 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
         # if we get a KeyError for the optimizer name, we raise a ValueError
         # specifying the list of supported optimizers from the dict
         try:
-            self.optimizer_class = self.OPTIMIZERS_DICT[optimizer_class_name]
+            self.optimizer_class = self.OPTIMIZERS_DICT[
+                    optimizer_class_name.lower()
+            ]
         except KeyError:
             raise ValueError(
                     'Please use one of the supported optimizers: {}'.format(
@@ -81,9 +94,54 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
         # we keep lr in the model to allow for Trainer.tune
         # to run and determine the optimal ones
         self.lr = lr
-        self.accuracy_func = accuracy_func
-        self.loss_func = loss_func
-        self.normalize_prob_func = normalize_prob_func
+        # as before, if the name is not there we raise an error showing the
+        # supported names
+        # if found we instantiate it with the extra arguments
+        try:
+            self.normalize_prob_func = self.NORMALIZATIONS_DICT[
+                    normalize_prob_func_name.lower()
+            ](
+                **normalize_prob_func_extra_args
+            )
+        except KeyError:
+            raise ValueError(
+                    'Please use one of the supported '
+                    'normalizations: {}'.format(
+                            tuple(self.NORMALIZATIONS_DICT.keys())
+                    )
+            )
+        # as before, if the name is not there we raise an error showing the
+        # supported names
+        # if found we instantiate it with the extra arguments
+        try:
+            self.loss_func = self.LOSSES_DICT[
+                    loss_func_name.lower()
+            ](
+                **loss_func_extra_args
+            )
+        except KeyError:
+            raise ValueError(
+                    'Please use one of the supported '
+                    'losses: {}'.format(
+                            tuple(self.LOSSES_DICT.keys())
+                    )
+            )
+        # as before, if the name is not there we raise an error showing the
+        # supported names
+        # if found we instantiate it with the extra arguments
+        try:
+            self.accuracy_func = self.ACCURACIES_DICT[
+                    accuracy_func_name.lower()
+            ](
+                **accuracy_func_extra_args
+            )
+        except KeyError:
+            raise ValueError(
+                    'Please use one of the supported '
+                    'accuracies: {}'.format(
+                            tuple(self.ACCURACIES_DICT.keys())
+                    )
+            )
 
     def forward(self, input_):
         return self.model(input_)

@@ -7,16 +7,13 @@ model:
     optimizer_class_name: adam
     optimizer_extra_args: {}
     lr: 1e-3
-    normalize_prob_func:
-      class_path: torch.nn.Softmax
-      init_args:
-        dim: -1
-    loss_func:
-      class_path: torch.nn.CrossEntropyLoss
-      init_args: {}
-    accuracy_func:
-      class_path: torchmetrics.Accuracy
-      init_args: {}
+    normalize_prob_func_name: softmax
+    normalize_prob_func_extra_args:
+      dim: -1
+    loss_func_name: crossentropyloss
+    loss_func_extra_args: {}
+    accuracy_func_name: accuracy
+    accuracy_func_extra_args: {}
 
 data:
   class_path: pl_bolts.datamodules.ImagenetDataModule
