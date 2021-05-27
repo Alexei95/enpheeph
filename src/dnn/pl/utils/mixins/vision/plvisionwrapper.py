@@ -5,17 +5,26 @@ import torch
 import torchmetrics
 
 
-DEFAULT_OPTIMIZER_CLASS = torch.optim.Adam
-DEFAULT_LEARNING_RATE = 1e-3
-# the default normalization function is softmax, and we compute it along the
-# last dimension as the first dimension is the batches, and we want the results
-# to be normalized across the elements in the batch
-DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION = torch.nn.Softmax(dim=-1)
-DEFAULT_LOSS_FUNCTION = torch.nn.CrossEntropyLoss()
-DEFAULT_ACCURACY_FUNCTION = torchmetrics.Accuracy()
-
-
 class PLVisionWrapper(pytorch_lightning.LightningModule):
+    # we define the mapping for the optimizers
+    # the name is the __qualname__ of the class mapped to the class itself
+    # to get the correct optimizers, we search through the list of elements
+    # in torch.optim, checking that the ones that have mro its result contains
+    # torch.optim.Optimizer which is the base class for all optimizers
+    OPTIMIZERS_DICT = {
+            opt.__qualname__.lower(): opt
+            for opt in dir(torch.optim)
+            if hasattr(opt, 'mro') and torch.optim.Optimizer in opt.mro()
+    }
+    DEFAULT_OPTIMIZER_CLASS_NAME = 'adam'
+    DEFAULT_LEARNING_RATE = 1e-3
+    # the default normalization function is softmax, and we compute it along
+    # the last dimension as the first dimension is the batches, and we want
+    # the results to be normalized across the elements in the batch
+    DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION = torch.nn.Softmax(dim=-1)
+    DEFAULT_LOSS_FUNCTION = torch.nn.CrossEntropyLoss()
+    DEFAULT_ACCURACY_FUNCTION = torchmetrics.Accuracy()
+
     def __init__(
             self,
             model: torch.nn.Module,
@@ -28,7 +37,7 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
             #         [typing.Iterable, float],
             #         torch.optim.Optimizer
             # ] = DEFAULT_OPTIMIZER_CLASS,
-            optimizer_class: typing.Any = DEFAULT_OPTIMIZER_CLASS,
+            optimizer_class_name: typing.Any = DEFAULT_OPTIMIZER_CLASS_NAME,
             lr: float = DEFAULT_LEARNING_RATE,
             *,
             # NOTE: fix an annoying bug with typing.Callable and jsonargparse
@@ -57,7 +66,16 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
         super().__init__()
 
         self.model = model
-        self.optimizer_class = optimizer_class
+        # if we get a KeyError for the optimizer name, we raise a ValueError
+        # specifying the list of supported optimizers from the dict
+        try:
+            self.optimizer_class = self.OPTIMIZERS_DICT[optimizer_class_name]
+        except KeyError:
+            raise ValueError(
+                    'Please use one of the supported optimizers: {}'.format(
+                            tuple(self.OPTIMIZERS_DICT.keys())
+                    )
+            )
         # we keep lr in the model to allow for Trainer.tune
         # to run and determine the optimal ones
         self.lr = lr

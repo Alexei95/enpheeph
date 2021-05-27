@@ -3,8 +3,8 @@ model:
   init_args:
     model:
       class_path: torchvision.models.AlexNet
-    optimizer_class:
-      class_path: torch.optim.Adam
+      init_args: {}
+    optimizer_class: adam
     lr: 1e-3
     normalize_prob_func:
       class_path: torch.nn.Softmax
@@ -12,8 +12,10 @@ model:
         dim: -1
     loss_func:
       class_path: torch.nn.CrossEntropyLoss
+      init_args: {}
     accuracy_func:
       class_path: torchmetrics.Accuracy
+      init_args: {}
 
 data:
   class_path: pl_bolts.datamodules.ImagenetDataModule
