@@ -8,7 +8,7 @@ import pytorch_lightning.utilities.cli
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent.\
         parent.resolve()
 CONFIG_ROOT = PROJECT_ROOT / 'config'
-DEFAULT_CONFIGURATION_FILE = CONFIG_ROOT / 'default_custom_config.yml'
+DEFAULT_CONFIGURATION_FILE = CONFIG_ROOT / 'custom_config.yml'
 
 # we create the object and append the project path to sys.path only if this
 # file is being run as a script
