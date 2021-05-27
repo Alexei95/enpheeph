@@ -22,26 +22,36 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
             # this class should accept params and lr
             # if a custom implementation is required, i.e. a custom beta1 and
             # beta2 for Adam, use functools.partial
-            optimizer_class: typing.Callable[
-                    [typing.Iterable, float],
-                    torch.optim.Optimizer
-            ] = DEFAULT_OPTIMIZER_CLASS,
+            # NOTE: fix an annoying bug with typing.Callable and jsonargparse
+            # we should use the typing.Callable type hint but it doesn't work
+            # optimizer_class: typing.Callable[
+            #         [typing.Iterable, float],
+            #         torch.optim.Optimizer
+            # ] = DEFAULT_OPTIMIZER_CLASS,
+            optimizer_class: typing.Any = DEFAULT_OPTIMIZER_CLASS,
             lr: float = DEFAULT_LEARNING_RATE,
             *,
-            normalize_prob_func: typing.Callable[
-                    [torch.Tensor],
-                    torch.Tensor,
-            ] = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION,
-            loss_func: typing.Callable[
-                    [torch.Tensor, torch.Tensor],
-                    torch.Tensor,
-            ] = DEFAULT_LOSS_FUNCTION,
+            # NOTE: fix an annoying bug with typing.Callable and jsonargparse
+            # we should use the typing.Callable type hint but it doesn't work
+            # normalize_prob_func: typing.Callable[
+            #         [torch.Tensor],
+            #         torch.Tensor,
+            # ] = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION,
+            normalize_prob_func:
+            typing.Any = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION,
+            # NOTE: fix an annoying bug with typing.Callable and jsonargparse
+            # we should use the typing.Callable type hint but it doesn't work
+            # loss_func: typing.Callable[
+            #         [torch.Tensor, torch.Tensor],
+            #         torch.Tensor,
+            # ] = DEFAULT_LOSS_FUNCTION,
+            loss_func: typing.Any = DEFAULT_LOSS_FUNCTION,
+            # NOTE: fix an annoying bug with typing.Callable and jsonargparse
+            # we should use the typing.Callable type hint but it doesn't work
             # accuracy_func: typing.Callable[
             #         [torch.Tensor, torch.Tensor],
             #         torch.Tensor,
             # ] = DEFAULT_ACCURACY_FUNCTION,
-            # NOTE: fix an annoying bug with typing.Callable and jsonargparse
-            # we should use the typing.Callable type hint but it doesn't work
             accuracy_func: typing.Any = DEFAULT_ACCURACY_FUNCTION,
     ):
         super().__init__()
@@ -113,6 +123,6 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
         # this may not be needed, as for logging we already use self.log_dict
         # return metrics
 
-    def configure_optimizer(self):
+    def configure_optimizers(self):
         optimizer = self.optimizer_class(self.model.parameters(), lr=self.lr)
         return optimizer
