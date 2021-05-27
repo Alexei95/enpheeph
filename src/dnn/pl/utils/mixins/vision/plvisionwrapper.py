@@ -13,7 +13,10 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
     # torch.optim.Optimizer which is the base class for all optimizers
     OPTIMIZERS_DICT = {
             opt.__qualname__.lower(): opt
-            for opt in dir(torch.optim)
+            # the list of element is obtained from vars, otherwise we need to
+            # convert the string names into objects
+            # vars is a dict name: object, we are interested only in objects
+            for opt in vars(torch.optim).values()
             if hasattr(opt, 'mro') and torch.optim.Optimizer in opt.mro()
     }
     DEFAULT_OPTIMIZER_CLASS_NAME = 'adam'
