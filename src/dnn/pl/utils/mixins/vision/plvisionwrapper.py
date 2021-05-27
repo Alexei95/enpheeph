@@ -17,6 +17,7 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
             if hasattr(opt, 'mro') and torch.optim.Optimizer in opt.mro()
     }
     DEFAULT_OPTIMIZER_CLASS_NAME = 'adam'
+    DEFAULT_OPTIMIZER_EXTRA_ARGS = {}
     DEFAULT_LEARNING_RATE = 1e-3
     # the default normalization function is softmax, and we compute it along
     # the last dimension as the first dimension is the batches, and we want
@@ -29,15 +30,12 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
             self,
             model: torch.nn.Module,
             # this class should accept params and lr
-            # if a custom implementation is required, i.e. a custom beta1 and
-            # beta2 for Adam, use functools.partial
-            # NOTE: fix an annoying bug with typing.Callable and jsonargparse
-            # we should use the typing.Callable type hint but it doesn't work
-            # optimizer_class: typing.Callable[
-            #         [typing.Iterable, float],
-            #         torch.optim.Optimizer
-            # ] = DEFAULT_OPTIMIZER_CLASS,
-            optimizer_class_name: typing.Any = DEFAULT_OPTIMIZER_CLASS_NAME,
+            optimizer_class_name: str = DEFAULT_OPTIMIZER_CLASS_NAME,
+            # extra arguments for the optimizer
+            optimizer_extra_args:
+            typing.Optional[
+                    typing.Dict[str, typing.Any]
+            ] = DEFAULT_OPTIMIZER_EXTRA_ARGS,
             lr: float = DEFAULT_LEARNING_RATE,
             *,
             # NOTE: fix an annoying bug with typing.Callable and jsonargparse
@@ -76,6 +74,7 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
                             tuple(self.OPTIMIZERS_DICT.keys())
                     )
             )
+        self.optimizer_extra_args = optimizer_extra_args
         # we keep lr in the model to allow for Trainer.tune
         # to run and determine the optimal ones
         self.lr = lr
@@ -142,5 +141,7 @@ class PLVisionWrapper(pytorch_lightning.LightningModule):
         # return metrics
 
     def configure_optimizers(self):
-        optimizer = self.optimizer_class(self.parameters(), lr=self.lr)
+        optimizer = self.optimizer_class(
+            self.parameters(), lr=self.lr, **self.optimizer_extra_args
+        )
         return optimizer

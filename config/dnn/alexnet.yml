@@ -4,7 +4,8 @@ model:
     model:
       class_path: torchvision.models.AlexNet
       init_args: {}
-    optimizer_class: adam
+    optimizer_class_name: adam
+    optimizer_extra_args: {}
     lr: 1e-3
     normalize_prob_func:
       class_path: torch.nn.Softmax
