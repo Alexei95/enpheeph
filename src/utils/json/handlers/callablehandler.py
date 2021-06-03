@@ -8,28 +8,28 @@ import src.utils.mixins.dispatcher
 import src.utils.mixins.importutils
 
 
-class ObjectHandler(
+class CallableHandler(
     # to dispatch the operation to other object handlers
     src.utils.mixins.dispatcher.Dispatcher,
     src.utils.mixins.importutils.ImportUtils,
 ):
     # this is the default that should be used to get the name associated to
     # this decoder/encoder
-    OBJECT_HANDLER_DEFAULT_STRING = 'object'
-    OBJECT_HANDLER_KEYS = ['__object__']
-    OBJECT_HANDLER_EXTRA_KEYS = ['__import__']
+    CALLABLE_HANDLER_DEFAULT_STRING = 'callable'
+    CALLABLE_HANDLER_KEYS = ['__callable__']
+    CALLABLE_HANDLER_EXTRA_KEYS = ['__args__', '__kwargs__', '__import__']
 
     @src.utils.instance_or_classmethod.instance_or_classmethod
     def get_default_string(self_or_cls):
-        return self_or_cls.OBJECT_HANDLER_DEFAULT_STRING
+        return self_or_cls.CALLABLE_HANDLER_DEFAULT_STRING
 
     @src.utils.instance_or_classmethod.instance_or_classmethod
     def get_keys(self_or_cls):
-        return self_or_cls.OBJECT_HANDLER_KEYS
+        return self_or_cls.CALLABLE_HANDLER_KEYS
 
     @src.utils.instance_or_classmethod.instance_or_classmethod
     def get_extra_keys(self_or_cls):
-        return self_or_cls.OBJECT_HANDLER_EXTRA_KEYS
+        return self_or_cls.CALLABLE_HANDLER_EXTRA_KEYS
 
     @src.utils.instance_or_classmethod.instance_or_classmethod
     def decode_json(
@@ -42,7 +42,9 @@ class ObjectHandler(
         # hence, we don't need to check them again, only work on the
         # remaining parameters
         # this handler supports
-        # __object__ to mention an object to be returned
+        # __callable__ to mention a callable, which can also be a class
+        # __args__ to mention a list of args
+        # __kwargs__ to mention a dict of args
         # if __import__ is True, then the callable must be imported
         # if not given or False, then we assume the callable is already present
         # in the namespace
@@ -61,12 +63,14 @@ class ObjectHandler(
                         'parsed: {}'.format(self_or_cls.get_keys())
                 )
 
-        object_str = dict_['__object__']
+        callable_str = dict_['__callable__']
+        args = dict_.get('__args__', tuple())
+        kwargs = dict_.get('__kwargs__', {})
         import_ = dict_.get('__import__', False)
 
-        object_ = self_or_cls.get_object(
-                element=object_str,
+        callable_func = self_or_cls.get_object(
+                element=callable_str,
                 import_=import_
         )
 
-        return object_
+        return callable_func(*args, **kwargs)
