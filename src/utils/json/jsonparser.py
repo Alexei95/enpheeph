@@ -126,19 +126,6 @@ class JSONParser(
     DecoderDispatcher = src.utils.mixins.dispatcher.Dispatcher()
     PostprocessorDispatcher = src.utils.mixins.dispatcher.Dispatcher()
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.import_submodules(
-                package_name='src.utils.json.handlers',
-                package_path=pathlib.Path(
-                        __file__
-                ).resolve().parent / 'handlers',
-                root=pathlib.Path(
-                        __file__
-                ).resolve().parent.parent.parent.parent,
-        )
-
     # the method has to be a normal instance method as it uses the default
     # value set in the __init__
     # this method loads different streams in JSON formats, with the first
