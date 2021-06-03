@@ -5,14 +5,14 @@ import typing
 
 class ImportUtils(object):
     @classmethod
-    def get_callable_from_import(cls, element: str) -> typing.Callable:
+    def get_object_from_import(cls, element: str) -> typing.Any:
         # we copy the whole name of the element
         module_string = element
         # we define the module to be None, so that we can check before
-        # returning the callable
+        # returning the object
         module = None
         # we repeat the cycle depending on how many elements we have in
-        # the full callable path, e.g. src.fi.utils.Action.get_function
+        # the full object path, e.g. src.fi.utils.Action.get_function
         # will repeat the loop for 5 times
         for i in range(len(element.split('.'))):
             # at each iteration we split the string from the end
@@ -20,8 +20,8 @@ class ImportUtils(object):
             # 1 split, hence getting the first element with all the names
             # except the last one, which is the one we are interested in
             # the second element is the function name, so we save it
-            # as the callable name
-            module_string, callable_string = module_string.rsplit(
+            # as the object name
+            module_string, object_string = module_string.rsplit(
                     '.',
                     maxsplit=1
             )
@@ -35,20 +35,20 @@ class ImportUtils(object):
                 break
         if module is None:
             raise ValueError(f"{element} is not importable")
-        # we get the final callable using the callable_string and the
+        # we get the final object using the object_string and the
         # imported module
-        callable_ = getattr(module, callable_string, None)
+        object_ = getattr(module, object_string, None)
 
-        # we raise the error if callable_ is not existing
-        if callable_ is None:
-            raise ValueError(f"{callable_string} not found in {module_string}")
+        # we raise the error if object_ is not existing
+        if object_ is None:
+            raise ValueError(f"{object_string} not found in {module_string}")
 
-        return callable_
+        return object_
 
-    # we return a callable from a string, going through the local namespace
+    # we return an object from a string, going through the local namespace
     # as well as the builtin functions
     @classmethod
-    def get_callable_from_namespace(cls, element: str) -> typing.Callable:
+    def get_object_from_namespace(cls, element: str) -> typing.Any:
         # we get the module from the vars, since it is a dict
         # if not present in vars, we check in __builtins__, then we let it
         # raise its error
@@ -75,20 +75,20 @@ class ImportUtils(object):
 
         return value
 
-    # this function returns a callable from a string and a flag to force
+    # this function returns an object from a string and a flag to force
     # its import
     @classmethod
-    def get_callable(
+    def get_object(
             cls,
             element: str,
             import_: bool = False
-    ) -> typing.Callable:
-        # if we are required to import the callable
+    ) -> typing.Any:
+        # if we are required to import the object
         if import_:
-            # we get the callable importing the required elements
-            callable_ = cls.get_callable_from_import(element)
+            # we get the object importing the required elements
+            object_ = cls.get_object_from_import(element)
         # if not required, we cycle through the module and getattr to reach the
-        # final callable
+        # final object
         else:
-            callable_ = cls.get_callable_from_namespace(element)
-        return callable_
+            object_ = cls.get_object_from_namespace(element)
+        return object_
