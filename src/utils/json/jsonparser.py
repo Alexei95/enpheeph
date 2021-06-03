@@ -7,13 +7,11 @@ import typing
 
 import src.utils.instance_or_classmethod
 import src.utils.mixins.dispatcher
-import src.utils.mixins.modulegatherer
 
 
 # to be able to encode JSON, we need to subclass the encoder
 # for decoding it is not needed, but we will define a decode classmethod here
 class JSONParser(
-        src.utils.mixins.modulegatherer.ModuleGatherer,
         json.JSONEncoder,
 ):
     # dict1 is the base and then dict2 overrides it
@@ -125,6 +123,9 @@ class JSONParser(
     # encoders
     DecoderDispatcher = src.utils.mixins.dispatcher.Dispatcher()
     PostprocessorDispatcher = src.utils.mixins.dispatcher.Dispatcher()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     # the method has to be a normal instance method as it uses the default
     # value set in the __init__
