@@ -132,8 +132,7 @@
             "data_dir": "/shared/ml/datasets/ImageNet_2012/",
             "shuffle": true,
             "pin_memory": true,
-            "drop_last": false,
-            "seed": 42
+            "drop_last": false
         }
     }
 }
