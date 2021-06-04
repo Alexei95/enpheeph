@@ -89,7 +89,7 @@
                 "__custom__": true,
                 "__custom_decoder__": "object",
                 "__import__": true,
-                "__callable__": "torch.optim.Adam"
+                "__object__": "torch.optim.Adam"
             },
             "learning_rate": 1e-3,
             "batch_size": 1,
