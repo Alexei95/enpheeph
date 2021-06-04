@@ -13,7 +13,8 @@ model:
       init_args: {}
     optimizer_class_name: adam
     optimizer_extra_args: {}
-    lr: 1e-3
+    learning_rate: 1e-3
+    batch_size: 1
     normalize_prob_func_name: softmax
     normalize_prob_func_extra_args:
       dim: -1
@@ -23,8 +24,8 @@ model:
     accuracy_func_extra_args: {}
 
 data:
-  class_path: pl_bolts.datamodules.ImagenetDataModule
+  class_path: pl_bolts.datamodules.MNISTDataModule
   init_args:
-    data_dir: /shared/ml/datasets/ImageNet_2012/
+    data_dir: model_training/datasets/mnist
     shuffle: true
     pin_memory: true
