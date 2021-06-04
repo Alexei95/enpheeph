@@ -36,7 +36,7 @@
                                                         "self": {
                                                             "0": "config/dnn/basic_trainer.json",
                                                             "1": "config/dnn/option_clearer.json",
-                                                            "2": "config/dnn/alexnet.json"
+                                                            "2": "config/dnn/alexnet_imagenet_base.json"
                                                         }
                                                     }
                                                 }
