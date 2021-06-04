@@ -54,3 +54,4 @@ print(parser.load_strings(["""
         }
     }
 }"""]))
+print(parser.load_paths([pathlib.Path(SRC_PARENT_DIR / 'config' / 'dnn' / 'basic_trainer.json')]))

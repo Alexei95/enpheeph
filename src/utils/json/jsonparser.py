@@ -39,6 +39,13 @@ class JSONParser(
                         item1,
                         item2
                 )
+            # if both are sequences, then we put them all together in a single
+            # list
+            # elif isinstance(item2, collections.abc.Sequence) and isinstance(
+            #         item1,
+            #         collections.abc.Sequence
+            # ):
+            #     updated_item = [*item1, *item2]
             # otherwise we just copy it over
             else:
                 updated_item = copy.deepcopy(item2)
@@ -134,20 +141,28 @@ class JSONParser(
     def load_streams(
             self,
             fps: typing.Sequence[typing.IO],
-            # extra arguments are passed to json.load
             *args,
+            raw: bool = False,
+            # extra arguments are passed to json.load
             **kwargs,
     ) -> typing.Dict[str, typing.Any]:
         returned_dict = {}
         for fp in fps:
-            d = json.load(fp, *args, object_hook=self.decode, **kwargs)
+            # if raw is True we do not decode the JSON
+            if raw:
+                object_hook = None
+            else:
+                object_hook = self.decode
+            d = json.load(fp, *args, object_hook=object_hook, **kwargs)
             # we update the current dict with the newly-parsed JSON
             returned_dict = self.recursive_update_dict(returned_dict, d)
-        # post-processing
-        return self.post_process_decoding(
-                returned_dict,
-                complete=returned_dict
-        )
+        # post-processing if raw is False
+        if not raw:
+            returned_dict = self.post_process_decoding(
+                    returned_dict,
+                    complete=returned_dict
+            )
+        return returned_dict
 
     # the method has to be a normal instance method as it uses the default
     # value set in the __init__
@@ -156,35 +171,44 @@ class JSONParser(
     def load_strings(
             self,
             strings: typing.Sequence[str],
-            # extra arguments are passed to json.load
             *args,
+            raw: bool = False,
+            # extra arguments are passed to json.load
             **kwargs,
     ) -> typing.Dict[str, typing.Any]:
         returned_dict = {}
         for string in strings:
-            d = json.loads(string, *args, object_hook=self.decode, **kwargs)
+            # if raw is True we do not decode the JSON
+            if raw:
+                object_hook = None
+            else:
+                object_hook = self.decode
+            d = json.loads(string, *args, object_hook=object_hook, **kwargs)
             if isinstance(d, collections.abc.Mapping):
                 # we update the current dict with the newly-parsed JSON
                 returned_dict = self.recursive_update_dict(returned_dict, d)
             else:
                 # if not we simply overwrite the value
                 returned_dict = d
-        # post-processing
-        return self.post_process_decoding(
-                returned_dict,
-                complete=returned_dict
-        )
+        # post-processing if raw is False
+        if not raw:
+            returned_dict = self.post_process_decoding(
+                    returned_dict,
+                    complete=returned_dict
+            )
+        return returned_dict
 
     def load_paths(
             self,
             paths: typing.Sequence[pathlib.Path],
-            # extra arguments are passed to json.load
             *args,
+            raw: bool = False,
+            # extra arguments are passed to json.load
             **kwargs,
     ) -> typing.Dict[str, typing.Any]:
         # we read the paths to get the strings to feed load_strings
         strings = [p.read_text() for p in paths]
-        return self.load_strings(strings, *args, **kwargs)
+        return self.load_strings(strings, *args, raw=raw, **kwargs)
 
     # the method has to be a normal instance method as it uses the default
     # value set in the __init__

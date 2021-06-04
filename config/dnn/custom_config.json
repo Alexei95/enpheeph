@@ -1,0 +1,58 @@
+{
+    "trainer": {
+        "__kwargs__": {
+            "auto_scale_batch_size": true,
+            "auto_lr_find": true,
+            "default_root_dir": "model_training/lightning/test_alexnet",
+
+            "logger": {
+                "__kwargs__": {
+                    "initlist": {
+                        "__kwargs__": {
+                            "self": {
+                                "1": {
+                                    "__kwargs__": {
+                                        "save_dir": "model_training/lightning/test_alexnet"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    "model": {
+        "__custom__": true,
+        "__custom_decoder__": "callable",
+        "__import__": true,
+        "__callable__": "src.dnn.pl.utils.mixins.vision.plvisionwrapper.PLVisionWrapper",
+        "__args__": [],
+        "__kwargs__": {
+            "model": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torchvision.models.AlexNet",
+                "__args__": [],
+                "__kwargs__": {}
+            }
+        }
+    },
+
+    "datamodule": {
+        "__custom__": true,
+        "__custom_decoder__": "callable",
+        "__import__": true,
+        "__callable__": "pl_bolts.datamodules.mnist_datamodule.MNISTDataModule",
+        "__args__": [],
+        "__kwargs__": {
+            "data_dir": "model_training/datasets/mnist/",
+            "normalize": true,
+            "shuffle": true,
+            "pin_memory": true,
+            "drop_last": false
+        }
+    }
+}

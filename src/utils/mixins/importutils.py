@@ -1,5 +1,6 @@
 import builtins
 import importlib
+import types
 import typing
 
 
@@ -10,21 +11,28 @@ class ImportUtils(object):
         module_string = element
         # we define the module to be None, so that we can check before
         # returning the object
+        # also object_string is empty at the beginning
         module = None
-        # we repeat the cycle depending on how many elements we have in
-        # the full object path, e.g. src.fi.utils.Action.get_function
-        # will repeat the loop for 5 times
-        for i in range(len(element.split('.'))):
-            # at each iteration we split the string from the end
-            # towards the beginning, using the dot '.' and allowing at most
-            # 1 split, hence getting the first element with all the names
-            # except the last one, which is the one we are interested in
-            # the second element is the function name, so we save it
-            # as the object name
-            module_string, object_string = module_string.rsplit(
+        object_string = ''
+        # we iterate from the last sub-object in the string by split
+        for el in reversed(element.split('.')):
+            # we drop the last element in the whole element string
+            # and at each iteration we drop one more
+            # to try and import the current module_string
+            module_string = module_string.rsplit(
                     '.',
                     maxsplit=1
-            )
+            )[0]
+            # we update the object_string, uniting the elements from last to
+            # first, the opposite direction compared to the search for the
+            # module
+            # if the object_string is empty, we directly copy the last element
+            # this is done at the first iteration
+            if object_string:
+                object_string = '.'.join([el, object_string])
+            else:
+                object_string = el
+
             # we try importing the module, if we get an ImportError we
             # continue on the next iteration, otherwise we can stop
             try:
@@ -37,11 +45,7 @@ class ImportUtils(object):
             raise ValueError(f"{element} is not importable")
         # we get the final object using the object_string and the
         # imported module
-        object_ = getattr(module, object_string, None)
-
-        # we raise the error if object_ is not existing
-        if object_ is None:
-            raise ValueError(f"{object_string} not found in {module_string}")
+        object_ = cls.get_object_from_module(object_string, module)
 
         return object_
 
@@ -91,4 +95,22 @@ class ImportUtils(object):
         # final object
         else:
             object_ = cls.get_object_from_namespace(element)
+        return object_
+
+    # to return an object from a string and a module
+    @classmethod
+    def get_object_from_module(
+            cls,
+            object_string: str,
+            module: types.ModuleType
+    ) -> typing.Any:
+        # we iterate over the children from the module to the final object
+        object_ = module
+        for el in object_string.split('.'):
+            object_ = getattr(object_, el, None)
+            # we raise the error if object_ is not existing
+            if object_ is None:
+                raise ValueError(
+                        f"{object_string} not found in {module_string}"
+                )
         return object_
