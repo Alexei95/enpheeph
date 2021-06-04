@@ -91,7 +91,8 @@
                 "__import__": true,
                 "__callable__": "torch.optim.Adam"
             },
-            "lr": 1e-3,
+            "learning_rate": 1e-3,
+            "batch_size": 1,
             "normalize_prob_func": {
                 "__custom__": true,
                 "__custom_decoder__": "callable",
