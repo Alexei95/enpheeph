@@ -11,141 +11,54 @@ class PLVisionWrapper(
         pytorch_lightning.LightningModule,
         src.utils.mixins.subclassgatherer.SubclassGatherer
 ):
-    OPTIMIZERS_DICT = src.utils.mixins.\
-    subclassgatherer.SubclassGatherer.gather_subclasses(
-            module=torch.optim,
-            baseclass=torch.optim.Optimizer,
-    )
-    NORMALIZATIONS_DICT = src.utils.mixins.\
-    subclassgatherer.SubclassGatherer.gather_subclasses(
-            module=torch.nn.modules.activation,
-            baseclass=torch.nn.Module,
-    )
-    LOSSES_DICT = src.utils.mixins.\
-    subclassgatherer.SubclassGatherer.gather_subclasses(
-            module=torch.nn.modules.loss,
-            baseclass=torch.nn.Module,
-    )
-    ACCURACIES_DICT = src.utils.mixins.\
-    subclassgatherer.SubclassGatherer.gather_subclasses(
-            module=torchmetrics,
-            baseclass=torchmetrics.metric.Metric,
-    )
-
-    DEFAULT_OPTIMIZER_CLASS_NAME = 'adam'
-    DEFAULT_OPTIMIZER_EXTRA_ARGS = {}
+    DEFAULT_OPTIMIZER_CLASS = torch.optim.Adam
     DEFAULT_LEARNING_RATE = 1e-3
     DEFAULT_BATCH_SIZE = 1
     # the default normalization function is softmax, and we compute it along
     # the last dimension as the first dimension is the batches, and we want
     # the results to be normalized across the elements in the batch
-    DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION_NAME = 'softmax'
-    DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION_EXTRA_ARGS = {'dim': -1}
-    DEFAULT_LOSS_FUNCTION_NAME = 'crossentropyloss'
-    DEFAULT_LOSS_FUNCTION_EXTRA_ARGS = {}
-    DEFAULT_ACCURACY_FUNCTION_NAME = 'accuracy'
-    DEFAULT_ACCURACY_FUNCTION_EXTRA_ARGS = {}
+    DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION = torch.nn.Softmax(dim=-1)
+    DEFAULT_LOSS_FUNCTION = torch.nn.CrossEntropyLoss()
+    DEFAULT_ACCURACY_FUNCTION = torchmetrics.Accuracy()
 
     def __init__(
             self,
             model: torch.nn.Module,
             # this class should accept params and lr
-            optimizer_class_name: str = DEFAULT_OPTIMIZER_CLASS_NAME,
-            # extra arguments for the optimizer
-            optimizer_extra_args: typing.Optional[
-                    typing.Dict[str, typing.Any]
-            ] = DEFAULT_OPTIMIZER_EXTRA_ARGS,
+            optimizer_class: typing.Callable[
+                        [torch.Variable, float],
+                        torch.optim.Optimizer,
+            ] = DEFAULT_OPTIMIZER_CLASS,
             learning_rate: float = DEFAULT_LEARNING_RATE,
             batch_size: int = DEFAULT_BATCH_SIZE,
             *,
-            normalize_prob_func_name:
-            str = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION_NAME,
-            # extra arguments for the normalization function
-            normalize_prob_func_extra_args: typing.Optional[
-                    typing.Dict[str, typing.Any]
-            ] = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION_EXTRA_ARGS,
-            loss_func_name:
-            str = DEFAULT_LOSS_FUNCTION_NAME,
-            # extra arguments for the loss function
-            loss_func_extra_args: typing.Optional[
-                    typing.Dict[str, typing.Any]
-            ] = DEFAULT_LOSS_FUNCTION_EXTRA_ARGS,
-            accuracy_func_name:
-            str = DEFAULT_ACCURACY_FUNCTION_NAME,
-            # extra arguments for the accuracy function
-            accuracy_func_extra_args: typing.Optional[
-                    typing.Dict[str, typing.Any]
-            ] = DEFAULT_ACCURACY_FUNCTION_EXTRA_ARGS,
+            normalize_prob_func: typing.Callable[
+                        [torch.Tensor],
+                        torch.Tensor,
+            ] = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION,
+            loss_func: typing.Callable[
+                        [torch.Tensor, torch.Tensor],
+                        torch.Tensor,
+            ] = DEFAULT_LOSS_FUNCTION,
+            accuracy_func: typing.Callable[
+                        [torch.Tensor, torch.Tensor],
+                        torch.Tensor,
+            ] = DEFAULT_ACCURACY_FUNCTION,
     ):
         super().__init__()
 
         self.model = model
-        # if we get a KeyError for the optimizer name, we raise a ValueError
-        # specifying the list of supported optimizers from the dict
-        try:
-            self.optimizer_class = self.OPTIMIZERS_DICT[
-                    optimizer_class_name.lower()
-            ]
-        except KeyError:
-            raise ValueError(
-                    'Please use one of the supported optimizers: {}'.format(
-                            tuple(self.OPTIMIZERS_DICT.keys())
-                    )
-            )
-        self.optimizer_extra_args = optimizer_extra_args
+        self.optimizer_class = optimizer_class
+
         # we keep lr in the model to allow for Trainer.tune
         # to run and determine the optimal ones
         self.learning_rate = learning_rate
         # same for batch size
         self.batch_size = batch_size
-        # as before, if the name is not there we raise an error showing the
-        # supported names
-        # if found we instantiate it with the extra arguments
-        try:
-            self.normalize_prob_func = self.NORMALIZATIONS_DICT[
-                    normalize_prob_func_name.lower()
-            ](
-                **normalize_prob_func_extra_args
-            )
-        except KeyError:
-            raise ValueError(
-                    'Please use one of the supported '
-                    'normalizations: {}'.format(
-                            tuple(self.NORMALIZATIONS_DICT.keys())
-                    )
-            )
-        # as before, if the name is not there we raise an error showing the
-        # supported names
-        # if found we instantiate it with the extra arguments
-        try:
-            self.loss_func = self.LOSSES_DICT[
-                    loss_func_name.lower()
-            ](
-                **loss_func_extra_args
-            )
-        except KeyError:
-            raise ValueError(
-                    'Please use one of the supported '
-                    'losses: {}'.format(
-                            tuple(self.LOSSES_DICT.keys())
-                    )
-            )
-        # as before, if the name is not there we raise an error showing the
-        # supported names
-        # if found we instantiate it with the extra arguments
-        try:
-            self.accuracy_func = self.ACCURACIES_DICT[
-                    accuracy_func_name.lower()
-            ](
-                **accuracy_func_extra_args
-            )
-        except KeyError:
-            raise ValueError(
-                    'Please use one of the supported '
-                    'accuracies: {}'.format(
-                            tuple(self.ACCURACIES_DICT.keys())
-                    )
-            )
+
+        self.normalize_prob_func = normalize_prob_func
+        self.loss_func = loss_func
+        self.accuracy_func = accuracy_func
 
     def forward(self, input_):
         return self.model(input_)
@@ -209,6 +122,5 @@ class PLVisionWrapper(
         optimizer = self.optimizer_class(
             self.parameters(),
             lr=self.learning_rate,
-            **self.optimizer_extra_args
         )
         return optimizer

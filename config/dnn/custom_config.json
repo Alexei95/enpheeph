@@ -84,6 +84,39 @@
                 "__callable__": "torchvision.models.AlexNet",
                 "__args__": [],
                 "__kwargs__": {}
+            },
+            "optimizer_class": {
+                "__custom__": true,
+                "__custom_decoder__": "object",
+                "__import__": true,
+                "__callable__": "torch.optim.Adam"
+            },
+            "lr": 1e-3,
+            "normalize_prob_func": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torch.nn.Softmax",
+                "__args__": [],
+                "__kwargs__": {
+                    "dim": -1
+                }
+            },
+            "loss_func": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torch.nn.CrossEntropyLoss",
+                "__args__": [],
+                "__kwargs__": {}
+            },
+            "accuracy_func": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torchmetrics.Accuracy",
+                "__args__": [],
+                "__kwargs__": {}
             }
         }
     },
@@ -92,11 +125,10 @@
         "__custom__": true,
         "__custom_decoder__": "callable",
         "__import__": true,
-        "__callable__": "pl_bolts.datamodules.mnist_datamodule.MNISTDataModule",
+        "__callable__": "pl_bolts.datamodules.ImagenetDataModule",
         "__args__": [],
         "__kwargs__": {
-            "data_dir": "model_training/datasets/mnist/",
-            "normalize": true,
+            "data_dir": "/shared/ml/datasets/ImageNet_2012/",
             "shuffle": true,
             "pin_memory": true,
             "drop_last": false,
