@@ -35,6 +35,7 @@ class PLVisionWrapper(
     DEFAULT_OPTIMIZER_CLASS_NAME = 'adam'
     DEFAULT_OPTIMIZER_EXTRA_ARGS = {}
     DEFAULT_LEARNING_RATE = 1e-3
+    DEFAULT_BATCH_SIZE = 1
     # the default normalization function is softmax, and we compute it along
     # the last dimension as the first dimension is the batches, and we want
     # the results to be normalized across the elements in the batch
@@ -54,7 +55,8 @@ class PLVisionWrapper(
             optimizer_extra_args: typing.Optional[
                     typing.Dict[str, typing.Any]
             ] = DEFAULT_OPTIMIZER_EXTRA_ARGS,
-            lr: float = DEFAULT_LEARNING_RATE,
+            learning_rate: float = DEFAULT_LEARNING_RATE,
+            batch_size: int = DEFAULT_BATCH_SIZE,
             *,
             normalize_prob_func_name:
             str = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION_NAME,
@@ -93,7 +95,9 @@ class PLVisionWrapper(
         self.optimizer_extra_args = optimizer_extra_args
         # we keep lr in the model to allow for Trainer.tune
         # to run and determine the optimal ones
-        self.lr = lr
+        self.learning_rate = learning_rate
+        # same for batch size
+        self.batch_size = batch_size
         # as before, if the name is not there we raise an error showing the
         # supported names
         # if found we instantiate it with the extra arguments
@@ -203,6 +207,8 @@ class PLVisionWrapper(
 
     def configure_optimizers(self):
         optimizer = self.optimizer_class(
-            self.parameters(), lr=self.lr, **self.optimizer_extra_args
+            self.parameters(),
+            lr=self.learning_rate,
+            **self.optimizer_extra_args
         )
         return optimizer
