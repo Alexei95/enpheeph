@@ -1,31 +1,45 @@
 import copy
+import json
 import pathlib
+import pprint
+import shutil
 import sys
 
 import pytorch_lightning
-import pytorch_lightning.utilities.cli
-
-import src.cli.utils.argumentparser
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().\
     parent.parent.parent.parent.parent.resolve()
 CONFIG_ROOT = PROJECT_ROOT / 'config'
 DEFAULT_CONFIGURATION_FILE = CONFIG_ROOT / 'custom_config.yml'
 
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.append(str(PROJECT_ROOT))
+
+import src.cli.utils.argumentparser
+import src.dnn.pl.utils.callbacks.saveconfigcallback
+import src.utils.json.jsonparser
+import src.utils.json.handlers.callablehandler
+import src.utils.json.handlers.objecthandler
+
 
 class PLTrainerCLI(
         src.utils.json.jsonparser.JSONParser,
 ):
+    # default subdirectory for saving configs
+    DEFAULT_SUBDIRECTORY = 'configs'
     # default keys and values for the default configs
     DEFAULT_CONFIG_KEY = 'config'
     DEFAULT_CONFIG_VALUE = []
     DEFAULT_SAVE_CONFIG_KEY = 'save_config'
     DEFAULT_SAVE_CONFIG_FLAG = True
     DEFAULT_SAVE_CONFIG_VALUE = pathlib.Path('.')
-    DEFAULT_ROOT_DIR_KEY = 'default_root_dir'
+    DEFAULT_TRAINER_ROOT_DIR_KEY = 'default_root_dir'
+    DEFAULT_CALLBACKS_KEY = 'callbacks'
+    DEFAULT_CALLBACKS_VALUE = []
     # keys to be used in the config
     CONFIG_KEY = 'config'
     TRAINER_KEY = 'trainer'
+    TRAINER_DEFAULT_VALUE = {}
     MODEL_KEY = 'model'
     DATAMODULE_KEY = 'datamodule'
     TRAINER_CLASS_KEY = 'trainer_class'
@@ -64,10 +78,25 @@ class PLTrainerCLI(
                 else defaults
         )
 
+        self.DecoderDispatcher.register(
+                src.utils.json.handlers.callablehandler.\
+                CallableHandler.CALLABLE_HANDLER_DEFAULT_STRING,
+                src.utils.json.handlers.callablehandler.\
+                CallableHandler.decode_json
+        )
+        self.DecoderDispatcher.register(
+                src.utils.json.handlers.objecthandler.\
+                ObjectHandler.OBJECT_HANDLER_DEFAULT_STRING,
+                src.utils.json.handlers.objecthandler.\
+                ObjectHandler.decode_json
+        )
+
         self.parser = src.cli.utils.argumentparser.ArgumentParser()
-        self.parsed_namespace = {}
-        self.config = {}
-        self.config_paths = []
+        self.namespace = None
+        self.config = None
+        self.raw_config = None
+        self.json_raw_config = None
+        self.config_paths = None
         self.trainer = None
         self.model = None
         self.datamodule = None
@@ -76,9 +105,13 @@ class PLTrainerCLI(
         self.add_default_arguments(parser=self.parser, defaults=self.defaults)
         self.add_extra_arguments(parser=self.parser, defaults=self.defaults)
         self.parse_arguments(parser=self.parser)
-        self.postprocess_parsed_arguments(namespace=self.parsed_namespace)
-        self.load_configs(namespace=self.parsed_namespace)
+        self.postprocess_parsed_arguments(namespace=self.namespace)
+        self.load_raw_configs(namespace=self.namespace)
+        self.postprocess_loaded_raw_configs(config=self.raw_config)
+        self.convert_raw_config_to_json_config(config=self.raw_config)
+        self.load_config(config=self.json_raw_config)
         self.postprocess_loaded_configs(config=self.config)
+        self.check_config(config=self.config)
         self.init_trainer(config=self.config)
         self.init_model(config=self.config)
         self.init_datamodule(config=self.config)
@@ -138,11 +171,15 @@ class PLTrainerCLI(
         )
 
     def add_default_arguments(self, parser, defaults):
+        # when using '+', if the option starts with -- it is considered
+        # optional, but it must have at least one argument when used
+        # so "--config a" or "" are ok but "--config" is not
+        # hence we add required=True
         parser.add_argument(
-                '--config',
                 '-c',
+                '--config',
                 nargs='+',
-                action='extend',
+                required=True,
                 type=pathlib.Path,
                 default=defaults.get(
                         self.DEFAULT_CONFIG_KEY,
@@ -150,18 +187,21 @@ class PLTrainerCLI(
                 ),
                 help='to provide the paths for the JSON configs to be loaded',
         )
+        # we use the same flag so that if we get the flag we can use the
+        # default path if no Trainer path is provided
         parser.add_argument(
                 '--save-config',
                 action='store',
                 nargs='?',
                 default=defaults.get(
                         self.DEFAULT_SAVE_CONFIG_KEY,
-                        self.DEFAULT_SAVE_CONFIG_FLAG,
+                        copy.deepcopy(self.DEFAULT_SAVE_CONFIG_FLAG),
                 ),
                 const=defaults.get(
                         self.DEFAULT_SAVE_CONFIG_KEY,
-                        self.DEFAULT_SAVE_CONFIG_VALUE,
+                        copy.deepcopy(self.DEFAULT_SAVE_CONFIG_FLAG),
                 ),
+                type=pathlib.Path,
                 help=(
                         'if enabled it will save the configuration in '
                         'the Trainer default_root_dir'
@@ -172,16 +212,75 @@ class PLTrainerCLI(
         pass
 
     def parse_arguments(self, parser, args=None, namespace=None):
-        self.namespace = self.parser.parse_args(args=args, namespace=namespace)
+        self.namespace = parser.parse_args(args=args, namespace=namespace)
 
     def postprocess_parsed_arguments(self, namespace):
         pass
 
-    def load_configs(self, namespace):
-        configs = namespace[self.DEFAULT_CONFIG_KEY]
+    def load_raw_configs(self, namespace):
+        config_paths = getattr(namespace, self.DEFAULT_CONFIG_KEY)
 
-        self.config = self.load_paths(configs)
-        self.config_paths = configs
+        # we load the JSON config, without decoding
+        config = self.load_paths(config_paths, raw=True)
+
+        # here we check the save config path
+        # if it is enabled we attach it in the configuration
+        # for the path, if not given we get the Trainer default_root_dir
+        # path
+        save_config_value = getattr(namespace, self.DEFAULT_SAVE_CONFIG_KEY)
+        if save_config_value:
+            if isinstance(
+                    save_config_value,
+                    pathlib.Path
+            ):
+                save_path = pathlib.Path(save_config_value).resolve()
+            else:
+                save_path = (
+                        pathlib.Path(
+                                config.get(
+                                    self.TRAINER_KEY,
+                                    copy.deepcopy(self.TRAINER_DEFAULT_VALUE),
+                                ).get(
+                                        '__kwargs__', {}
+                                ).get(
+                                        self.DEFAULT_TRAINER_ROOT_DIR_KEY,
+                                        copy.deepcopy(
+                                                self.DEFAULT_SAVE_CONFIG_VALUE
+                                        ),
+                                )
+                        ).resolve() / self.DEFAULT_SUBDIRECTORY
+                ).resolve()
+
+            # we generate the correct JSON for SaveConfigCallback
+            complete_dest_dir = save_path.resolve() / self.DEFAULT_SUBDIRECTORY
+            complete_dest_dir.mkdir(exist_ok=True, parents=True)
+            # we cycle through the configurations
+            for index, c in enumerate(config_paths):
+                # we resolve the path
+                c = c.resolve()
+                # we get the complete suffix
+                config_suffix = ''.join(c.suffixes)
+                # we generate a new name using the index followed by the suffix
+                config_name = c.with_suffix(
+                        f".{index}{config_suffix}"
+                ).name
+
+                shutil.copy2(c, complete_dest_dir / config_name)
+
+        self.raw_config = config
+        self.config_paths = config_paths
+
+    def _save_configs(self, ):
+        pass
+
+    def postprocess_loaded_raw_configs(self, config):
+        pass
+
+    def convert_raw_config_to_json_config(self, config):
+        self.json_raw_config = json.dumps(config)
+
+    def load_config(self, config):
+        self.config = self.load_strings([config])
 
     def postprocess_loaded_configs(self, config):
         pass
@@ -264,7 +363,7 @@ class PLTrainerCLI(
         # here we consider True an empty dict, as we check using "is"
         if config.get(
                 self.TRAINER_TUNE_KEY,
-                self.TRAINER_TUNE_DEFAULT
+                copy.deepcopy(self.TRAINER_TUNE_DEFAULT),
         ) is False:
             return
 
@@ -306,15 +405,8 @@ class PLTrainerCLI(
         pass
 
 
-# we create the object and append the project path to sys.path only if this
+# we create the object only if this
 # file is being run as a script
 if __name__ == '__main__':
-    # we need to append the project root to be able to import the custom
-    # wrapper classes inside the project, which otherwise would be unreachable
-    # since this file is called as a script
-    if str(PROJECT_ROOT) not in sys.path:
-        sys.path.append(str(PROJECT_ROOT))
-
-    cli = PLTrainerCLI(
-
-)
+    cli = PLTrainerCLI()
+    cli.run()
