@@ -1,4 +1,6 @@
 {
+    "seed_everything": 42,
+
     "trainer": {
         "__custom__": true,
         "__custom_decoder__": "callable",

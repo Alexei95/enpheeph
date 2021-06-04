@@ -1,4 +1,6 @@
 {
+    "seed_everything": 42,
+
     "trainer": {
         "__kwargs__": {
             "auto_scale_batch_size": true,
@@ -97,7 +99,8 @@
             "normalize": true,
             "shuffle": true,
             "pin_memory": true,
-            "drop_last": false
+            "drop_last": false,
+            "seed": 42
         }
     }
 }

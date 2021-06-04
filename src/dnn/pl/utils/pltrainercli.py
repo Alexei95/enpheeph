@@ -17,6 +17,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import src.cli.utils.argumentparser
 import src.dnn.pl.utils.callbacks.saveconfigcallback
+import src.utils.functions
 import src.utils.json.jsonparser
 import src.utils.json.handlers.callablehandler
 import src.utils.json.handlers.objecthandler
@@ -39,6 +40,9 @@ class PLTrainerCLI(
     # keys to be used in the config
     CONFIG_KEY = 'config'
     TRAINER_KEY = 'trainer'
+    SEED_EVERYTHING_KEY = 'seed_everything'
+    SEED_EVERYTHING_DEFAULT_FLAG = False
+    SEED_EVERYTHING_DEFAULT_VALUE = 42
     TRAINER_DEFAULT_MAIN_CLASS = pytorch_lightning.Trainer
     TRAINER_DEFAULT_VALUE = {}
     MODEL_KEY = 'model'
@@ -120,6 +124,7 @@ class PLTrainerCLI(
         self.load_config(config=self.json_raw_config)
         self.postprocess_loaded_configs(config=self.config)
         self.check_config(config=self.config)
+        self.warm_up_init(config=self.config)
         self.init_trainer(config=self.config)
         self.init_model(config=self.config)
         self.init_datamodule(config=self.config)
@@ -311,6 +316,15 @@ class PLTrainerCLI(
                                 dict_['class_key'],
                         )
                     )
+
+    def warm_up_init(self, config):
+        seed_everything = config.get(
+                self.SEED_EVERYTHING_KEY,
+                self.SEED_EVERYTHING_DEFAULT_FLAG
+        )
+
+        if isinstance(seed_everything, int):
+            src.utils.functions.enable_determinism(seed=seed_everything)
 
     def init_trainer(self, config):
         # if the value is not a Trainer instance
