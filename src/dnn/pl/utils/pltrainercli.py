@@ -31,7 +31,7 @@ class PLTrainerCLI(
     DEFAULT_CONFIG_KEY = 'config'
     DEFAULT_CONFIG_VALUE = []
     DEFAULT_SAVE_CONFIG_KEY = 'save_config'
-    DEFAULT_SAVE_CONFIG_FLAG = True
+    DEFAULT_SAVE_CONFIG_FLAG = False
     DEFAULT_SAVE_CONFIG_VALUE = pathlib.Path('.')
     DEFAULT_TRAINER_ROOT_DIR_KEY = 'default_root_dir'
     DEFAULT_CALLBACKS_KEY = 'callbacks'
@@ -39,9 +39,12 @@ class PLTrainerCLI(
     # keys to be used in the config
     CONFIG_KEY = 'config'
     TRAINER_KEY = 'trainer'
+    TRAINER_DEFAULT_MAIN_CLASS = pytorch_lightning.Trainer
     TRAINER_DEFAULT_VALUE = {}
     MODEL_KEY = 'model'
+    MODEL_DEFAULT_MAIN_CLASS = pytorch_lightning.LightningModule
     DATAMODULE_KEY = 'datamodule'
+    DATAMODULE_DEFAULT_MAIN_CLASS = pytorch_lightning.LightningDataModule
     TRAINER_CLASS_KEY = 'trainer_class'
     DATAMODULE_CLASS_KEY = 'datamodule_class'
     MODEL_CLASS_KEY = 'model_class'
@@ -53,8 +56,8 @@ class PLTrainerCLI(
         super().__init__()
 
         self.CONFIGS_TO_CHECK = [
-                {'key': key, 'class_key': class_key}
-                for key, class_key in zip(
+                {'key': key, 'class_key': class_key, 'class': class_}
+                for key, class_key, class_ in zip(
                         (
                                 self.TRAINER_KEY,
                                 self.MODEL_KEY,
@@ -64,6 +67,11 @@ class PLTrainerCLI(
                                 self.TRAINER_CLASS_KEY,
                                 self.MODEL_CLASS_KEY,
                                 self.DATAMODULE_CLASS_KEY
+                        ),
+                        (
+                                self.TRAINER_DEFAULT_MAIN_CLASS,
+                                self.MODEL_DEFAULT_MAIN_CLASS,
+                                self.DATAMODULE_DEFAULT_MAIN_CLASS,
                         )
                 )
         ]
@@ -117,55 +125,55 @@ class PLTrainerCLI(
         self.init_datamodule(config=self.config)
         self.before_tune(
                 trainer=self.trainer,
-                model=self.mode,
+                model=self.model,
                 datamodule=self.datamodule,
                 config=self.config
         )
         self.tune(
                 trainer=self.trainer,
-                model=self.mode,
+                model=self.model,
                 datamodule=self.datamodule,
                 config=self.config
         )
         self.after_tune(
                 trainer=self.trainer,
-                model=self.mode,
+                model=self.model,
                 datamodule=self.datamodule,
                 config=self.config
         )
         self.before_fit(
                 trainer=self.trainer,
-                model=self.mode,
+                model=self.model,
                 datamodule=self.datamodule,
                 config=self.config
         )
         self.fit(
                 trainer=self.trainer,
-                model=self.mode,
+                model=self.model,
                 datamodule=self.datamodule,
                 config=self.config
         )
         self.after_fit(
                 trainer=self.trainer,
-                model=self.mode,
+                model=self.model,
                 datamodule=self.datamodule,
                 config=self.config
         )
         self.before_test(
                 trainer=self.trainer,
-                model=self.mode,
+                model=self.model,
                 datamodule=self.datamodule,
                 config=self.config
         )
         self.test(
                 trainer=self.trainer,
-                model=self.mode,
+                model=self.model,
                 datamodule=self.datamodule,
                 config=self.config
         )
         self.after_test(
                 trainer=self.trainer,
-                model=self.mode,
+                model=self.model,
                 datamodule=self.datamodule,
                 config=self.config
         )
@@ -251,27 +259,19 @@ class PLTrainerCLI(
                         ).resolve() / self.DEFAULT_SUBDIRECTORY
                 ).resolve()
 
-            # we generate the correct JSON for SaveConfigCallback
-            complete_dest_dir = save_path.resolve() / self.DEFAULT_SUBDIRECTORY
-            complete_dest_dir.mkdir(exist_ok=True, parents=True)
-            # we cycle through the configurations
-            for index, c in enumerate(config_paths):
-                # we resolve the path
-                c = c.resolve()
-                # we get the complete suffix
-                config_suffix = ''.join(c.suffixes)
-                # we generate a new name using the index followed by the suffix
-                config_name = c.with_suffix(
-                        f".{index}{config_suffix}"
-                ).name
+            saveconfigcallback = src.dnn.pl.utils.callbacks.\
+                saveconfigcallback.SaveConfigCallback(
+                        configs=config_paths,
+                        dest_dir=save_path,
+                )
 
-                shutil.copy2(c, complete_dest_dir / config_name)
+            config = self.recursive_update_dict(
+                    config,
+                    saveconfigcallback.make_config()
+            )
 
         self.raw_config = config
         self.config_paths = config_paths
-
-    def _save_configs(self, ):
-        pass
 
     def postprocess_loaded_raw_configs(self, config):
         pass
@@ -299,15 +299,15 @@ class PLTrainerCLI(
                         "contain required key '{}'".format(dict_['key'])
                 )
 
-            # if the value is not a Trainer instance, we check whether there
+            # if the value is not a proper instance, we check whether there
             # is a __class__ key in the config
-            if not isinstance(instance, pytorch_lightning.Trainer):
+            if not isinstance(instance, dict_['class']):
                 try:
                     config[dict_['class_key']]
                 except KeyError:
                     raise ValueError(
                         "config does not "
-                        "contain required class key '{1}'".format(
+                        "contain required class key '{0}'".format(
                                 dict_['class_key'],
                         )
                     )

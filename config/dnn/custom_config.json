@@ -3,7 +3,52 @@
         "__kwargs__": {
             "auto_scale_batch_size": true,
             "auto_lr_find": true,
-            "default_root_dir": "model_training/lightning/test_alexnet",
+            "default_root_dir": "model_training/lightning/alexnet",
+
+            "callbacks": {
+                "__kwargs__": {
+                    "initlist": {
+                        "__kwargs__": {
+                            "self": {
+                                "save_config_callback": {
+                                    "__custom__": true,
+                                    "__custom_decoder__": "callable",
+                                    "__import__": true,
+                                    "__callable__": "src.dnn.pl.utils.callbacks.saveconfigcallback.SaveConfigCallback",
+                                    "__args__": [],
+                                    "__kwargs__": {
+                                        "configs": {
+                                            "__custom__": true,
+                                            "__custom_decoder__": "callable",
+                                            "__import__": true,
+                                            "__callable__": "collections.UserList",
+                                            "__args__": [],
+                                            "__kwargs__": {
+                                                "initlist": {
+                                                    "__custom__": true,
+                                                    "__custom_decoder__": "callable",
+                                                    "__import__": true,
+                                                    "__callable__": "collections.UserDict.values",
+                                                    "__args__": [],
+                                                    "__kwargs__": {
+                                                        "self": {
+                                                            "0": "config/dnn/basic_trainer.json",
+                                                            "1": "config/dnn/option_clearer.json",
+                                                            "2": "config/dnn/alexnet.json"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "dest_dir": "model_training/lightning/alexnet",
+                                        "subdirectory": "configs"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
 
             "logger": {
                 "__kwargs__": {
@@ -12,7 +57,7 @@
                             "self": {
                                 "1": {
                                     "__kwargs__": {
-                                        "save_dir": "model_training/lightning/test_alexnet"
+                                        "save_dir": "model_training/lightning/alexnet"
                                     }
                                 }
                             }

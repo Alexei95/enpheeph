@@ -33,7 +33,7 @@ class SaveConfigCallback(pytorch_lightning.callbacks.Callback):
         },
         "dest_dir": ".",
         "subdirectory": "configs",
-    },
+    }
     DICT_CONFIG = {
         "trainer": {
             "__kwargs__": {
@@ -87,6 +87,8 @@ class SaveConfigCallback(pytorch_lightning.callbacks.Callback):
         }
         self.KWARGS_DICT['dest_dir'] = str(self.dest_dir.resolve())
         self.KWARGS_DICT['subdirectory'] = self.subdirectory
+
+        return self.DICT_CONFIG
 
     def on_train_start(
             self,

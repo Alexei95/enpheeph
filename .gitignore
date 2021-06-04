@@ -25,6 +25,8 @@ __pycache__
 /data
 # PyTorch Lightning logs
 /lightning_logs
+# custom model training
+model_training
 
 # Jupyter temp files
 .ipynb_checkpoints/
