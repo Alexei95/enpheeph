@@ -1,0 +1,139 @@
+{
+    "seed_everything": 42,
+
+    "trainer": {
+        "__kwargs__": {
+            "auto_scale_batch_size": true,
+            "auto_lr_find": true,
+            "default_root_dir": "model_training/lightning/lenet5",
+
+            "callbacks": {
+                "__kwargs__": {
+                    "initlist": {
+                        "__kwargs__": {
+                            "self": {
+                                "save_config_callback": {
+                                    "__custom__": true,
+                                    "__custom_decoder__": "callable",
+                                    "__import__": true,
+                                    "__callable__": "src.dnn.pl.utils.callbacks.saveconfigcallback.SaveConfigCallback",
+                                    "__args__": [],
+                                    "__kwargs__": {
+                                        "configs": {
+                                            "__custom__": true,
+                                            "__custom_decoder__": "callable",
+                                            "__import__": true,
+                                            "__callable__": "collections.UserList",
+                                            "__args__": [],
+                                            "__kwargs__": {
+                                                "initlist": {
+                                                    "__custom__": true,
+                                                    "__custom_decoder__": "callable",
+                                                    "__import__": true,
+                                                    "__callable__": "collections.UserDict.values",
+                                                    "__args__": [],
+                                                    "__kwargs__": {
+                                                        "self": {
+                                                            "0": "config/dnn/basic_trainer.json",
+                                                            "1": "config/dnn/option_clearer.json",
+                                                            "2": "config/dnn/lenet5_mnist_test.json"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "dest_dir": "model_training/lightning/lenet5",
+                                        "subdirectory": "configs"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            "logger": {
+                "__kwargs__": {
+                    "initlist": {
+                        "__kwargs__": {
+                            "self": {
+                                "1": {
+                                    "__kwargs__": {
+                                        "save_dir": "model_training/lightning/lenet5"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    "model": {
+        "__custom__": true,
+        "__custom_decoder__": "callable",
+        "__import__": true,
+        "__callable__": "src.dnn.pl.utils.mixins.vision.plvisionwrapper.PLVisionWrapper",
+        "__args__": [],
+        "__kwargs__": {
+            "model": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "src.dnn.models.vision.lenet5.LeNet5",
+                "__args__": [],
+                "__kwargs__": {}
+            },
+            "optimizer_class": {
+                "__custom__": true,
+                "__custom_decoder__": "object",
+                "__import__": true,
+                "__object__": "torch.optim.Adam"
+            },
+            "learning_rate": 1e-3,
+            "batch_size": 1,
+            "normalize_prob_func": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torch.nn.Softmax",
+                "__args__": [],
+                "__kwargs__": {
+                    "dim": -1
+                }
+            },
+            "loss_func": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torch.nn.CrossEntropyLoss",
+                "__args__": [],
+                "__kwargs__": {}
+            },
+            "accuracy_func": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torchmetrics.Accuracy",
+                "__args__": [],
+                "__kwargs__": {}
+            }
+        }
+    },
+
+    "datamodule": {
+        "__custom__": true,
+        "__custom_decoder__": "callable",
+        "__import__": true,
+        "__callable__": "pl_bolts.datamodules.MNISTDataModule",
+        "__args__": [],
+        "__kwargs__": {
+            "data_dir": "data/mnist/",
+            "seed": 42,
+            "shuffle": true,
+            "pin_memory": true,
+            "drop_last": false
+        }
+    }
+}

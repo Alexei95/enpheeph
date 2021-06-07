@@ -46,19 +46,20 @@ class PLVisionWrapper(
             ] = DEFAULT_ACCURACY_FUNCTION,
     ):
         super().__init__()
+        self.save_hyperparameters()
 
-        self.model = model
-        self.optimizer_class = optimizer_class
+        self.model = self.hparams.model
+        self.optimizer_class = self.hparams.optimizer_class
 
         # we keep lr in the model to allow for Trainer.tune
         # to run and determine the optimal ones
-        self.learning_rate = learning_rate
+        self.learning_rate = self.hparams.learning_rate
         # same for batch size
-        self.batch_size = batch_size
+        self.batch_size = self.hparams.batch_size
 
-        self.normalize_prob_func = normalize_prob_func
-        self.loss_func = loss_func
-        self.accuracy_func = accuracy_func
+        self.normalize_prob_func = self.hparams.normalize_prob_func
+        self.loss_func = self.hparams.loss_func
+        self.accuracy_func = self.hparams.accuracy_func
 
     def forward(self, input_):
         return self.model(input_)
@@ -121,6 +122,6 @@ class PLVisionWrapper(
     def configure_optimizers(self):
         optimizer = self.optimizer_class(
             self.parameters(),
-            lr=self.learning_rate,
+            lr=self.hparams.learning_rate,
         )
         return optimizer

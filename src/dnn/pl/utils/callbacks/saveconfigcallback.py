@@ -98,6 +98,7 @@ class SaveConfigCallback(pytorch_lightning.callbacks.Callback):
         # we generate the complete destination file
         # and we make sure it exists
         complete_dest_dir = self.dest_dir.resolve() / self.subdirectory
+        print(self.dest_dir.resolve(), complete_dest_dir)
         complete_dest_dir.mkdir(exist_ok=True, parents=True)
         # we cycle through the configurations
         for index, config in enumerate(self.configs):

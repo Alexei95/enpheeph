@@ -75,6 +75,7 @@
                         "__args__": [],
                         "__kwargs__": {
                             "self": {
+
                                 "1": {
                                     "__custom__": true,
                                     "__custom_decoder__": "callable",
@@ -86,6 +87,7 @@
                                         "process_position": 0
                                         }
                                 },
+
                                 "2": {
                                     "__custom__": true,
                                     "__custom_decoder__": "callable",
@@ -105,6 +107,7 @@
                                         "every_n_val_epochs": 1
                                     }
                                 },
+
                                 "3": {
                                     "__custom__": true,
                                     "__custom_decoder__": "callable",
@@ -116,6 +119,7 @@
                                         "log_momentum": true
                                     }
                                 },
+
                                 "4": {
                                     "__custom__": true,
                                     "__custom_decoder__": "callable",
@@ -131,6 +135,7 @@
                                         "temperature": true
                                     }
                                 },
+
                                 "5": {
                                     "__custom__": true,
                                     "__custom_decoder__": "callable",
@@ -148,6 +153,40 @@
                                         "stopping_threshold": null,
                                         "divergence_threshold": null,
                                         "check_on_train_epoch_end": false
+                                    }
+                                },
+
+                                "save_config_callback": {
+                                    "__custom__": true,
+                                    "__custom_decoder__": "callable",
+                                    "__import__": true,
+                                    "__callable__": "src.dnn.pl.utils.callbacks.saveconfigcallback.SaveConfigCallback",
+                                    "__args__": [],
+                                    "__kwargs__": {
+                                        "configs": {
+                                            "__custom__": true,
+                                            "__custom_decoder__": "callable",
+                                            "__import__": true,
+                                            "__callable__": "collections.UserList",
+                                            "__args__": [],
+                                            "__kwargs__": {
+                                                "initlist": {
+                                                    "__custom__": true,
+                                                    "__custom_decoder__": "callable",
+                                                    "__import__": true,
+                                                    "__callable__": "collections.UserDict.values",
+                                                    "__args__": [],
+                                                    "__kwargs__": {
+                                                        "self": {
+                                                            "0": "config/dnn/basic_trainer.json",
+                                                            "1": "config/dnn/option_clearer.json"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "dest_dir": "model_training/lightning/alexnet",
+                                        "subdirectory": "configs"
                                     }
                                 }
                             }

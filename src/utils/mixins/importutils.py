@@ -111,6 +111,6 @@ class ImportUtils(object):
             # we raise the error if object_ is not existing
             if object_ is None:
                 raise ValueError(
-                        f"{object_string} not found in {module_string}"
+                        f"{object_string} not found in {module.__name__}"
                 )
         return object_

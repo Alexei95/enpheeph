@@ -200,26 +200,6 @@ class PLTrainerCLI(
                 ),
                 help='to provide the paths for the JSON configs to be loaded',
         )
-        # we use the same flag so that if we get the flag we can use the
-        # default path if no Trainer path is provided
-        parser.add_argument(
-                '--save-config',
-                action='store',
-                nargs='?',
-                default=defaults.get(
-                        self.DEFAULT_SAVE_CONFIG_KEY,
-                        copy.deepcopy(self.DEFAULT_SAVE_CONFIG_FLAG),
-                ),
-                const=defaults.get(
-                        self.DEFAULT_SAVE_CONFIG_KEY,
-                        copy.deepcopy(self.DEFAULT_SAVE_CONFIG_FLAG),
-                ),
-                type=pathlib.Path,
-                help=(
-                        'if enabled it will save the configuration in '
-                        'the Trainer default_root_dir'
-                ),
-        )
 
     def add_extra_arguments(self, parser, defaults):
         pass
@@ -235,45 +215,6 @@ class PLTrainerCLI(
 
         # we load the JSON config, without decoding
         config = self.load_paths(config_paths, raw=True)
-
-        # here we check the save config path
-        # if it is enabled we attach it in the configuration
-        # for the path, if not given we get the Trainer default_root_dir
-        # path
-        save_config_value = getattr(namespace, self.DEFAULT_SAVE_CONFIG_KEY)
-        if save_config_value:
-            if isinstance(
-                    save_config_value,
-                    pathlib.Path
-            ):
-                save_path = pathlib.Path(save_config_value).resolve()
-            else:
-                save_path = (
-                        pathlib.Path(
-                                config.get(
-                                    self.TRAINER_KEY,
-                                    copy.deepcopy(self.TRAINER_DEFAULT_VALUE),
-                                ).get(
-                                        '__kwargs__', {}
-                                ).get(
-                                        self.DEFAULT_TRAINER_ROOT_DIR_KEY,
-                                        copy.deepcopy(
-                                                self.DEFAULT_SAVE_CONFIG_VALUE
-                                        ),
-                                )
-                        ).resolve() / self.DEFAULT_SUBDIRECTORY
-                ).resolve()
-
-            saveconfigcallback = src.dnn.pl.utils.callbacks.\
-                saveconfigcallback.SaveConfigCallback(
-                        configs=config_paths,
-                        dest_dir=save_path,
-                )
-
-            config = self.recursive_update_dict(
-                    config,
-                    saveconfigcallback.make_config()
-            )
 
         self.raw_config = config
         self.config_paths = config_paths
