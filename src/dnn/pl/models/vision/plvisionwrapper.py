@@ -4,12 +4,9 @@ import pytorch_lightning
 import torch
 import torchmetrics
 
-import src.utils.mixins.subclassgatherer
-
 
 class PLVisionWrapper(
         pytorch_lightning.LightningModule,
-        src.utils.mixins.subclassgatherer.SubclassGatherer
 ):
     DEFAULT_OPTIMIZER_CLASS = torch.optim.Adam
     DEFAULT_LEARNING_RATE = 1e-3
@@ -24,14 +21,14 @@ class PLVisionWrapper(
     def __init__(
             self,
             model: torch.nn.Module,
+            learning_rate: float = DEFAULT_LEARNING_RATE,
+            batch_size: int = DEFAULT_BATCH_SIZE,
+            *,
             # this class should accept params and lr
             optimizer_class: typing.Callable[
                         [typing.Iterable[torch.nn.parameter.Parameter], float],
                         torch.optim.Optimizer,
             ] = DEFAULT_OPTIMIZER_CLASS,
-            learning_rate: float = DEFAULT_LEARNING_RATE,
-            batch_size: int = DEFAULT_BATCH_SIZE,
-            *,
             normalize_prob_func: typing.Callable[
                         [torch.Tensor],
                         torch.Tensor,

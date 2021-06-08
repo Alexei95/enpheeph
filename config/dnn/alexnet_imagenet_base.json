@@ -74,7 +74,7 @@
         "__custom__": true,
         "__custom_decoder__": "callable",
         "__import__": true,
-        "__callable__": "src.dnn.pl.utils.mixins.vision.plvisionwrapper.PLVisionWrapper",
+        "__callable__": "src.dnn.pl.models.vision.plvisionwrapper.PLVisionWrapper",
         "__args__": [],
         "__kwargs__": {
             "model": {
