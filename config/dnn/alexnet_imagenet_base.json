@@ -85,14 +85,23 @@
                 "__args__": [],
                 "__kwargs__": {}
             },
-            "optimizer_class": {
+            "learning_rate": 1e-3,
+            "batch_size": 1,
+            "example_input_array": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torch.randn",
+                "__args__": [1, 1, 224, 224],
+                "__kwargs__": {}
+            },
+            "optimizer_classes": [{
                 "__custom__": true,
                 "__custom_decoder__": "object",
                 "__import__": true,
                 "__object__": "torch.optim.Adam"
-            },
-            "learning_rate": 1e-3,
-            "batch_size": 1,
+            }],
+            "lr_scheduler_classes": {},
             "normalize_prob_func": {
                 "__custom__": true,
                 "__custom_decoder__": "callable",

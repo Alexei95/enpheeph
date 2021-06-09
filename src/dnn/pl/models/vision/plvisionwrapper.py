@@ -1,3 +1,4 @@
+import collections
 import typing
 
 import pytorch_lightning
@@ -8,9 +9,12 @@ import torchmetrics
 class PLVisionWrapper(
         pytorch_lightning.LightningModule,
 ):
-    DEFAULT_OPTIMIZER_CLASS = torch.optim.Adam
+    SCHEDULER_KEY = "scheduler"
     DEFAULT_LEARNING_RATE = 1e-3
     DEFAULT_BATCH_SIZE = 1
+    DEFAULT_EXAMPLE_INPUT_ARRAY = torch.Tensor()
+    DEFAULT_OPTIMIZER_CLASSES = [torch.optim.Adam]
+    DEFAULT_LR_SCHEDULER_CLASSES = []
     # the default normalization function is softmax, and we compute it along
     # the last dimension as the first dimension is the batches, and we want
     # the results to be normalized across the elements in the batch
@@ -21,14 +25,35 @@ class PLVisionWrapper(
     def __init__(
             self,
             model: torch.nn.Module,
-            learning_rate: float = DEFAULT_LEARNING_RATE,
+            learning_rate: typing.Union[
+                    float,
+                    typing.Sequence[float]
+            ] = DEFAULT_LEARNING_RATE,
             batch_size: int = DEFAULT_BATCH_SIZE,
             *,
-            # this class should accept params and lr
-            optimizer_class: typing.Callable[
-                        [typing.Iterable[torch.nn.parameter.Parameter], float],
-                        torch.optim.Optimizer,
-            ] = DEFAULT_OPTIMIZER_CLASS,
+            # used for exporting the model and producing summaries
+            example_input_array:
+            torch.Tensor = DEFAULT_EXAMPLE_INPUT_ARRAY,
+            # each class in this list should accept params and lr
+            optimizer_classes: typing.Sequence[
+                    typing.Callable[
+                            [
+                                    typing.Iterable[
+                                            torch.nn.parameter.Parameter
+                                    ],
+                                    float
+                            ],
+                            torch.optim.Optimizer,
+                    ]
+            ] = DEFAULT_OPTIMIZER_CLASSES,
+            # the schedules should also be a list of dicts with configurations
+            # the classes in scheduler will be mapped 1-to-1 onto the optimizer
+            # classes
+            # hence, they should accept a singple argument which is the
+            # corresponding optimizer
+            lr_scheduler_classes: typing.Sequence[
+                    typing.Dict[str, typing.Any]
+            ] = DEFAULT_LR_SCHEDULER_CLASSES,
             normalize_prob_func: typing.Callable[
                         [torch.Tensor],
                         torch.Tensor,
@@ -46,10 +71,13 @@ class PLVisionWrapper(
         self.save_hyperparameters()
 
         self.model = self.hparams.model
-        self.optimizer_class = self.hparams.optimizer_class
+        self.example_input_array = self.hparams.example_input_array
+        self.optimizer_classes = self.hparams.optimizer_classes
+        self.lr_scheduler_classes = self.hparams.lr_scheduler_classes
 
         # we keep lr in the model to allow for Trainer.tune
         # to run and determine the optimal ones
+        # we need to keep learning_rate as is to allow for tune to work
         self.learning_rate = self.hparams.learning_rate
         # same for batch size
         self.batch_size = self.hparams.batch_size
@@ -116,9 +144,66 @@ class PLVisionWrapper(
         # this may not be needed, as for logging we already use self.log_dict
         # return metrics
 
-    def configure_optimizers(self):
-        optimizer = self.optimizer_class(
-            self.parameters(),
-            lr=self.hparams.learning_rate,
+    # this function is used to check that lr, optimizers and schedulers
+    # follow the general rules
+    # lr can be either one for all optimizers or one for each
+    # schedulers can be in any number up to optimizers and they will
+    # be fed the corresponding optimizer in the list
+    def _check_lr_opt_sched(self):
+        assert isinstance(
+                self.optimizer_classes,
+                collections.abc.Sequence
+        ), "Optimizer classes must be a list"
+        assert isinstance(
+                self.learning_rate,
+                (float, collections.abc.Sequence)
+        ), "LR must be either a float or a list"
+
+        if isinstance(self.learning_rate, collections.abc.Sequence):
+            error = (
+                    "Learning rates in a list must be provided "
+                    "for all optimzers one-to-one"
+            )
+            flag = len(self.learning_rate) == len(self.optimizer_classes)
+            assert flag, error
+
+        error = "Schedulers should be at most as many as the optimizers"
+        flag = len(self.optimizer_classes) >= len(self.lr_scheduler_classes)
+        assert flag, error
+
+        error = (
+                "Each scheduler config dict must "
+                "have a '{}' key".format(self.SCHEDULER_KEY)
         )
-        return optimizer
+        assert all(
+                self.SCHEDULER_KEY in d
+                for d in self.lr_scheduler_classes
+        ), error
+
+    def configure_optimizers(self):
+        self._check_lr_opt_sched()
+
+        if isinstance(self.learning_rate, float):
+            learning_rates = [
+                    self.learning_rate
+                    for _ in range(len(self.optimizer_classes))
+            ]
+        else:
+            learning_rates = self.learning_rate
+        optimizers = [
+                opt(self.parameters(), lr=lr)
+                for opt, lr in zip(self.optimizer_classes, learning_rates)
+        ]
+        lr_scheds = [
+                # in this way we can save all the configurations
+                # while overwriting the class with the correct object
+                # instantiated using the corresponding optimizer
+                {**d, self.SCHEDULER_KEY: d[self.SCHEDULER_KEY](opt)}
+                # we can use this zip here as schedulers may be fewer
+                # than optimzers, and we are interested only in schedulers
+                for d, opt in zip(
+                        self.lr_scheduler_classes,
+                        self.optimizer_classes
+                )
+        ]
+        return optimizers, lr_scheds
