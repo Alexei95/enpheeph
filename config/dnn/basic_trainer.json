@@ -1,5 +1,6 @@
 {
     "seed_everything": 42,
+    "verbose": true,
 
     "trainer": {
         "__custom__": true,

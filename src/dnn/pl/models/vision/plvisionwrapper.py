@@ -12,7 +12,7 @@ class PLVisionWrapper(
     SCHEDULER_KEY = "scheduler"
     DEFAULT_LEARNING_RATE = 1e-3
     DEFAULT_BATCH_SIZE = 1
-    DEFAULT_EXAMPLE_INPUT_ARRAY = torch.Tensor()
+    DEFAULT_EXAMPLE_INPUT_ARRAY_SIZE = tuple()
     DEFAULT_OPTIMIZER_CLASSES = [torch.optim.Adam]
     DEFAULT_LR_SCHEDULER_CLASSES = []
     # the default normalization function is softmax, and we compute it along
@@ -32,8 +32,8 @@ class PLVisionWrapper(
             batch_size: int = DEFAULT_BATCH_SIZE,
             *,
             # used for exporting the model and producing summaries
-            example_input_array:
-            torch.Tensor = DEFAULT_EXAMPLE_INPUT_ARRAY,
+            example_input_array_size:
+            torch.Size = DEFAULT_EXAMPLE_INPUT_ARRAY_SIZE,
             # each class in this list should accept params and lr
             optimizer_classes: typing.Sequence[
                     typing.Callable[
@@ -71,7 +71,9 @@ class PLVisionWrapper(
         self.save_hyperparameters()
 
         self.model = self.hparams.model
-        self.example_input_array = self.hparams.example_input_array
+        # we generate the random tensor from the siye used as input
+        self.example_input_array_size = self.hparams.example_input_array_size
+        self.example_input_array = torch.randn(*self.example_input_array_size)
         self.optimizer_classes = self.hparams.optimizer_classes
         self.lr_scheduler_classes = self.hparams.lr_scheduler_classes
 

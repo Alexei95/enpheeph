@@ -1,5 +1,6 @@
 {
     "seed_everything": 42,
+    "logging_file": "model_training/lightning/lenet5/pl_log.log",
 
     "trainer": {
         "__kwargs__": {
@@ -87,14 +88,7 @@
             },
             "learning_rate": 1e-3,
             "batch_size": 1,
-            "example_input_array": {
-                "__custom__": true,
-                "__custom_decoder__": "callable",
-                "__import__": true,
-                "__callable__": "torch.randn",
-                "__args__": [1, 1, 28, 28],
-                "__kwargs__": {}
-            },
+            "example_input_array_size": [1, 1, 28, 28],
             "optimizer_classes": [{
                 "__custom__": true,
                 "__custom_decoder__": "object",

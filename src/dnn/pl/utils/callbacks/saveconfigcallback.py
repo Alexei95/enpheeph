@@ -107,8 +107,10 @@ class SaveConfigCallback(pytorch_lightning.callbacks.Callback):
             # we get the complete suffix
             config_suffix = ''.join(config.suffixes)
             # we generate a new name using the index followed by the suffix
+            # we don't need a dot in between as the first suffix
+            # has already one inside
             config_name = config.with_suffix(
-                    f".{index}.{config_suffix}"
+                    f".{index}{config_suffix}"
             ).name
 
             shutil.copy2(config, complete_dest_dir / config_name)

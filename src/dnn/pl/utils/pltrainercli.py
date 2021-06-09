@@ -1,5 +1,6 @@
 import copy
 import json
+import logging
 import pathlib
 import pprint
 import shutil
@@ -43,6 +44,10 @@ class PLTrainerCLI(
     SEED_EVERYTHING_KEY = 'seed_everything'
     SEED_EVERYTHING_DEFAULT_FLAG = False
     SEED_EVERYTHING_DEFAULT_VALUE = 42
+    VERBOSE_KEY = 'verbose'
+    VERBOSE_DEFAULT_VALUE = False
+    LOGGING_FILE_KEY = 'logging_file'
+    LOGGING_FILE_DEFAULT_VALUE = False
     TRAINER_DEFAULT_MAIN_CLASS = pytorch_lightning.Trainer
     TRAINER_DEFAULT_VALUE = {}
     MODEL_KEY = 'model'
@@ -266,6 +271,29 @@ class PLTrainerCLI(
 
         if isinstance(seed_everything, int):
             src.utils.functions.enable_determinism(seed=seed_everything)
+
+        verbose = config.get(
+                self.VERBOSE_KEY,
+                self.VERBOSE_DEFAULT_VALUE,
+        )
+        logging_file = config.get(
+                self.LOGGING_FILE_KEY,
+                self.LOGGING_FILE_DEFAULT_VALUE,
+        )
+
+        logger = logging.getLogger("pytorch_lightning")
+        if verbose:
+            # if verbose we set the logging level to the lowest possible
+            # so that all messages will be shown
+            logger.setLevel(logging.NOTSET)
+            # if the logging file is set we use it for directing the
+            # console logs
+            if logging_file:
+                logger.addHandler(
+                        logging.FileHandler(
+                                str(pathlib.Path(logging_file).resolve())
+                        )
+                )
 
     def init_trainer(self, config):
         # if the value is not a Trainer instance
