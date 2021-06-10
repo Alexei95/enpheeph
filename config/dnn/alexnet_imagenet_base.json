@@ -86,8 +86,8 @@
                 "__args__": [],
                 "__kwargs__": {}
             },
-            "learning_rate": 1e-3,
-            "batch_size": 1,
+            "learning_rate": 0.1,
+            "batch_size": 32,
             "example_input_array_size": [1, 1, 224, 224],
             "optimizer_classes": [{
                 "__custom__": true,
@@ -95,7 +95,29 @@
                 "__import__": true,
                 "__object__": "torch.optim.Adam"
             }],
-            "lr_scheduler_classes": {},
+            "lr_scheduler_classes": [
+                {
+                    "scheduler": {
+                        "__custom__": true,
+                        "__custom_decoder__": "callable",
+                        "__import__": true,
+                        "__callable__": "functools.partial",
+                        "__args__": [
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "object",
+                                "__import__": true,
+                                "__object__": "torch.optim.lr_scheduler.StepLR"
+                            }
+                        ],
+                        "__kwargs__": {
+                            "step_size": 1,
+                            "gamma": 0.1,
+                            "verbose": false,
+                        }
+                    }
+                }
+            ],
             "normalize_prob_func": {
                 "__custom__": true,
                 "__custom_decoder__": "callable",
@@ -136,7 +158,9 @@
             "shuffle": true,
             "pin_memory": true,
             "drop_last": false,
-            "image_size": 224
+            "image_size": 224,
+            "batch_size": 32,
+            "num_imgs_per_val_class": 50
         }
     }
 }

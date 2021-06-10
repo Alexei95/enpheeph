@@ -95,7 +95,7 @@
                 "__import__": true,
                 "__object__": "torch.optim.Adam"
             }],
-            "lr_scheduler_classes": {},
+            "lr_scheduler_classes": [],
             "normalize_prob_func": {
                 "__custom__": true,
                 "__custom_decoder__": "callable",
