@@ -205,7 +205,7 @@ class PLVisionWrapper(
                 # than optimzers, and we are interested only in schedulers
                 for d, opt in zip(
                         self.lr_scheduler_classes,
-                        self.optimizer_classes
+                        optimizers
                 )
         ]
         return optimizers, lr_scheds
