@@ -10,6 +10,7 @@ class PLVisionWrapper(
         pytorch_lightning.LightningModule,
 ):
     SCHEDULER_KEY = "scheduler"
+    DEFAULT_INIT_BEFORE_FIT = True
     DEFAULT_LEARNING_RATE = 1e-3
     DEFAULT_BATCH_SIZE = 1
     DEFAULT_EXAMPLE_INPUT_ARRAY_SIZE = tuple()
@@ -25,6 +26,7 @@ class PLVisionWrapper(
     def __init__(
             self,
             model: torch.nn.Module,
+            init_before_fit: bool = DEFAULT_INIT_BEFORE_FIT,
             learning_rate: typing.Union[
                     float,
                     typing.Sequence[float]
@@ -71,6 +73,9 @@ class PLVisionWrapper(
         self.save_hyperparameters()
 
         self.model = self.hparams.model
+        # we save the flag to actually trigger the init when the warm-up
+        # function is called
+        self.init_before_fit = self.hparams.init_before_fit
         # we generate the random tensor from the siye used as input
         self.example_input_array_size = self.hparams.example_input_array_size
         self.example_input_array = torch.randn(*self.example_input_array_size)
@@ -209,3 +214,14 @@ class PLVisionWrapper(
                 )
         ]
         return optimizers, lr_scheds
+
+    # this function is called at the beginning of the training, so it
+    # can be used for weight initialization
+    def on_fit_start(self):
+        # if enabled
+        if self.init_before_fit:
+            # we try to init the weights, if it doesn't exist we skip
+            try:
+                self.model.init_weights()
+            except AttributeError:
+                pass

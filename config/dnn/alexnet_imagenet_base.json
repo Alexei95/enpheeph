@@ -81,10 +81,13 @@
                 "__custom__": true,
                 "__custom_decoder__": "callable",
                 "__import__": true,
-                "__callable__": "torchvision.models.AlexNet",
+                "__callable__": "src.dnn.models.vision.alexnet.AlexNet",
                 "__args__": [],
-                "__kwargs__": {}
+                "__kwargs__": {
+                    "n_classes": 1000,
+                }
             },
+            "init_before_fit": true,
             "learning_rate": 0.1,
             "batch_size": 32,
             "example_input_array_size": [1, 3, 224, 224],
