@@ -291,7 +291,7 @@ class PLTrainerCLI(
             if logging_file:
                 # we resolve the path to create the missing directories
                 logging_file = pathlib.Path(logging_file).resolve()
-                logging_file.mkdir(exist_ok=True, parents=True)
+                logging_file.parent.mkdir(exist_ok=True, parents=True)
                 logger.addHandler(
                         logging.FileHandler(
                                 logging_file
