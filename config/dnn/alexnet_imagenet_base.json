@@ -84,7 +84,7 @@
                 "__callable__": "src.dnn.models.vision.alexnet.AlexNet",
                 "__args__": [],
                 "__kwargs__": {
-                    "n_classes": 1000,
+                    "n_classes": 1000
                 }
             },
             "init_before_fit": true,
