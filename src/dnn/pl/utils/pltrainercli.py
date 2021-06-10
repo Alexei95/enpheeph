@@ -289,9 +289,12 @@ class PLTrainerCLI(
             # if the logging file is set we use it for directing the
             # console logs
             if logging_file:
+                # we resolve the path to create the missing directories
+                logging_file = pathlib.Path(logging_file).resolve()
+                logging_file.mkdir(exist_ok=True, parents=True)
                 logger.addHandler(
                         logging.FileHandler(
-                                str(pathlib.Path(logging_file).resolve())
+                                str()
                         )
                 )
 
