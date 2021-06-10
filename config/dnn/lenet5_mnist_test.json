@@ -17,7 +17,7 @@
                                     "__custom__": true,
                                     "__custom_decoder__": "callable",
                                     "__import__": true,
-                                    "__callable__": "src.dnn.pl.utils.callbacks.saveconfigcallback.SaveConfigCallback",
+                                    "__callable__": "src.ml.pl.utils.callbacks.saveconfigcallback.SaveConfigCallback",
                                     "__args__": [],
                                     "__kwargs__": {
                                         "configs": {
@@ -73,14 +73,14 @@
         "__custom__": true,
         "__custom_decoder__": "callable",
         "__import__": true,
-        "__callable__": "src.dnn.pl.models.vision.plvisionwrapper.PLVisionWrapper",
+        "__callable__": "src.ml.pl.models.vision.plvisionwrapper.PLVisionWrapper",
         "__args__": [],
         "__kwargs__": {
             "model": {
                 "__custom__": true,
                 "__custom_decoder__": "callable",
                 "__import__": true,
-                "__callable__": "src.dnn.models.vision.lenet5.LeNet5",
+                "__callable__": "src.ml.models.vision.lenet5.LeNet5",
                 "__args__": [],
                 "__kwargs__": {}
             },
