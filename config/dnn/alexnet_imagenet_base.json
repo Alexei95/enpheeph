@@ -35,8 +35,6 @@
                                                     "__args__": [],
                                                     "__kwargs__": {
                                                         "self": {
-                                                            "0": "config/dnn/basic_trainer.json",
-                                                            "1": "config/dnn/option_clearer.json",
                                                             "2": "config/dnn/alexnet_imagenet_base.json"
                                                         }
                                                     }
@@ -113,7 +111,7 @@
                         "__kwargs__": {
                             "step_size": 1,
                             "gamma": 0.1,
-                            "verbose": false,
+                            "verbose": false
                         }
                     }
                 }
