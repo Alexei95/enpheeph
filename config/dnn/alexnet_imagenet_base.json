@@ -86,7 +86,7 @@
             },
             "learning_rate": 0.1,
             "batch_size": 32,
-            "example_input_array_size": [1, 1, 224, 224],
+            "example_input_array_size": [1, 3, 224, 224],
             "optimizer_classes": [{
                 "__custom__": true,
                 "__custom_decoder__": "object",
