@@ -294,7 +294,7 @@ class PLTrainerCLI(
                 logging_file.mkdir(exist_ok=True, parents=True)
                 logger.addHandler(
                         logging.FileHandler(
-                                str()
+                                logging_file
                         )
                 )
 
