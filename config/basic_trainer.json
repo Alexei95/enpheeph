@@ -179,8 +179,8 @@
                                                     "__args__": [],
                                                     "__kwargs__": {
                                                         "self": {
-                                                            "0": "config/dnn/basic_trainer.json",
-                                                            "1": "config/dnn/option_clearer.json"
+                                                            "0": "config/basic_trainer.json",
+                                                            "1": "config/option_clearer.json"
                                                         }
                                                     }
                                                 }
