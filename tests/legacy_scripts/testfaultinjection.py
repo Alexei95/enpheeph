@@ -95,7 +95,7 @@ faults = []
 # layer to zero, covering all the bits
 weight_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
         module_name='model.classifier.0',
-        parameter_type=src.fi.utils.enums.parametertype.ParameterType.Weight,
+        parameter_type=src.fi.utils.enums.parametertype.ParameterType.DNNWeightDense,
         tensor_index=[0, 0],
         bit_index=[0],
         bit_value=src.fi.utils.enums.bitvalue.BitValue.StuckAtZero,
@@ -108,7 +108,7 @@ weight_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
 # here we have the activation fault on the first conv layer output
 activation_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
     module_name='model.features.0',
-    parameter_type=src.fi.utils.enums.parametertype.ParameterType.Activation,
+    parameter_type=src.fi.utils.enums.parametertype.ParameterType.DNNActivationDense,
     tensor_index=[0, ..., ...],
     bit_index=[0, 10, 32],
     bit_value=src.fi.utils.enums.bitvalue.BitValue.BitFlip,

@@ -77,6 +77,6 @@ class WeightInjection(
 
 
 src.fi.injection.injectioncallback.InjectionCallback.register(
-        src.fi.utils.enums.parametertype.ParameterType.Weight,
+        src.fi.utils.enums.parametertype.ParameterType.DNNWeightDense,
         WeightInjection.init_weight_mask_pytorch
 )

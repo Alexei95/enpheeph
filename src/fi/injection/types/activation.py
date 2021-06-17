@@ -12,7 +12,7 @@ import src.fi.utils.mixins.converters.pytorchdeviceawareconverter
 
 # we map the class to the activation injection
 @src.fi.injection.injectioncallback.InjectionCallback.register_decorator(
-        src.fi.utils.enums.parametertype.ParameterType.Activation
+        src.fi.utils.enums.parametertype.ParameterType.DNNActivationDense
 )
 # NOTE: we can only have one of the following module per layer, as the parsing
 # of the top module is done statically on the original structure, not on the
