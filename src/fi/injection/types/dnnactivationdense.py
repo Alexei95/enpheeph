@@ -20,7 +20,7 @@ import src.fi.utils.mixins.converters.pytorchdeviceawareconverter
 # NOTE: we cannot have dataclasses go with torch.nn.Module as Module.__init__
 # must be called before the dataclasses init
 # FIXME: implement also backward for fault-aware training
-class ActivationInjectionModule(
+class DNNActivationDenseInjectionModule(
         torch.nn.Module,
         src.fi.utils.mixins.injectionhandlers.
                 numpylikehandler.NumpyLikeHandler,

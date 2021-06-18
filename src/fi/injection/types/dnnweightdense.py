@@ -11,7 +11,7 @@ import src.fi.utils.mixins.converters.numpylikeconverter
 import src.fi.utils.mixins.converters.pytorchdeviceawareconverter
 
 
-class WeightInjection(
+class DNNWeightDenseInjection(
         # not required if we use PyTorchDeviceAwareConverter, otherwise we
         # get MRO error
         # src.utils.mixins.dispatcher.Dispatcher,
