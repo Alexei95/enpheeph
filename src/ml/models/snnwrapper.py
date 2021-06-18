@@ -31,6 +31,7 @@ class SNNWrapper(torch.nn.Module):
     def forward(
             self,
             inputs: torch.Tensor,
+            *,
             state: typing.Optional[
                     typing.Sequence[
                             torch.Tensor
@@ -52,6 +53,9 @@ class SNNWrapper(torch.nn.Module):
         # this is done only if we will return the state at the end
         if self.return_state:
             states = [state] + [None] * seq_length
+
+        # we need a list to save the output at each time step
+        out = []
         # we iterate over the timesteps
         for ts in range(seq_length):
             # we load the correct state depending on whether we are saving
@@ -60,8 +64,9 @@ class SNNWrapper(torch.nn.Module):
                 old_state = states[ts]
             else:
                 old_state = state
-
             output, new_state = self.model(encoded_inputs[ts], old_state)
+            # we append the output at the current timestep to the output list
+            out.append(output)
             # also here we save the state in a list for returning it, otherwise
             # we save it just for the following execution
             if self.return_state:
@@ -69,10 +74,22 @@ class SNNWrapper(torch.nn.Module):
             else:
                 state = new_state
 
+        # we stack the output to a torch tensor
+        torch_out = torch.stack(out)
         # we decode the outputs
-        decoded_output = self.decoder(output)
+        decoded_output = self.decoder(torch_out)
 
         if self.return_state:
             return SNNReturnTuple(output=decoded_output, state=states)
         else:
             return decoded_output
+
+    # NOTE: this is a temporary solution, as it is difficult to implement
+    # temporary function with JSON
+    @staticmethod
+    def max_membrane_voltage_log_softmax_decoder(inputs):
+        # we get the maximum for each membrane voltage over the time steps,
+        # dim=0
+        max_inputs, _ = torch.max(inputs, dim=0)
+        outputs = torch.nn.functional.log_softmax(max_inputs, dim=-1)
+        return outputs

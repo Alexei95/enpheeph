@@ -221,7 +221,5 @@ class PLVisionWrapper(
         # if enabled
         if self.init_before_fit:
             # we try to init the weights, if it doesn't exist we skip
-            try:
+            if hasattr(self.model, "init_weights"):
                 self.model.init_weights()
-            except AttributeError:
-                pass
