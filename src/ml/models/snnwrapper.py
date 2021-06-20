@@ -2,6 +2,7 @@ import typing
 
 import norse
 import torch
+import torchmetrics
 
 
 class SNNReturnTuple(typing.NamedTuple):
@@ -87,9 +88,29 @@ class SNNWrapper(torch.nn.Module):
     # NOTE: this is a temporary solution, as it is difficult to implement
     # temporary function with JSON
     @staticmethod
-    def max_membrane_voltage_log_softmax_decoder(inputs):
+    def random_noise_max_membrane_voltage_log_softmax_decoder(inputs):
+        # we add some random noise
+        temp = inputs + 0.001 * torch.randn(
+                *inputs.size(), device=inputs.device
+        )
         # we get the maximum for each membrane voltage over the time steps,
         # dim=0
-        max_inputs, _ = torch.max(inputs, dim=0)
-        outputs = torch.nn.functional.log_softmax(max_inputs, dim=-1)
-        return outputs
+        max_inputs, _ = torch.max(temp, dim=0)
+        return max_inputs
+
+    # NOTE: this is a temporary solution, as it is difficult to implement
+    # temporary function with JSON
+    @staticmethod
+    def label_smoothing_loss(y_hat, y, alpha=0.2):
+        log_probs = torch.nn.functional.log_softmax(y_hat, dim=-1)
+        xent = torch.nn.functional.nll_loss(log_probs, y, reduction="none")
+        KL = - log_probs.mean(dim=-1)
+        loss = (1 - alpha) * xent + alpha * KL
+        return loss.sum()
+
+    @staticmethod
+    def custom_softmax_accuracy(y_hat, y):
+        return torchmetrics.Accuracy().to(y_hat.device)(
+                torch.nn.functional.softmax(y_hat, dim=-1),
+                y
+        )
