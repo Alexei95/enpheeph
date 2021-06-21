@@ -97,7 +97,7 @@
                             }
                         ],
                         "__kwargs__": {
-                            "size": [64, -1, -1, -1, -1]
+                            "size": [128, -1, -1, -1, -1]
                         }
                     },
                     "model": {
@@ -406,9 +406,11 @@
             },
             "loss_func": {
                 "__custom__": true,
-                "__custom_decoder__": "object",
+                "__custom_decoder__": "callable",
                 "__import__": true,
-                "__object__": "src.ml.models.snnwrapper.SNNWrapper.label_smoothing_loss"
+                "__callable__": "torch.nn.NLLLoss",
+                "__args__": [],
+                "__kwargs__": {}
             },
             "accuracy_func": {
                 "__custom__": true,
@@ -432,7 +434,7 @@
             "shuffle": true,
             "pin_memory": true,
             "drop_last": false,
-            "batch_size": 16
+            "batch_size": 8
         }
     }
 }
