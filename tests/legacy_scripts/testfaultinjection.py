@@ -126,6 +126,7 @@ callback = src.fi.injection.injectioncallback.InjectionCallback(
         fault_descriptor_list=faults,
         enabled=False,
         auto_model_init_on_test_start=True,
+        auto_load_types=True,
         enabled_faults=[],
 )
 

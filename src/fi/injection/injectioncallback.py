@@ -34,13 +34,28 @@ class InjectionCallback(
             )
     ).resolve()
 
+    # defaults
+    FAULT_DESCRIPTOR_LIST_DEFAULT_FACTORY = list
+    ENABLED_DEFAULT = True
+    ENABLED_FAULTS_DEFAULT = ...
+    AUTO_MODEL_ON_TEST_START_DEFAULT = True
+    AUTO_LOAD_TYPES_DEFAULT = False
+
     # list of all faults to be injected, do not use two active faults on the
     # same module
     fault_descriptor_list: typing.Sequence[
             'src.fi.injection.faultdescriptor.FaultDescriptor'
-    ] = dataclasses.field(init=True, repr=True, default_factory=[])
+    ] = dataclasses.field(
+            init=True,
+            repr=True,
+            default_factory=FAULT_DESCRIPTOR_LIST_DEFAULT_FACTORY
+    )
     # enable/disable the injection, can be changed with the functions
-    enabled: bool = dataclasses.field(init=True, repr=True, default=True)
+    enabled: bool = dataclasses.field(
+            init=True,
+            repr=True,
+            default=ENABLED_DEFAULT
+    )
     # enabled faults, if None at init then all the faults are enabled, and they
     # follow the general flag for the callback
     # otherwise it must be a valid sequence of faults
@@ -49,15 +64,23 @@ class InjectionCallback(
             typing.Sequence[
                     'src.fi.injection.faultdescriptor.FaultDescriptor'
             ],
-    ] = dataclasses.field(init=True, repr=False, default=...)
+    ] = dataclasses.field(
+            init=True,
+            repr=False,
+            default=ENABLED_FAULTS_DEFAULT
+    )
     # enable the automatic init of the top module during each on_test_start
     auto_model_init_on_test_start: bool = dataclasses.field(
-            init=True, repr=True, default=True
+            init=True,
+            repr=True,
+            default=AUTO_MODEL_ON_TEST_START_DEFAULT,
     )
     # if the flag is true, we load the default injection types from the
     # subfolder
     auto_load_types: bool = dataclasses.field(
-            init=True, repr=True, default=True
+            init=True,
+            repr=True,
+            default=AUTO_LOAD_TYPES_DEFAULT
     )
     # internal flag for checking whether we have set up the modules for
     # injection
@@ -85,7 +108,7 @@ class InjectionCallback(
         # if the flag is true we auto load all the injection types in the
         # types subfolder
         if self.auto_load_types:
-            self.import_submodules(
+            self.load_types(
                     package_name=self.TYPES_PACKAGE,
                     package_path=self.TYPES_PACKAGE.replace('.', '/'),
                     root=self.ROOT,
@@ -273,3 +296,21 @@ class InjectionCallback(
             )
 
         return self.enabled_faults
+
+    # this function is used to load the fault types from a directory
+    def load_types(
+            self,
+            *,
+            package_name=TYPES_PACKAGE,
+            package_path=TYPES_PACKAGE.replace('.', '/'),
+            root=ROOT,
+            module_glob=None,
+            not_module_filter=None,
+    ):
+        self.import_submodules(
+                package_name=package_name,
+                package_path=package_path,
+                root=root,
+                module_glob=module_glob,
+                not_module_filter=not_module_filter,
+        )
