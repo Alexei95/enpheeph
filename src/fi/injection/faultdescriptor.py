@@ -6,7 +6,8 @@ import src.fi.utils.enums.bitvalue
 import src.fi.utils.enums.endianness
 import src.fi.utils.enums.parametertype
 
-
+# FIXME: fix the way hash is computed, as this solution is very sketchy
+# a better idea could be to use frozen
 # this is a container for the module name and the index for where the fault
 # should be injected
 # each fault descriptor covers a single bit-flip (or stuck-at)
@@ -46,6 +47,17 @@ class FaultDescriptor(object):
     )
     # type of bit injection to be carried out
     bit_value: src.fi.utils.enums.bitvalue.BitValue
+
+    # this is useful only for SNN and other simulated-time networks
+    sequence_time_step_index: typing.Optional[
+            typing.Union[
+                   typing.Sequence[int], slice, type(Ellipsis)
+            ]
+    ] = dataclasses.field(init=True, repr=True, default=None)
+    _sequence_time_step_index_repr: str = dataclasses.field(
+            init=False, repr=False, compare=False, hash=True
+    )
+
     # way to interpret the binary representation, as big endian or little
     # endian
     # big endian means the bit index 0 is mapped to the MSB of the binary
@@ -87,7 +99,21 @@ class FaultDescriptor(object):
         if isinstance(self.bit_index, collections.abc.MutableSequence):
             self.bit_index = tuple(self.bit_index)
         # we set the internal representation for hashability
-        self._bit_index_repr = repr(self.tensor_index)
+        self._bit_index_repr = repr(self.bit_index)
+
+        # if the sequence_time_step_index is a ordered container
+        # we need to save it as tuple to allow for hashability
+        if isinstance(
+                self.sequence_time_step_index,
+                collections.abc.MutableSequence
+        ):
+            self.sequence_time_step_index = tuple(
+                    self.sequence_time_step_index
+            )
+        # we set the internal representation for hashability
+        self._sequence_time_step_index_repr = repr(
+                self.sequence_time_step_index
+        )
 
     @staticmethod
     def bit_index_conversion(
