@@ -91,7 +91,7 @@ class SNNWrapper(torch.nn.Module):
         )
         # we get the maximum for each membrane voltage over the time steps,
         # dim=0
-        max_inputs, _ = torch.max(temp, dim=0)
+        max_inputs, _ = torch.max(temp, 0)
         return max_inputs
 
     # NOTE: this is a temporary solution, as it is difficult to implement
