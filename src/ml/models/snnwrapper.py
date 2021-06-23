@@ -86,10 +86,9 @@ class SNNWrapper(torch.nn.Module):
     @staticmethod
     def random_noise_max_membrane_voltage_log_softmax_decoder(inputs):
         # we add some random noise
-        # temp = inputs + 0.001 * torch.randn(
-        #         *inputs.size(), device=inputs.device
-        # )
-        temp = inputs
+        temp = inputs + 0.001 * torch.randn(
+                *inputs.size(), device=inputs.device
+        )
         # we get the maximum for each membrane voltage over the time steps,
         # dim=0
         max_inputs, _ = torch.max(temp, dim=0)
