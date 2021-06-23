@@ -382,7 +382,7 @@
                                 "__callable__": "torch.nn.Linear",
                                 "__args__": [],
                                 "__kwargs__": {
-                                    "in_features": 4096,
+                                    "in_features": 8192,
                                     "out_features": 512,
                                     "bias": false
                                 }
