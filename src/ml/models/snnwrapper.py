@@ -62,18 +62,14 @@ class SNNWrapper(torch.nn.Module):
             # we load the correct state depending on whether we are saving
             # them all or we only need it for execution
             if self.return_state:
-                old_state = states[ts]
-            else:
-                old_state = state
-            output, new_state = self.model(encoded_inputs[ts], old_state)
+                state = states[ts]
+            output, state = self.model(encoded_inputs[ts], state)
             # we append the output at the current timestep to the output list
             out.append(output)
             # also here we save the state in a list for returning it, otherwise
             # we save it just for the following execution
             if self.return_state:
-                states[ts + 1] = new_state
-            else:
-                state = new_state
+                states[ts + 1] = state
 
         # we stack the output to a torch tensor
         torch_out = torch.stack(out)
