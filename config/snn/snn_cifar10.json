@@ -266,7 +266,60 @@
                                 "__args__": [],
                                 "__kwargs__": {
                                     "in_channels": 256,
-                                    "out_channels": 256,
+                                    "out_channels": 512,
+                                    "kernel_size": 3,
+                                    "stride": 1,
+                                    "padding": 1,
+                                    "bias": false
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "norse.torch.module.LIFCell",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "p": {
+                                        "__custom__": true,
+                                        "__custom_decoder__": "callable",
+                                        "__import__": true,
+                                        "__callable__": "norse.torch.LIFParameters",
+                                        "__args__": [],
+                                        "kwargs": {
+                                            "v_th": {
+                                                "__custom__": true,
+                                                "__custom_decoder__": "callable",
+                                                "__import__": true,
+                                                "__callable__": "torch.tensor",
+                                                "__args__": [0.4],
+                                                "kwargs": {}
+                                            }
+                                        }
+                                    },
+                                    "dt": 0.001
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "torch.nn.MaxPool2d",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "kernel_size": 2
+                                }
+                            },
+
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "torch.nn.Conv2d",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "in_channels": 512,
+                                    "out_channels": 512,
                                     "kernel_size": 3,
                                     "stride": 1,
                                     "padding": 1,
@@ -330,6 +383,45 @@
                                 "__args__": [],
                                 "__kwargs__": {
                                     "in_features": 4096,
+                                    "out_features": 512,
+                                    "bias": false
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "norse.torch.module.LIFCell",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "p": {
+                                        "__custom__": true,
+                                        "__custom_decoder__": "callable",
+                                        "__import__": true,
+                                        "__callable__": "norse.torch.LIFParameters",
+                                        "__args__": [],
+                                        "kwargs": {
+                                            "v_th": {
+                                                "__custom__": true,
+                                                "__custom_decoder__": "callable",
+                                                "__import__": true,
+                                                "__callable__": "torch.tensor",
+                                                "__args__": [0.4],
+                                                "kwargs": {}
+                                            }
+                                        }
+                                    },
+                                    "dt": 0.001
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "torch.nn.Linear",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "in_features": 512,
                                     "out_features": 10,
                                     "bias": false
                                 }
