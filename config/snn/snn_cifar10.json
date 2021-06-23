@@ -1,0 +1,440 @@
+{
+    "seed_everything": 42,
+    "logging_file": "model_training/lightning/snn_cifar10_test/pl_log.log",
+
+    "trainer": {
+        "__kwargs__": {
+            "auto_scale_batch_size": true,
+            "auto_lr_find": true,
+            "default_root_dir": "model_training/lightning/snn_cifar10_test",
+
+            "callbacks": {
+                "__kwargs__": {
+                    "initlist": {
+                        "__kwargs__": {
+                            "self": {
+                                "save_config_callback": {
+                                    "__custom__": true,
+                                    "__custom_decoder__": "callable",
+                                    "__import__": true,
+                                    "__callable__": "src.ml.pl.utils.callbacks.saveconfigcallback.SaveConfigCallback",
+                                    "__args__": [],
+                                    "__kwargs__": {
+                                        "configs": {
+                                            "__custom__": true,
+                                            "__custom_decoder__": "callable",
+                                            "__import__": true,
+                                            "__callable__": "collections.UserList",
+                                            "__args__": [],
+                                            "__kwargs__": {
+                                                "initlist": {
+                                                    "__custom__": true,
+                                                    "__custom_decoder__": "callable",
+                                                    "__import__": true,
+                                                    "__callable__": "collections.UserDict.values",
+                                                    "__args__": [],
+                                                    "__kwargs__": {
+                                                        "self": {
+                                                            "2": "config/snn/snn_cifar10_test.json"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "dest_dir": "model_training/lightning/snn_cifar10_test",
+                                        "subdirectory": "configs"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "logger": {
+                "__kwargs__": {
+                    "initlist": {
+                        "__kwargs__": {
+                            "self": {
+                                "1": {
+                                    "__kwargs__": {
+                                        "save_dir": "model_training/lightning/snn_cifar10_test",
+                                        "log_graph": false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    "model": {
+        "__custom__": true,
+        "__custom_decoder__": "callable",
+        "__import__": true,
+        "__callable__": "src.ml.pl.models.vision.plvisionwrapper.PLVisionWrapper",
+        "__args__": [],
+        "__kwargs__": {
+            "model": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "src.ml.models.snnwrapper.SNNWrapper",
+                "__args__": [],
+                "__kwargs__": {
+                    "encoder": {
+                        "__custom__": true,
+                        "__custom_decoder__": "callable",
+                        "__import__": true,
+                        "__callable__": "functools.partial",
+                        "__args__": [
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "object",
+                                "__import__": true,
+                                "__object__": "torch.Tensor.expand"
+                            }
+                        ],
+                        "__kwargs__": {
+                            "size": [128, -1, -1, -1, -1]
+                        }
+                    },
+                    "model": {
+                        "__custom__": true,
+                        "__custom_decoder__": "callable",
+                        "__import__": true,
+                        "__callable__": "norse.torch.module.SequentialState",
+                        "__args__": [
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "torch.nn.Conv2d",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "in_channels": 3,
+                                    "out_channels": 64,
+                                    "kernel_size": 3,
+                                    "stride": 1,
+                                    "padding": 1,
+                                    "bias": false
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "norse.torch.module.LIFCell",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "p": {
+                                        "__custom__": true,
+                                        "__custom_decoder__": "callable",
+                                        "__import__": true,
+                                        "__callable__": "norse.torch.LIFParameters",
+                                        "__args__": [],
+                                        "kwargs": {
+                                            "v_th": {
+                                                "__custom__": true,
+                                                "__custom_decoder__": "callable",
+                                                "__import__": true,
+                                                "__callable__": "torch.tensor",
+                                                "__args__": [0.4],
+                                                "kwargs": {}
+                                            }
+                                        }
+                                    },
+                                    "dt": 0.001
+                                }
+                            },
+
+
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "torch.nn.Conv2d",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "in_channels": 64,
+                                    "out_channels": 128,
+                                    "kernel_size": 3,
+                                    "stride": 1,
+                                    "padding": 1,
+                                    "bias": false
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "norse.torch.module.LIFCell",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "p": {
+                                        "__custom__": true,
+                                        "__custom_decoder__": "callable",
+                                        "__import__": true,
+                                        "__callable__": "norse.torch.LIFParameters",
+                                        "__args__": [],
+                                        "kwargs": {
+                                            "v_th": {
+                                                "__custom__": true,
+                                                "__custom_decoder__": "callable",
+                                                "__import__": true,
+                                                "__callable__": "torch.tensor",
+                                                "__args__": [0.4],
+                                                "kwargs": {}
+                                            }
+                                        }
+                                    },
+                                    "dt": 0.001
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "torch.nn.MaxPool2d",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "kernel_size": 2
+                                }
+                            },
+
+
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "torch.nn.Conv2d",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "in_channels": 128,
+                                    "out_channels": 256,
+                                    "kernel_size": 3,
+                                    "stride": 1,
+                                    "padding": 1,
+                                    "bias": false
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "norse.torch.module.LIFCell",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "p": {
+                                        "__custom__": true,
+                                        "__custom_decoder__": "callable",
+                                        "__import__": true,
+                                        "__callable__": "norse.torch.LIFParameters",
+                                        "__args__": [],
+                                        "kwargs": {
+                                            "v_th": {
+                                                "__custom__": true,
+                                                "__custom_decoder__": "callable",
+                                                "__import__": true,
+                                                "__callable__": "torch.tensor",
+                                                "__args__": [0.4],
+                                                "kwargs": {}
+                                            }
+                                        }
+                                    },
+                                    "dt": 0.001
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "torch.nn.MaxPool2d",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "kernel_size": 2
+                                }
+                            },
+
+
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "torch.nn.Conv2d",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "in_channels": 256,
+                                    "out_channels": 256,
+                                    "kernel_size": 3,
+                                    "stride": 1,
+                                    "padding": 1,
+                                    "bias": false
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "norse.torch.module.LIFCell",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "p": {
+                                        "__custom__": true,
+                                        "__custom_decoder__": "callable",
+                                        "__import__": true,
+                                        "__callable__": "norse.torch.LIFParameters",
+                                        "__args__": [],
+                                        "kwargs": {
+                                            "v_th": {
+                                                "__custom__": true,
+                                                "__custom_decoder__": "callable",
+                                                "__import__": true,
+                                                "__callable__": "torch.tensor",
+                                                "__args__": [0.4],
+                                                "kwargs": {}
+                                            }
+                                        }
+                                    },
+                                    "dt": 0.001
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "torch.nn.MaxPool2d",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "kernel_size": 2
+                                }
+                            },
+
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "torch.nn.Flatten",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "start_dim": 1,
+                                    "end_dim": -1
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "torch.nn.Linear",
+                                "__args__": [],
+                                "__kwargs__": {
+                                    "in_features": 4096,
+                                    "out_features": 10,
+                                    "bias": false
+                                }
+                            },
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "callable",
+                                "__import__": true,
+                                "__callable__": "norse.torch.module.LICell",
+                                "__args__": [],
+                                "__kwargs__": {}
+                            }
+                        ],
+                        "__kwargs__": {}
+                    },
+                    "decoder": {
+                        "__custom__": true,
+                        "__custom_decoder__": "object",
+                        "__import__": true,
+                        "__object__": "src.ml.models.snnwrapper.SNNWrapper.random_noise_max_membrane_voltage_log_softmax_decoder"
+                    },
+                    "return_state": false
+                }
+            },
+            "learning_rate": 2e-4,
+            "batch_size": 16,
+            "example_input_array_size": [1, 3, 32, 32],
+            "optimizer_classes": [{
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "functools.partial",
+                "__args__": [
+                    {
+                        "__custom__": true,
+                        "__custom_decoder__": "object",
+                        "__import__": true,
+                        "__object__": "torch.optim.Adam"
+                    }
+                ],
+                "__kwargs__": {
+                    "weight_decay": 1e-5
+                }
+            }],
+            "lr_scheduler_classes": [
+                {
+                    "scheduler": {
+                        "__custom__": true,
+                        "__custom_decoder__": "callable",
+                        "__import__": true,
+                        "__callable__": "functools.partial",
+                        "__args__": [
+                            {
+                                "__custom__": true,
+                                "__custom_decoder__": "object",
+                                "__import__": true,
+                                "__object__": "torch.optim.lr_scheduler.StepLR"
+                            }
+                        ],
+                        "__kwargs__": {
+                            "step_size": 5,
+                            "gamma": 0.2
+                        }
+                    }
+                }
+            ],
+            "normalize_prob_func": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torch.nn.Identity",
+                "__args__": [],
+                "__kwargs__": {}
+            },
+            "loss_func": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torch.nn.NLLLoss",
+                "__args__": [],
+                "__kwargs__": {}
+            },
+            "accuracy_func": {
+                "__custom__": true,
+                "__custom_decoder__": "object",
+                "__import__": true,
+                "__object__": "src.ml.models.snnwrapper.SNNWrapper.custom_softmax_accuracy"
+            }
+        }
+    },
+
+    "datamodule": {
+        "__custom__": true,
+        "__custom_decoder__": "callable",
+        "__import__": true,
+        "__callable__": "pl_bolts.datamodules.CIFAR10DataModule",
+        "__args__": [],
+        "__kwargs__": {
+            "data_dir": "/shared/ml/datasets/CIFAR10/",
+            "normalize": false,
+            "seed": 42,
+            "shuffle": true,
+            "pin_memory": true,
+            "drop_last": false,
+            "batch_size": 8
+        }
+    }
+}
