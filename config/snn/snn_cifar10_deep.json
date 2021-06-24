@@ -1,12 +1,12 @@
 {
     "seed_everything": 42,
-    "logging_file": "model_training/lightning/snn_cifar10_test/pl_log.log",
+    "logging_file": "model_training/lightning/snn_cifar10_deep/pl_log.log",
 
     "trainer": {
         "__kwargs__": {
             "auto_scale_batch_size": true,
             "auto_lr_find": true,
-            "default_root_dir": "model_training/lightning/snn_cifar10_test",
+            "default_root_dir": "model_training/lightning/snn_cifar10_deep",
 
             "callbacks": {
                 "__kwargs__": {
@@ -35,13 +35,13 @@
                                                     "__args__": [],
                                                     "__kwargs__": {
                                                         "self": {
-                                                            "2": "config/snn/snn_cifar10_test.json"
+                                                            "2": "config/snn/snn_cifar10_deep.json"
                                                         }
                                                     }
                                                 }
                                             }
                                         },
-                                        "dest_dir": "model_training/lightning/snn_cifar10_test",
+                                        "dest_dir": "model_training/lightning/snn_cifar10_deep",
                                         "subdirectory": "configs"
                                     }
                                 }
@@ -57,7 +57,7 @@
                             "self": {
                                 "1": {
                                     "__kwargs__": {
-                                        "save_dir": "model_training/lightning/snn_cifar10_test",
+                                        "save_dir": "model_training/lightning/snn_cifar10_deep",
                                         "log_graph": false
                                     }
                                 }
