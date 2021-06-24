@@ -954,11 +954,9 @@
             },
             "loss_func": {
                 "__custom__": true,
-                "__custom_decoder__": "callable",
+                "__custom_decoder__": "object",
                 "__import__": true,
-                "__callable__": "src.ml.models.snnwrapper.SNNWrapper.label_smoothing_loss",
-                "__args__": [],
-                "__kwargs__": {}
+                "__object__": "src.ml.models.snnwrapper.SNNWrapper.label_smoothing_loss"
             },
             "accuracy_func": {
                 "__custom__": true,
