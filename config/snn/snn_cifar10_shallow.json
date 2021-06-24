@@ -954,11 +954,9 @@
             },
             "loss_func": {
                 "__custom__": true,
-                "__custom_decoder__": "callable",
+                "__custom_decoder__": "object",
                 "__import__": true,
-                "__callable__": "torch.nn.NLLLoss",
-                "__args__": [],
-                "__kwargs__": {}
+                "__object__": "src.ml.models.snnwrapper.SNNWrapper.label_smoothing_loss"
             },
             "accuracy_func": {
                 "__custom__": true,
@@ -973,10 +971,106 @@
         "__custom__": true,
         "__custom_decoder__": "callable",
         "__import__": true,
-        "__callable__": "pl_bolts.datamodules.CIFAR10DataModule",
+        "__callable__": "src.ml.pl.datasets.vision.cifar10.CIFAR10DataModule",
         "__args__": [],
         "__kwargs__": {
-            "data_dir": "/shared/ml/datasets/CIFAR10/",
+            "train_transforms": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torchvision.transforms.Compose",
+                "__args__": [
+                    [
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "torchvision.transforms.ToTensor",
+                            "__args__": [],
+                            "__kwargs__": {}
+                        },
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "torchvision.transforms.Normalize",
+                            "__args__": [],
+                            "__kwargs__": {
+                                "mean": [
+                                    0.4913725490196078,
+                                    0.4823529411764706,
+                                    0.4466666666666667
+                                ],
+                                "std": [
+                                    0.24705882352941178,
+                                    0.24352941176470588,
+                                    0.2615686274509804
+                                ]
+                            }
+                        },
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "torchvision.transforms.RandomCrop",
+                            "__args__": [
+                                32
+                            ],
+                            "__kwargs__": {
+                                "padding": 4
+                            }
+                        },
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "torchvision.transforms.RandomHorizontalFlip",
+                            "__args__": [],
+                            "__kwargs__": {}
+                        }
+                    ]
+                ],
+                "__kwargs__": {}
+            },
+            "test_transforms": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torchvision.transforms.Compose",
+                "__args__": [
+                    [
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "torchvision.transforms.ToTensor",
+                            "__args__": [],
+                            "__kwargs__": {}
+                        }
+                    ]
+                ],
+                "__kwargs__": {}
+            },
+            "val_transforms": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torchvision.transforms.Compose",
+                "__args__": [
+                    [
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "torchvision.transforms.ToTensor",
+                            "__args__": [],
+                            "__kwargs__": {}
+                        }
+                    ]
+                ],
+                "__kwargs__": {}
+            },
+            "data_dir": "data/CIFAR10/",
             "normalize": false,
             "seed": 42,
             "shuffle": true,
