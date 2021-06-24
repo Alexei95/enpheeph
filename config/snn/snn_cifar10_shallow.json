@@ -1070,7 +1070,7 @@
                 ],
                 "__kwargs__": {}
             },
-            "data_dir": "data/CIFAR10/",
+            "data_dir": "/shared/ml/datasets/CIFAR10/",
             "normalize": false,
             "seed": 42,
             "shuffle": true,

@@ -650,7 +650,7 @@
                 ],
                 "__kwargs__": {}
             },
-            "data_dir": "data/MNIST",
+            "data_dir": "/shared/ml/datasets/MNIST",
             "normalize": false,
             "seed": 42,
             "shuffle": true,
