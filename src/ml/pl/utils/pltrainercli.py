@@ -341,6 +341,7 @@ class PLTrainerCLI(
         self.datamodule = datamodule
         self.datamodule.train_transforms = torchvision.transforms.Compose(
         [
+            torchvision.transforms.ToTensor(),
             torchvision.transforms.RandomCrop(32, padding=4),
             torchvision.transforms.RandomHorizontalFlip(),
         ]
