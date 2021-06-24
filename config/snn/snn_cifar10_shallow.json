@@ -943,28 +943,7 @@
                     "weight_decay": 1e-5
                 }
             }],
-            "lr_scheduler_classes": [
-                {
-                    "scheduler": {
-                        "__custom__": true,
-                        "__custom_decoder__": "callable",
-                        "__import__": true,
-                        "__callable__": "functools.partial",
-                        "__args__": [
-                            {
-                                "__custom__": true,
-                                "__custom_decoder__": "object",
-                                "__import__": true,
-                                "__object__": "torch.optim.lr_scheduler.StepLR"
-                            }
-                        ],
-                        "__kwargs__": {
-                            "step_size": 5,
-                            "gamma": 0.2
-                        }
-                    }
-                }
-            ],
+            "lr_scheduler_classes": [],
             "normalize_prob_func": {
                 "__custom__": true,
                 "__custom_decoder__": "callable",
@@ -977,7 +956,7 @@
                 "__custom__": true,
                 "__custom_decoder__": "callable",
                 "__import__": true,
-                "__callable__": "torch.nn.NLLLoss",
+                "__callable__": "src.ml.models.snnwrapper.SNNWrapper.label_smoothing_loss",
                 "__args__": [],
                 "__kwargs__": {}
             },

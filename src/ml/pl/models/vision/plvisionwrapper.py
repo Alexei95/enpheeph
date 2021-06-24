@@ -117,6 +117,7 @@ class PLVisionWrapper(
                 prog_bar=True,
                 on_step=True,
                 on_epoch=True,
+                logger=True
         )
         # here we need to return the loss to be able to properly train
         return m['loss']
@@ -131,7 +132,8 @@ class PLVisionWrapper(
                 metrics,
                 prog_bar=True,
                 on_step=True,
-                on_epoch=True
+                on_epoch=True,
+                logger=True
         )
         # this may not be needed, as for logging we already use self.log_dict
         # return metrics
@@ -146,7 +148,8 @@ class PLVisionWrapper(
                 metrics,
                 prog_bar=True,
                 on_step=True,
-                on_epoch=True
+                on_epoch=True,
+                logger=True
         )
         # this may not be needed, as for logging we already use self.log_dict
         # return metrics
