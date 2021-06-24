@@ -65,6 +65,21 @@
                         }
                     }
                 }
+            },
+            "plugins": {
+                "__kwargs__": {
+                    "initlist": {
+                        "__kwargs__": {
+                            "self": {
+                                "1": {
+                                    "__kwargs__": {
+                                        "find_unused_parameters": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
@@ -260,34 +275,7 @@
                                                 ],
                                                 "__kwargs__": {}
                                             },
-                                            "method": "super",
-                                            "alpha": {
-                                                "__custom__": true,
-                                                "__custom_decoder__": "callable",
-                                                "__import__": true,
-                                                "__callable__": "torch.nn.Parameter",
-                                                "__args__": [
-                                                    {
-                                                        "__custom__": true,
-                                                        "__custom_decoder__": "callable",
-                                                        "__import__": true,
-                                                        "__callable__": "torch.full",
-                                                        "__args__": [],
-                                                        "__kwargs__": {
-                                                            "size": [64, 32, 32],
-                                                            "fill_value": {
-                                                                "__custom__": true,
-                                                                "__custom_decoder__": "callable",
-                                                                "__import__": true,
-                                                                "__callable__": "norse.torch.LIFParameters._field_defaults.get",
-                                                                "__args__": ["alpha"],
-                                                                "__kwargs__": {}
-                                                            }
-                                                        }
-                                                    }
-                                                ],
-                                                "__kwargs__": {}
-                                            }
+                                            "method": "super"
                                         }
                                     },
                                     "dt": 0.001
@@ -337,7 +325,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [128, 16, 16],
+                                                            "size": [128, 32, 32],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -364,7 +352,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [128, 16, 16],
+                                                            "size": [128, 32, 32],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -408,7 +396,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [128, 16, 16],
+                                                            "size": [128, 32, 32],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -435,7 +423,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [128, 16, 16],
+                                                            "size": [128, 32, 32],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -449,34 +437,7 @@
                                                 ],
                                                 "__kwargs__": {}
                                             },
-                                            "method": "super",
-                                            "alpha": {
-                                                "__custom__": true,
-                                                "__custom_decoder__": "callable",
-                                                "__import__": true,
-                                                "__callable__": "torch.nn.Parameter",
-                                                "__args__": [
-                                                    {
-                                                        "__custom__": true,
-                                                        "__custom_decoder__": "callable",
-                                                        "__import__": true,
-                                                        "__callable__": "torch.full",
-                                                        "__args__": [],
-                                                        "__kwargs__": {
-                                                            "size": [128, 16, 16],
-                                                            "fill_value": {
-                                                                "__custom__": true,
-                                                                "__custom_decoder__": "callable",
-                                                                "__import__": true,
-                                                                "__callable__": "norse.torch.LIFParameters._field_defaults.get",
-                                                                "__args__": ["alpha"],
-                                                                "__kwargs__": {}
-                                                            }
-                                                        }
-                                                    }
-                                                ],
-                                                "__kwargs__": {}
-                                            }
+                                            "method": "super"
                                         }
                                     },
                                     "dt": 0.001
@@ -536,7 +497,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [256, 8, 8],
+                                                            "size": [256, 16, 16],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -563,7 +524,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [256, 8, 8],
+                                                            "size": [256, 16, 16],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -607,7 +568,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [256, 8, 8],
+                                                            "size": [256, 16, 16],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -634,7 +595,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [256, 8, 8],
+                                                            "size": [256, 16, 16],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -648,34 +609,7 @@
                                                 ],
                                                 "__kwargs__": {}
                                             },
-                                            "method": "super",
-                                            "alpha": {
-                                                "__custom__": true,
-                                                "__custom_decoder__": "callable",
-                                                "__import__": true,
-                                                "__callable__": "torch.nn.Parameter",
-                                                "__args__": [
-                                                    {
-                                                        "__custom__": true,
-                                                        "__custom_decoder__": "callable",
-                                                        "__import__": true,
-                                                        "__callable__": "torch.full",
-                                                        "__args__": [],
-                                                        "__kwargs__": {
-                                                            "size": [256, 8, 8],
-                                                            "fill_value": {
-                                                                "__custom__": true,
-                                                                "__custom_decoder__": "callable",
-                                                                "__import__": true,
-                                                                "__callable__": "norse.torch.LIFParameters._field_defaults.get",
-                                                                "__args__": ["alpha"],
-                                                                "__kwargs__": {}
-                                                            }
-                                                        }
-                                                    }
-                                                ],
-                                                "__kwargs__": {}
-                                            }
+                                            "method": "super"
                                         }
                                     },
                                     "dt": 0.001
@@ -735,7 +669,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [512, 4, 4],
+                                                            "size": [512, 8, 8],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -762,7 +696,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [512, 4, 4],
+                                                            "size": [512, 8, 8],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -806,7 +740,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [512, 4, 4],
+                                                            "size": [512, 8, 8],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -833,7 +767,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [512, 4, 4],
+                                                            "size": [512, 8, 8],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -847,34 +781,7 @@
                                                 ],
                                                 "__kwargs__": {}
                                             },
-                                            "method": "super",
-                                            "alpha": {
-                                                "__custom__": true,
-                                                "__custom_decoder__": "callable",
-                                                "__import__": true,
-                                                "__callable__": "torch.nn.Parameter",
-                                                "__args__": [
-                                                    {
-                                                        "__custom__": true,
-                                                        "__custom_decoder__": "callable",
-                                                        "__import__": true,
-                                                        "__callable__": "torch.full",
-                                                        "__args__": [],
-                                                        "__kwargs__": {
-                                                            "size": [512, 4, 4],
-                                                            "fill_value": {
-                                                                "__custom__": true,
-                                                                "__custom_decoder__": "callable",
-                                                                "__import__": true,
-                                                                "__callable__": "norse.torch.LIFParameters._field_defaults.get",
-                                                                "__args__": ["alpha"],
-                                                                "__kwargs__": {}
-                                                            }
-                                                        }
-                                                    }
-                                                ],
-                                                "__kwargs__": {}
-                                            }
+                                            "method": "super"
                                         }
                                     },
                                     "dt": 0.001
@@ -933,7 +840,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [512, 2, 2],
+                                                            "size": [512, 4, 4],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -960,7 +867,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [512, 2, 2],
+                                                            "size": [512, 4, 4],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -1004,7 +911,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [512, 2, 2],
+                                                            "size": [512, 4, 4],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -1031,7 +938,7 @@
                                                         "__callable__": "torch.full",
                                                         "__args__": [],
                                                         "__kwargs__": {
-                                                            "size": [512, 2, 2],
+                                                            "size": [512, 4, 4],
                                                             "fill_value": {
                                                                 "__custom__": true,
                                                                 "__custom_decoder__": "callable",
@@ -1045,34 +952,7 @@
                                                 ],
                                                 "__kwargs__": {}
                                             },
-                                            "method": "super",
-                                            "alpha": {
-                                                "__custom__": true,
-                                                "__custom_decoder__": "callable",
-                                                "__import__": true,
-                                                "__callable__": "torch.nn.Parameter",
-                                                "__args__": [
-                                                    {
-                                                        "__custom__": true,
-                                                        "__custom_decoder__": "callable",
-                                                        "__import__": true,
-                                                        "__callable__": "torch.full",
-                                                        "__args__": [],
-                                                        "__kwargs__": {
-                                                            "size": [512, 2, 2],
-                                                            "fill_value": {
-                                                                "__custom__": true,
-                                                                "__custom_decoder__": "callable",
-                                                                "__import__": true,
-                                                                "__callable__": "norse.torch.LIFParameters._field_defaults.get",
-                                                                "__args__": ["alpha"],
-                                                                "__kwargs__": {}
-                                                            }
-                                                        }
-                                                    }
-                                                ],
-                                                "__kwargs__": {}
-                                            }
+                                            "method": "super"
                                         }
                                     },
                                     "dt": 0.001
@@ -1251,34 +1131,7 @@
                                                 ],
                                                 "__kwargs__": {}
                                             },
-                                            "method": "super",
-                                            "alpha": {
-                                                "__custom__": true,
-                                                "__custom_decoder__": "callable",
-                                                "__import__": true,
-                                                "__callable__": "torch.nn.Parameter",
-                                                "__args__": [
-                                                    {
-                                                        "__custom__": true,
-                                                        "__custom_decoder__": "callable",
-                                                        "__import__": true,
-                                                        "__callable__": "torch.full",
-                                                        "__args__": [],
-                                                        "__kwargs__": {
-                                                            "size": [256],
-                                                            "fill_value": {
-                                                                "__custom__": true,
-                                                                "__custom_decoder__": "callable",
-                                                                "__import__": true,
-                                                                "__callable__": "norse.torch.LIFParameters._field_defaults.get",
-                                                                "__args__": ["alpha"],
-                                                                "__kwargs__": {}
-                                                            }
-                                                        }
-                                                    }
-                                                ],
-                                                "__kwargs__": {}
-                                            }
+                                            "method": "super"
                                         }
                                     },
                                     "dt": 0.001

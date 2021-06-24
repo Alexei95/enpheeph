@@ -35,19 +35,14 @@ class SNNWrapper(torch.nn.Module):
     # this method is used to register possible hidden parameters inside the
     # SNN configurations
     def register_snn_parameters(self):
-        module_iterator = itertools.chain(
-                self.encoder.named_modules(),
-                self.model.named_modules(),
-                self.encoder.named_modules(),
-        )
-        for module_name, module in module_iterator:
+        for module_name, module in self.named_modules():
             if hasattr(module, 'p'):
                 p = getattr(module, 'p')
                 if hasattr(p, '_asdict'):
                     for p_name, p_value in p._asdict().items():
                         if getattr(p_value, 'requires_grad', False):
                             self.register_parameter(
-                                module_name + '.' + p_name,
+                                module_name.replace('.', '_') + '_' + p_name,
                                 p_value
                             )
 
