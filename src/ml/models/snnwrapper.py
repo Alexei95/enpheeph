@@ -1,3 +1,4 @@
+import itertools
 import typing
 
 import norse
@@ -27,7 +28,28 @@ class SNNWrapper(torch.nn.Module):
         self.model = model
         self.decoder = decoder
 
+        self.register_snn_parameters()
+
         self.return_state = return_state
+
+    # this method is used to register possible hidden parameters inside the
+    # SNN configurations
+    def register_snn_parameters(self):
+        module_iterator = itertools.chain(
+                self.encoder.named_modules(),
+                self.model.named_modules(),
+                self.encoder.named_modules(),
+        )
+        for module_name, module in module_iterator:
+            if hasattr(module, 'p'):
+                p = getattr(module, 'p')
+                if hasattr(p, '_asdict'):
+                    for p_name, p_value in p._asdict().items():
+                        if getattr(p_value, 'requires_grad', False):
+                            self.register_parameter(
+                                module_name + '.' + p_name,
+                                p_value
+                            )
 
     def forward(
             self,
