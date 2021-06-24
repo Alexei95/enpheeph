@@ -13,7 +13,7 @@ class PLVisionWrapper(
     DEFAULT_INIT_BEFORE_FIT = True
     DEFAULT_LEARNING_RATE = 1e-3
     DEFAULT_BATCH_SIZE = 1
-    DEFAULT_EXAMPLE_INPUT_ARRAY_SIZE = tuple()
+    DEFAULT_EXAMPLE_INPUT_ARRAY_SIZE = None
     DEFAULT_OPTIMIZER_CLASSES = [torch.optim.Adam]
     DEFAULT_LR_SCHEDULER_CLASSES = []
     # the default normalization function is softmax, and we compute it along
@@ -76,9 +76,12 @@ class PLVisionWrapper(
         # we save the flag to actually trigger the init when the warm-up
         # function is called
         self.init_before_fit = self.hparams.init_before_fit
-        # we generate the random tensor from the siye used as input
+        # we generate the random tensor from the size used as input
         self.example_input_array_size = self.hparams.example_input_array_size
-        self.example_input_array = torch.randn(*self.example_input_array_size)
+        if self.example_input_array_size is not None:
+            self.example_input_array = torch.randn(
+                    *self.example_input_array_size
+            )
         self.optimizer_classes = self.hparams.optimizer_classes
         self.lr_scheduler_classes = self.hparams.lr_scheduler_classes
 

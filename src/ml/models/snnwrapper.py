@@ -127,3 +127,18 @@ class SNNWrapper(torch.nn.Module):
                 torch.nn.functional.softmax(y_hat, dim=-1),
                 y
         )
+
+    # the following functions are for MNIST SNN training, from the norse
+    # tutorial
+    @staticmethod
+    def custom_argmax_accuracy(y_hat, y):
+        return torchmetrics.Accuracy().to(y_hat.device)(
+                torch.argmax(y_hat, dim=-1),
+                y
+        )
+
+    @staticmethod
+    def decode(x):
+        x, _ = torch.max(x, 0)
+        log_p_y = torch.nn.functional.log_softmax(x, dim=-1)
+        return log_p_y
