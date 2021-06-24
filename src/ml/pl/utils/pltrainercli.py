@@ -7,7 +7,6 @@ import shutil
 import sys
 
 import pytorch_lightning
-import torchvision
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().\
     parent.parent.parent.parent.parent.resolve()
@@ -339,13 +338,6 @@ class PLTrainerCLI(
             datamodule = config[self.DATAMODULE_KEY]
 
         self.datamodule = datamodule
-        self.datamodule.train_transforms = torchvision.transforms.Compose(
-        [
-            torchvision.transforms.ToTensor(),
-            torchvision.transforms.RandomCrop(32, padding=4),
-            torchvision.transforms.RandomHorizontalFlip(),
-        ]
-    )
 
     def before_tune(self, trainer, model, datamodule, config):
         pass
