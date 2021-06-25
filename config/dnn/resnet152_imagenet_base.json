@@ -103,11 +103,10 @@
                             "__custom__": true,
                             "__custom_decoder__": "object",
                             "__import__": true,
-                            "__object__": "torch.optim.SGD"
+                            "__object__": "torch.optim.Adam"
                         }
                     ],
                     "__kwargs__": {
-                        "momentum": 0.9,
                         "weight_decay": 1e-4
                     }
                 }
