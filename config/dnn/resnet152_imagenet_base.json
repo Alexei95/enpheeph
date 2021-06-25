@@ -81,7 +81,7 @@
                 "__custom__": true,
                 "__custom_decoder__": "callable",
                 "__import__": true,
-                "__callable__": "torchvsion.models.resnet152",
+                "__callable__": "torchvision.models.resnet152",
                 "__args__": [],
                 "__kwargs__": {
                     "pretrained": false,
