@@ -36,7 +36,7 @@
                                                     "__args__": [],
                                                     "__kwargs__": {
                                                         "self": {
-                                                            "2": "config/dnn/resnet152_imagenet_base_imagenet_base.json"
+                                                            "2": "config/dnn/resnet152_imagenet_base.json"
                                                         }
                                                     }
                                                 }
