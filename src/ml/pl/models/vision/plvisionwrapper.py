@@ -21,6 +21,7 @@ class PLVisionWrapper(
     # the results to be normalized across the elements in the batch
     DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION = torch.nn.Softmax(dim=-1)
     DEFAULT_LOSS_FUNCTION = torch.nn.CrossEntropyLoss()
+    DEFAULT_PRE_ACCURACY_FUNCTION = torch.nn.Identity()
     DEFAULT_ACCURACY_FUNCTION = torchmetrics.Accuracy()
 
     def __init__(
@@ -64,6 +65,10 @@ class PLVisionWrapper(
                         [torch.Tensor, torch.Tensor],
                         torch.Tensor,
             ] = DEFAULT_LOSS_FUNCTION,
+            pre_accuracy_func: typing.Callable[
+                        [torch.Tensor],
+                        torch.Tensor,
+            ] = DEFAULT_PRE_ACCURACY_FUNCTION,
             accuracy_func: typing.Callable[
                         [torch.Tensor, torch.Tensor],
                         torch.Tensor,
@@ -94,6 +99,7 @@ class PLVisionWrapper(
 
         self.normalize_prob_func = self.hparams.normalize_prob_func
         self.loss_func = self.hparams.loss_func
+        self.pre_accuracy_func = self.hparams.pre_accuracy_func
         self.accuracy_func = self.hparams.accuracy_func
 
     def forward(self, input_):
@@ -105,7 +111,7 @@ class PLVisionWrapper(
         x, y = batch
         y_hat = self.normalize_prob_func(self.forward(x))
         loss = self.loss_func(y_hat, y)
-        acc = self.accuracy_func(y_hat, y)
+        acc = self.accuracy_func(self.pre_accuracy_func(y_hat), y)
 
         return {'acc': acc, 'loss': loss}
 
@@ -227,5 +233,9 @@ class PLVisionWrapper(
         # if enabled
         if self.init_before_fit:
             # we try to init the weights, if it doesn't exist we skip
-            if hasattr(self.model, "init_weights"):
-                self.model.init_weights()
+            if (init_weights := getattr(
+                    self.model,
+                    "init_weights",
+                    None
+            )) is not None:
+                init_weights()
