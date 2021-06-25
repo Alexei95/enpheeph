@@ -138,11 +138,9 @@
                 "__custom__": true,
                 "__custom_decoder__": "callable",
                 "__import__": true,
-                "__callable__": "torch.nn.Softmax",
+                "__callable__": "torch.nn.Identity",
                 "__args__": [],
-                "__kwargs__": {
-                    "dim": -1
-                }
+                "__kwargs__": {}
             },
             "loss_func": {
                 "__custom__": true,
@@ -156,8 +154,27 @@
                 "__custom__": true,
                 "__custom_decoder__": "callable",
                 "__import__": true,
-                "__callable__": "torchmetrics.Accuracy",
-                "__args__": [],
+                "__callable__": "torch.nn.Sequential",
+                "__args__": [
+                    {
+                        "__custom__": true,
+                        "__custom_decoder__": "callable",
+                        "__import__": true,
+                        "__callable__": "torch.nn.Softmax",
+                        "__args__": [],
+                        "__kwargs__": {
+                            "dim": -1
+                        }
+                    },
+                    {
+                        "__custom__": true,
+                        "__custom_decoder__": "callable",
+                        "__import__": true,
+                        "__callable__": "torchmetrics.Accuracy",
+                        "__args__": [],
+                        "__kwargs__": {}
+                    }
+                ],
                 "__kwargs__": {}
             }
         }
