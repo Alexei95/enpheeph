@@ -9,10 +9,11 @@ import src.fi.injection.injectioncallback
 import src.fi.utils.enums.parametertype
 import src.fi.utils.mixins.injectionhandlers.numpylikehandler
 import src.fi.utils.mixins.converters.numpylikeconverter
-import src.fi.utils.mixins.converters.pytorchdeviceawareconverter
+import src.fi.utils.mixins.converters.norsedeviceawareconverter
 
 
-# we map the class to the activation injection
+# we map the class to the SNN LIF state voltage injection
+# only for dense arrays
 @src.fi.injection.injectioncallback.InjectionCallback.register_decorator(
         src.fi.utils.enums.parametertype.
         ParameterType.SNNStateLIFStateVoltageDense
@@ -29,11 +30,12 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
         numpylikehandler.NumpyLikeHandler,
         src.fi.utils.mixins.converters.numpylikeconverter.NumpyLikeConverter,
         src.fi.utils.mixins.converters.
-        pytorchdeviceawareconverter.PyTorchDeviceAwareConverter,
+        pytorchdeviceawareconverter.NorseDeviceAwareConverter,
 ):
     ARGS_KWARGS_NAMES = ('args', 'kwargs')
     EXTRA_SNN_PARAMETERS = ('dt', )
     EXTRA_RECURRENT_SNN_PARAMETERS = ('dt', 'autapses')
+    CELL_STRING = 'Cell'
 
     def __init__(
                 self,
@@ -88,7 +90,7 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
             # we get the name of the class of the module
             module_class_name = module.__class__.__qualname__
             # we add Cell to convert the name
-            new_module_class_name = module_class_name + 'Cell'
+            new_module_class_name = module_class_name + self.CELL_STRING
             # we get the corresponding new Cell module from norse
             new_module_class = getattr(norse.torch, new_module_class_name)
             # we create the new module
@@ -102,19 +104,25 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
 
     def get_mask(
             self,
-            tensor: torch.Tensor,
-            library: str,
+            tensor: torch.Tensor
     ):
         # if the mask has been already defined, we return it
         if self._mask is not None:
             return self._mask
 
+        # we get the library from the tensor
+        library = self.get_numpy_like_string(self.pytorch_to_numpy_like(
+                tensor
+        ))
+
         # we get the required info
         tensor_shape = self.get_pytorch_shape(tensor)
-        # we need to remove the batch size dimension, so that the mask is
-        # usable on all possible batch sizes
-        no_batch_size_tensor_shape = self.remove_pytorch_batch_size_from_shape(
-                tensor_shape,
+        # we need to remove the batch size dimension,
+        # so that the mask is usable on all possible batch sizes
+        pure_tensor_shape = self.remove_norse_sequence_time_step_from_shape(
+                self.remove_pytorch_batch_size_from_shape(
+                        tensor_shape,
+                )
         )
         dtype = self.get_pytorch_dtype(tensor)
         bitwidth = self.get_pytorch_bitwidth(tensor)
@@ -133,11 +141,15 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
                         bit_index=self.fault.bit_index,
                         bit_width=bitwidth,
             ),
-            tensor_index=self.fault.tensor_index_conversion(
-                    tensor_index=self.fault.tensor_index,
-                    tensor_shape=no_batch_size_tensor_shape,
+            # here we use a fake first index as it covers the sequence time
+            # step, which is not useful in this case
+            tensor_index=self.remove_norse_sequence_time_step_from_shape(
+                    self.fault.tensor_index_conversion(
+                            tensor_index=self.fault.tensor_index,
+                            tensor_shape=[0, pure_tensor_shape],
+                    )
             ),
-            tensor_shape=no_batch_size_tensor_shape,
+            tensor_shape=pure_tensor_shape,
             endianness=self.fault.endianness,
             bit_value=self.fault.bit_value,
             library=library,
@@ -148,7 +160,7 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
 
         return self._mask
 
-    def forward(self, x, state=None):
+    def _forward_single_step(self, x, state=None):
         # if current state is None means we are starting from scratch
         # we also reset the timer if the saved state from the previous
         # iteration is different from the passed state, meaning non-continuity
@@ -161,50 +173,73 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
             if state is None:
                 state = self.new_module.state_fallback(x)
 
+        # we get the pure input shape, without batch size
+        pure_input_shape = self.remove_pytorch_batch_size_from_shape(
+                self.get_pytorch_shape(x)
+        )
         # we consider the first index of the fault injection to be the time
         # step
+        # to convert the index we pass the fault index together with the
+        # current length of the state sequence
+        # we can use the current counter as for each iteration we are
+        # considering only the current time step
+        # we are interested only in the time step index
         sequence_time_step_index = self.fault.bit_index_conversion(
-            bit_index=self.fault.sequence_time_step_index,
-            bit_width=self.counter,
-        )
+            bit_index=self.fault.bit_index,
+            bit_width=[self.counter, *pure_input_shape],
+        )[0]
         if self.counter in sequence_time_step_index:
+            state_variable = None
+            state_variable_name = None
+
             # we select the target for injection
-            if (src.fi.utils.enums.parametertype.
+            if (
+                    src.fi.utils.enums.parametertype.
                     ParameterType.Voltage in self.fault.parameter_type
             ):
-            target =
-            mask = self.get_mask(
-                    tensor=state,
-                    library=numpy
-            )
+                state_variable = state.v
+                state_variable_name = 'v'
 
+            if state_variable is not None and state_variable_name is not None:
+                # we convert the state_variable from the state to numpy-like
+                numpy_like_state_variable = self.pytorch_to_numpy_like(
+                        state_variable
+                )
 
+                mask = self.get_mask(
+                        tensor=state_variable,
+                )
 
+                # we inject the temporary output,
+                numpy_like_state_variable_injected = self.\
+                        inject_fault_tensor_from_mask(
+                                numpy_like_element=numpy_like_state_variable,
+                                mask=mask,
+                                in_place=True,
+                        )
 
-        # we get the exact result from the previous module
-        y_temp = self.module(x)
-        # we convert the output to numpy-like
-        numpy_like_y_temp = self.pytorch_to_numpy_like(y_temp)
-        # we use the converted element to get the library we are using
-        numpy_like_string = self.get_numpy_like_string(numpy_like_y_temp)
+                # we convert the injected final output from numpy-like to
+                # pytorch
+                state_variable_injected = self.numpy_like_to_pytorch(
+                    numpy_like_state_variable_injected,
+                    dtype=self.get_pytorch_dtype(state),
+                )
 
-        # we generate the mask
-        mask = self.get_mask(
-                tensor=y_temp,
-                library=numpy_like_string,
-        )
+                # we update the state variable value in the state
+                setattr(state, state_variable_name, state_variable_injected)
 
-        # we inject the temporary output,
-        numpy_like_y = self.inject_fault_tensor_from_mask(
-                numpy_like_element=numpy_like_y_temp,
-                mask=mask,
-                in_place=True,
-        )
+        # here we simply run the forward
+        y, updated_state = self.new_module(x, state)
+        # we save the returned state to guarantee the continuity
+        self._old_state = updated_state
+        return y, updated_state
 
-        # we convert the injected final output from numpy-like to pytorch
-        y = self.numpy_like_to_pytorch(
-            numpy_like_y,
-            dtype=self.get_pytorch_dtype(y_temp),
-        )
-        # we return the fault-injected tensor
-        return y
+    def forward(self, x, state=None):
+        if self.converted:
+            time_sequence_length = x[0]
+            y = [None] * time_sequence_length
+            for ts in range(time_sequence_length):
+                y[ts], state = self._forward_single_step(x[ts], state)
+            return torch.stack(y, dim=0), state
+        else:
+            return self._forward_single_step(x, state)

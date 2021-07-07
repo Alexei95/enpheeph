@@ -41,23 +41,27 @@ class DNNActivationDenseInjectionModule(
 
     def get_mask(
             self,
-            output: torch.Tensor,
-            library: str,
+            tensor: torch.Tensor
     ):
         # if the mask has been already defined, we return it
         if self._mask is not None:
             return self._mask
 
+        # we get the library from the tensor
+        library = self.get_numpy_like_string(self.pytorch_to_numpy_like(
+                tensor
+        ))
+
         # we get the required info
-        tensor_shape = self.get_pytorch_shape(output)
+        tensor_shape = self.get_pytorch_shape(tensor)
         # we need to remove the batch size dimension, so that the mask is
         # usable on all possible batch sizes
         no_batch_size_tensor_shape = self.remove_pytorch_batch_size_from_shape(
                 tensor_shape,
         )
-        dtype = self.get_pytorch_dtype(output)
-        bitwidth = self.get_pytorch_bitwidth(output)
-        device = self.get_pytorch_device(output)
+        dtype = self.get_pytorch_dtype(tensor)
+        bitwidth = self.get_pytorch_bitwidth(tensor)
+        device = self.get_pytorch_device(tensor)
 
         # we convert them into numpy-like object
         numpy_like_dtype = self.pytorch_dtype_to_numpy_like_dtype(
@@ -92,16 +96,13 @@ class DNNActivationDenseInjectionModule(
         y_temp = self.module(x)
         # we convert the output to numpy-like
         numpy_like_y_temp = self.pytorch_to_numpy_like(y_temp)
-        # we use the converted element to get the library we are using
-        numpy_like_string = self.get_numpy_like_string(numpy_like_y_temp)
 
         # we generate the mask
         mask = self.get_mask(
-                output=y_temp,
-                library=numpy_like_string,
+                tensor=y_temp
         )
 
-        # we inject the temporary output,
+        # we inject the temporary output
         numpy_like_y = self.inject_fault_tensor_from_mask(
                 numpy_like_element=numpy_like_y_temp,
                 mask=mask,
