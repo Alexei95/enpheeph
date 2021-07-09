@@ -9,7 +9,7 @@ import sys
 # PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent
 # if str(PROJECT_DIR) not in sys.path:
 #     sys.path.append(str(PROJECT_DIR))
-from src.common import DEFAULT_PRNG_SEED, DEFAULT_TIME_FORMAT
+import src.utils.common
 
 
 ### time handling functions ###
@@ -20,7 +20,7 @@ def current_utctime():
 
 
 # returns a string version of the current utc time
-def current_utctime_string(template=DEFAULT_TIME_FORMAT):
+def current_utctime_string(template=src.utils.common.DEFAULT_TIME_FORMAT):
     return time_string(current_utctime(), template)
 
 
@@ -33,7 +33,7 @@ def localtime_to_utctime(datetime_obj):
 
 
 # returns the string of a datetime object given the format
-def time_string(datetime_obj, template=DEFAULT_TIME_FORMAT):
+def time_string(datetime_obj, template=src.utils.common.DEFAULT_TIME_FORMAT):
     return datetime_obj.strftime(template)
 
 ### end time handling functions ###
@@ -44,7 +44,7 @@ def time_string(datetime_obj, template=DEFAULT_TIME_FORMAT):
 # this function is similar to pytorch_lightning.seed_everything, but they
 # don't set CUDA and cuDNN for determinism
 # CUDA and cuDNN determinism can be set from the Trainer class
-def enable_determinism(seed=DEFAULT_PRNG_SEED):
+def enable_determinism(seed=src.utils.common.DEFAULT_PRNG_SEED):
     # if pytorch-lightning is available, we devolve the determinism to it
     try:
         import pytorch_lightning

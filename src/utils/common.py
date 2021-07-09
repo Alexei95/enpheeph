@@ -29,4 +29,4 @@ DEFAULT_DATASET_PATH = PROJECT_DIR / 'data' / 'datasets'
 DEFAULT_MODEL_PATH = PROJECT_DIR / 'data' / 'trained_models'
 
 # default time format string
-DEFAULT_TIME_FORMAT = '%Y_%m_%d_%H_%M_%S_%f_%z'
+DEFAULT_TIME_FORMAT = '%Y_%m_%d__%H_%M_%S_%f__%z'
