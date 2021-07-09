@@ -187,7 +187,9 @@
                                             }
                                         },
                                         "dest_dir": "model_training/lightning/alexnet",
-                                        "subdirectory": "configs"
+                                        "subdirectory": "configs",
+                                        "version": true,
+                                        "time_info": true
                                     }
                                 }
                             }
