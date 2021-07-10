@@ -105,7 +105,7 @@
                         "__callable__": "norse.torch.ConstantCurrentLIFEncoder",
                         "__args__": [],
                         "__kwargs__": {
-                            "seq_length": 200,
+                            "seq_length": 100,
                             "p": {
                                 "__custom__": true,
                                 "__custom_decoder__": "callable",
@@ -630,7 +630,7 @@
                                 "__kwargs__": {
                                     "in_features": 800,
                                     "out_features": 500,
-                                    "bias": false
+                                    "bias": true
                                 }
                             },
                             {
@@ -650,7 +650,7 @@
                                 "__kwargs__": {
                                     "in_features": 500,
                                     "out_features": 10,
-                                    "bias": false
+                                    "bias": true
                                 }
                             },
                             {
@@ -755,7 +755,7 @@
                 }
             },
             "learning_rate": 2e-3,
-            "batch_size": 32,
+            "batch_size": 64,
             "example_input_array_size": [1, 1, 28, 28],
             "optimizer_classes": [
                 {
@@ -885,7 +885,7 @@
             "shuffle": true,
             "pin_memory": true,
             "drop_last": false,
-            "batch_size": 32
+            "batch_size": 64
         }
     }
 }
