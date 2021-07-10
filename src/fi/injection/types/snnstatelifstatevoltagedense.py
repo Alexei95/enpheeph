@@ -30,7 +30,7 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
         numpylikehandler.NumpyLikeHandler,
         src.fi.utils.mixins.converters.numpylikeconverter.NumpyLikeConverter,
         src.fi.utils.mixins.converters.
-        pytorchdeviceawareconverter.NorseDeviceAwareConverter,
+        norsedeviceawareconverter.NorseDeviceAwareConverter,
 ):
     ARGS_KWARGS_NAMES = ('args', 'kwargs')
     EXTRA_SNN_PARAMETERS = ('dt', )
@@ -43,12 +43,6 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
                 module: typing.Union['norse.torch.SNN', 'norse.torch.SNNCell'],
     ):
         super().__init__()
-
-        if fault.sequence_time_step is None:
-            raise ValueError(
-                    "'sequence_time_step' value in FaultDescriptor "
-                    "must be provided for SNN injection"
-            )
 
         self.fault = fault
         self.old_module = module
