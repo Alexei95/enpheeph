@@ -1,4 +1,5 @@
 import copy
+import typing
 
 import src.fi.utils.mixins.converters.pytorchconverter
 
@@ -16,3 +17,12 @@ class NorseConverter(
         # named tensors or similar other tricks
         # for now we only remove the first dimension
         return size[1:]
+
+    @classmethod
+    def get_norse_sequence_time_step_from_index(
+            cls,
+            index: typing.Sequence[typing.Sequence[typing.Union[int, slice]]]
+    ) -> typing.Tuple[int]:
+        # FIXME: for now we return the first index
+        # it could be customizable
+        return tuple(index[0])

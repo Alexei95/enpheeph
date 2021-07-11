@@ -141,8 +141,8 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
                     # the shape from the index excluding the first element
                     # related to the time step
                     self.fault.tensor_index_conversion(
-                            tensor_index=self.fault.tensor_index[1:],
-                            tensor_shape=pure_tensor_shape,
+                            tensor_index=self.fault.tensor_index,
+                            tensor_shape=[0, *pure_tensor_shape],
                     )
             ),
             tensor_shape=pure_tensor_shape,
@@ -176,11 +176,24 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
         # for the shape, we need to increase the counter by 1, as if the
         # counter is 0 the corresponding shape will be 1 and so on
         # counter works as an index in a list, and we need its length here
-        sequence_time_step_index = self.fault.tensor_index_conversion(
-            # we need a list otherwise it creates issues
-            tensor_index=[self.fault.tensor_index[0]],
-            tensor_shape=[self._counter + 1],
-            force_index=True,
+        time_tensor_index = (
+                self.fault.tensor_index
+                if isinstance(self.fault.tensor_index, type(Ellipsis))
+                else [
+                        self.remove_norse_sequence_time_step_from_shape(
+                                self.fault.tensor_index
+                        )
+                ]
+        )
+        # we need to get the first index using the interface
+        # the returned type is a tuple with the indices
+        sequence_time_step_index = self.\
+        get_norse_sequence_time_step_from_index(
+                self.fault.tensor_index_conversion(
+                    tensor_index=time_tensor_index,
+                    tensor_shape=[self._counter + 1],
+                    force_index=True,
+                )
         )
         if self._counter in sequence_time_step_index:
             state_variable = None
