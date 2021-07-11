@@ -48,16 +48,6 @@ class FaultDescriptor(object):
     # type of bit injection to be carried out
     bit_value: src.fi.utils.enums.bitvalue.BitValue
 
-    # this is useful only for SNN and other simulated-time networks
-    sequence_time_step_index: typing.Optional[
-            typing.Union[
-                   typing.Sequence[int], slice, type(Ellipsis)
-            ]
-    ] = dataclasses.field(init=True, repr=True, default=None)
-    _sequence_time_step_index_repr: str = dataclasses.field(
-            init=False, repr=False, compare=False, hash=True
-    )
-
     # way to interpret the binary representation, as big endian or little
     # endian
     # big endian means the bit index 0 is mapped to the MSB of the binary
@@ -100,20 +90,6 @@ class FaultDescriptor(object):
             self.bit_index = tuple(self.bit_index)
         # we set the internal representation for hashability
         self._bit_index_repr = repr(self.bit_index)
-
-        # if the sequence_time_step_index is a ordered container
-        # we need to save it as tuple to allow for hashability
-        if isinstance(
-                self.sequence_time_step_index,
-                collections.abc.MutableSequence
-        ):
-            self.sequence_time_step_index = tuple(
-                    self.sequence_time_step_index
-            )
-        # we set the internal representation for hashability
-        self._sequence_time_step_index_repr = repr(
-                self.sequence_time_step_index
-        )
 
     @staticmethod
     def bit_index_conversion(
@@ -161,11 +137,25 @@ class FaultDescriptor(object):
                                 typing.Union[
                                         int, slice, type(Ellipsis)]]],
                 tensor_shape: typing.Sequence[int],
+                # if force_index is True we return a list of indices
+                # not a slice
+                force_index: typing.Optional[bool] = False,
                 ) -> typing.Tuple[typing.Union[int, slice]]:
         # if we have a single ellipsis, without any container, we have a slice
         # covering the whole tensor shape
         if isinstance(tensor_index, type(Ellipsis)):
-            return tuple(slice(0, dim_range) for dim_range in tensor_shape)
+            slices = (slice(0, dim_range) for dim_range in tensor_shape)
+            if force_index:
+                return tuple(
+                        tuple(range(
+                                s.start if s.start else 0,
+                                s.stop,
+                                s.step if s.step else 1
+                        ))
+                        for s in slices
+                )
+            else:
+                return tuple(slices)
         # we check if the number of elements in the index and in the number of
         # dimensions is the same, otherwise we raise ValueError
         # this check exists as zip goes over the shortest one
@@ -181,13 +171,21 @@ class FaultDescriptor(object):
             # of the current dimension
             if isinstance(index, slice):
                 new_index = index.indices(dim_range - 1)
+                if force_index:
+                    new_index = tuple(range(*new_index))
             # if we get an Ellipsis, then we set it up as a slice from 0 to
             # max dimension range
             elif isinstance(index, type(Ellipsis)):
                 new_index = slice(0, dim_range - 1)
-            # if it is int we copy it
+                if force_index:
+                    new_index = tuple(range(
+                            new_index.start if new_index.start else 0,
+                            new_index.stop,
+                            new_index.step if new_index.step else 1
+                    ))
+            # if it is int we copy it in a tuple
             elif isinstance(index, int):
-                new_index = index
+                new_index = (index, )
             # as fallback we raise ValueError
             else:
                 raise ValueError('Wrong index value, use slice, int or ...')
