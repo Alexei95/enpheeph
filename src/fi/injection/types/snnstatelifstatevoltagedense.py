@@ -56,9 +56,6 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
 
         # this counter is used to remember the time step during forward
         self._counter = 0
-        # we also save the old state at the end of forward so that
-        # we reset the timer when the new state is different
-        self._old_state = None
 
         # if the module is already a cell we save it
         if isinstance(module, norse.torch.module.snn.SNNCell):
@@ -111,12 +108,11 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
 
         # we get the required info
         tensor_shape = self.get_pytorch_shape(tensor)
-        # we need to remove the batch size dimension,
-        # so that the mask is usable on all possible batch sizes
-        pure_tensor_shape = self.remove_norse_sequence_time_step_from_shape(
-                self.remove_pytorch_batch_size_from_shape(
-                        tensor_shape,
-                )
+        # here we need to remove only the batch size, as the time-step
+        # dimension is already not present, since its state represents
+        # the neuronal state at a single time-step
+        pure_tensor_shape = self.remove_pytorch_batch_size_from_shape(
+                tensor_shape,
         )
         dtype = self.get_pytorch_dtype(tensor)
         bitwidth = self.get_pytorch_bitwidth(tensor)
@@ -138,9 +134,15 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
             # here we use a fake first index as it covers the sequence time
             # step, which is not useful in this case
             tensor_index=self.remove_norse_sequence_time_step_from_shape(
+                    # we need to select the correct indices, as the first
+                    # one is the time step that we do not need when making
+                    # the mask
+                    # only the actual tensor shape is required, so we select
+                    # the shape from the index excluding the first element
+                    # related to the time step
                     self.fault.tensor_index_conversion(
-                            tensor_index=self.fault.tensor_index,
-                            tensor_shape=[0, pure_tensor_shape],
+                            tensor_index=self.fault.tensor_index[1:],
+                            tensor_shape=pure_tensor_shape,
                     )
             ),
             tensor_shape=pure_tensor_shape,
@@ -156,21 +158,13 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
 
     def _forward_single_step(self, x, state=None):
         # if current state is None means we are starting from scratch
-        # we also reset the timer if the saved state from the previous
-        # iteration is different from the passed state, meaning non-continuity
-        if state is None or self._old_state != state:
+        if state is None:
             self._counter = 0
-            # if state is None we generate a fallback state from the current
-            # input
+            # we generate a fallback state from the current input
             # this is done inside the target module, but we need the state
             # here for possible injection
-            if state is None:
-                state = self.new_module.state_fallback(x)
+            state = self.new_module.state_fallback(x)
 
-        # we get the pure input shape, without batch size
-        pure_input_shape = self.remove_pytorch_batch_size_from_shape(
-                self.get_pytorch_shape(x)
-        )
         # we consider the first index of the fault injection to be the time
         # step
         # to convert the index we pass the fault index together with the
@@ -178,11 +172,17 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
         # we can use the current counter as for each iteration we are
         # considering only the current time step
         # we are interested only in the time step index
-        sequence_time_step_index = self.fault.bit_index_conversion(
-            bit_index=self.fault.bit_index,
-            bit_width=[self.counter, *pure_input_shape],
-        )[0]
-        if self.counter in sequence_time_step_index:
+        # we force the function to return a list of indices, and not slices
+        # for the shape, we need to increase the counter by 1, as if the
+        # counter is 0 the corresponding shape will be 1 and so on
+        # counter works as an index in a list, and we need its length here
+        sequence_time_step_index = self.fault.tensor_index_conversion(
+            # we need a list otherwise it creates issues
+            tensor_index=[self.fault.tensor_index[0]],
+            tensor_shape=[self._counter + 1],
+            force_index=True,
+        )
+        if self._counter in sequence_time_step_index:
             state_variable = None
             state_variable_name = None
 
@@ -194,6 +194,7 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
                 state_variable = state.v
                 state_variable_name = 'v'
 
+            # if the target is not None we execute the injection
             if state_variable is not None and state_variable_name is not None:
                 # we convert the state_variable from the state to numpy-like
                 numpy_like_state_variable = self.pytorch_to_numpy_like(
@@ -216,17 +217,20 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
                 # pytorch
                 state_variable_injected = self.numpy_like_to_pytorch(
                     numpy_like_state_variable_injected,
-                    dtype=self.get_pytorch_dtype(state),
+                    dtype=self.get_pytorch_dtype(state_variable),
                 )
 
                 # we update the state variable value in the state
-                setattr(state, state_variable_name, state_variable_injected)
+                # it cannot be done directly as the state is a tuple, so we
+                # need to create a new one substituting the state variable
+                state = state._replace(**{
+                        state_variable_name: state_variable_injected
+                })
 
+        # we increase the counter
+        self._counter += 1
         # here we simply run the forward
-        y, updated_state = self.new_module(x, state)
-        # we save the returned state to guarantee the continuity
-        self._old_state = updated_state
-        return y, updated_state
+        return self.new_module(x, state)
 
     def forward(self, x, state=None):
         if self.converted:
