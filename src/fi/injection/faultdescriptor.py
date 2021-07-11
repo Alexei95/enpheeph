@@ -69,7 +69,10 @@ class FaultDescriptor(object):
         # we raise error if parameter_name is not set and we are not doing
         # activation injection
         activation_flag = self.parameter_type.Activation in self.parameter_type
-        if self.parameter_name is None and not activation_flag:
+        snn_state = self.parameter_type.SNN | self.parameter_type.State
+        snn_flag = snn_state in self.parameter_type
+        flags = not activation_flag and not snn_flag
+        if self.parameter_name is None and flags:
             raise ValueError('Please provide a parameter_name from which '
                     'to gather the values of the tensor to be injected')
 
