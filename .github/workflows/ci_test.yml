@@ -1,5 +1,5 @@
 # we test the repository every time there is a new push on main
-name: CI Testing
+name: CI Test
 
 # events that trigger the workflow
 on:
