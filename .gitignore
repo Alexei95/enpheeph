@@ -30,3 +30,6 @@ model_training*/
 
 # Jupyter temp files
 .ipynb_checkpoints/
+
+# to remove the coverage files
+.coverage
