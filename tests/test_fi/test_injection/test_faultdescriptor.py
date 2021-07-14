@@ -21,7 +21,8 @@ MISSING_PARAMETER_NAME_NO_ERROR_TYPES = (
     SNN_STATE_TYPE,
 )
 
-
+# we test only the conversions in the class, as well as the hashability
+# but we do not test the dataclasss
 class TestFaultDescriptor:
     @pytest.mark.parametrize(
         'parameter_type',
@@ -50,6 +51,7 @@ class TestFaultDescriptor:
     ):
         # here we have a missing parameter name
         # it can be omitted only for SNN state or activation injection
+        # so we check it is None for those types, which is the default value
         assert src.fi.injection.faultdescriptor.FaultDescriptor(
                 module_name='',
                 parameter_type=parameter_type,
@@ -99,3 +101,18 @@ class TestFaultDescriptor:
                     bit_index= [],
                     bit_value=bit_value,
             )
+
+    def test_init_bit_index(self):
+        assert 0
+
+    def test_init_tensor_index(self):
+        assert 0
+
+    def test_hashability(self):
+        assert 0
+
+    def test_bit_index_coversion(self):
+        assert 0
+
+    def test_tensor_index_coversion(self):
+        assert 0
