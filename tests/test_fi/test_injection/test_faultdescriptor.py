@@ -1,8 +1,3 @@
-import functools
-import itertools
-import operator
-
-import more_itertools
 import pytest
 
 import src.fi.injection.faultdescriptor
