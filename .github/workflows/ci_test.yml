@@ -1,4 +1,5 @@
-name: CI Tests
+# we test the repository every time there is a new push on main
+name: CI Testing
 
 # events that trigger the workflow
 on:
@@ -15,6 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # for now a small grid is more than enough
         os: [ubuntu-18.04]
         python-version: [3.7]
         # os: [ubuntu-18.04, ubuntu-20.04, windows-2019, windows-2020, macOS-10.15]
@@ -51,6 +53,6 @@ jobs:
     - name: Upload pytest results
       uses: actions/upload-artifact@v2
       with:
-        name: pytest-results-${{ runner.os }}-${{ matrix.python-version }}-
-        path: junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-.xml
+        name: pytest-results-${{ runner.os }}-${{ matrix.python-version }}
+        path: junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
       if: failure()
