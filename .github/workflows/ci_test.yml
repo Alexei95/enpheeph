@@ -1,0 +1,60 @@
+name: CI Tests
+
+# events that trigger the workflow
+on:
+  # we select push for the selected branches
+  push:
+    branches: [main]
+
+jobs:
+  # name of the job
+  pytest:
+
+    # the system to run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, windows-2020, macOS-10.15]
+        python-version: [3.7, 3.8, 3.9]
+        release: ['stable']
+
+    # Timeout: https://stackoverflow.com/a/59076067/4521646
+    timeout-minutes: 40
+
+    steps:
+    # we check out the repository
+    - name: Repository check-out
+      uses: actions/checkout@v2
+
+    # we set up the Python environment
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Update pip
+      run: |
+        # needed for `pip cache` command
+        pip install --quiet "pip==20.2" --upgrade --user
+
+    # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
+
+    - name: Install test dependencies
+      run: |
+        python --version
+        pip --version
+        pip install --requirement requirements/test.txt --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        pip list
+      shell: bash
+
+    - name: Tests
+      run: |
+        python -m pytest -vvv --durations=0 --full-trace --junitxml=junit/test-results-${{ runner.os }}-py${{ matrix.python-version }}.xml
+
+    - name: Upload pytest results
+      uses: actions/upload-artifact@v2
+      with:
+        name: pytest-results-${{ runner.os }}-${{ matrix.python-version }}-
+        path: junit/test-results-${{ runner.os }}-${{ matrix.python-version }}-.xml
+      if: failure()
