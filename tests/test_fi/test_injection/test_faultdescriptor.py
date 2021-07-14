@@ -1,6 +1,7 @@
 import pytest
 
 import src.fi.injection.faultdescriptor
+import src.fi.utils.enums.bitvalue
 import src.fi.utils.enums.parametertype
 
 class TestFaultDescriptor:
@@ -8,7 +9,7 @@ class TestFaultDescriptor:
         with pytest.raises(ValueError):
             src.fi.injection.faultdescriptor.FaultDescriptor(
                     module_name='',
-                    parameter_type=src.fi.injection.parametertype.ParameterType.Voltage,
+                    parameter_type=src.fi.utils.enums.parametertype.ParameterType.Voltage,
                     tensor_index=[],
                     bit_index= [],
                     bit_value=src.fi.utils.enums.bitvalue.BitValue.BitFlip,
