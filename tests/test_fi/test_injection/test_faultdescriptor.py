@@ -16,19 +16,21 @@ SNN_STATE_TYPE = (
         enums.parametertype.ParameterType.State
 )
 
+MISSING_PARAMETER_NAME_NO_ERROR_TYPES = (
+    ACTIVATION_TYPE,
+    SNN_STATE_TYPE,
+)
+
 
 class TestFaultDescriptor:
     @pytest.mark.parametrize(
         'parameter_type',
         [
             pytest.param(
-                    ACTIVATION_TYPE,
-                    id=repr(ACTIVATION_TYPE),
-            ),
-            pytest.param(
-                    SNN_STATE_TYPE,
-                    id=repr(SNN_STATE_TYPE),
-            ),
+                    parameter_type,
+                    id=repr(parameter_type),
+            )
+            for parameter_type in MISSING_PARAMETER_NAME_NO_ERROR_TYPES
         ]
     )
     @pytest.mark.parametrize(
@@ -66,9 +68,9 @@ class TestFaultDescriptor:
             for parameter_type in (
                     src.fi.utils.enums.parametertype.ParameterType
             )
-            if (
-                    ACTIVATION_TYPE not in parameter_type and \
-                    SNN_STATE_TYPE not in parameter_type
+            if all(
+                    no_error_type not in parameter_type
+                    for no_error_type in MISSING_PARAMETER_NAME_NO_ERROR_TYPES
             )
         ]
     )
