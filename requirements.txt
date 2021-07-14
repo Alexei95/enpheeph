@@ -1,0 +1,7 @@
+cupy==9.0.0
+pytorch-lightning==1.3.3
+pytorch-lightning-bolts==0.3.2
+torch==1.8.1
+torchmetrics==0.3.2
+torchsummary==1.5.1
+torchvision==0.9.1
