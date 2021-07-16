@@ -1,35 +1,40 @@
+
+#### PYTHON
+# Python extra files - bytecode
+__pycache__
+*.pyc
+# Jupyter temp files
+.ipynb_checkpoints/
+# to remove the coverage files
+.coverage
+# pytest cache
+.pytest_cache/
+####
+
+#### PROJECT SETTINGS
 # VSCode settings
 .vscode/
 
 # Spyder settings
 .spyproject
+####
 
-# Python extra files - bytecode
-__pycache__
-*.pyc
 
+#### TEMPORARY LOCAL TEST DATA
 # Datasets
 /cifar10
 /mnist
 /datasets
-
-# Trained Models
-/models
-/trained_models
-
-# DSE results
-/*.csv
-/results
-
 # data for testing
 /data
 # PyTorch Lightning logs
 /lightning_logs
 # custom model training
 model_training*/
-
-# Jupyter temp files
-.ipynb_checkpoints/
-
-# to remove the coverage files
-.coverage
+# DSE results
+/*.csv
+/results
+# Trained Models
+/models
+/trained_models
+####
