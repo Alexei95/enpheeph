@@ -42,7 +42,7 @@ jobs:
       run: |
         python --version
         pip --version
-        pip install --requirement requirements/test.txt --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+        pip install --requirement requirements/test/full.txt --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
         pip list
       shell: bash
 

@@ -1,4 +1,0 @@
-# install basic requirements to run the framework
--r ../requirements.txt
-
-pytest==6.2.4
