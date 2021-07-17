@@ -1,5 +1,5 @@
-norse==0.0.6
-pytorch-lightning-bolts==0.3.2
-tonic==0.4.2
-torchmetrics==0.3.2
-torchvision==0.9.1
+norse>=0.0.6
+pytorch-lightning-bolts>=0.3.2
+tonic>=0.4.2
+torchmetrics>=0.3.2
+torchvision>=0.9.1

@@ -10,6 +10,13 @@ pip -r requirements.txt
 
 to install the package requirements for running the framework.
 
+Extra requirements can be found in the folder ```requirements```, depending on the specific application which need to be used.
+
+### Possible Issues
+
+1. If installing ```tonic``` in a ```conda``` environment, pay attention to install also the GCC/G++ compilers from ```conda``` (e.g. ```gcc_linux-64``` and ```gxx_linux-64```, eventually also ```gfortran_linux-64``` if needed later on), as there are some ABI compatibility issues when building a ```tonic``` dependency, ```loris```, using a compiler which is external to the ```conda``` environment.
+2. Pay attention to the CUDA libraries being used if installing both ```PyTorch``` and ```CUPy``` using ```conda```. The best solution is to install a compatible CUDA toolkit from ```conda```, and then install ```PyTorch``` and ```CUPy``` using the compatible versions from ```PyPI```, using ```pip```.
+
 ## Tests
 
 Tests are run using ```pytest```.
