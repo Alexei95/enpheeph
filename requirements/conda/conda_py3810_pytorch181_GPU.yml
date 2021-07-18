@@ -1,0 +1,18 @@
+name: CFIF
+channels:
+  - defaults
+  - pytorch
+  - conda-forge
+dependencies:
+  - cupy
+  - torchvision
+  - gcc_linux-64
+  - gxx_linux-64
+  - pytorch=1.8.1
+  - cudatoolkit=10.2
+  - pip:
+    - norse
+    - pytorch-lightning
+    - pytorch-lightning-bolts
+    - tonic
+    - torchsummary
