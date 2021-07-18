@@ -13,6 +13,8 @@ class SNNReturnTuple(typing.NamedTuple):
 
 class SNNWrapper(torch.nn.Module):
     DEFAULT_RETURN_STATE = True
+    DEFAULT_ENCODING_FLAG = True
+    DEFAULT_DECODING_FLAG = True
 
     def __init__(
             self,
@@ -20,13 +22,18 @@ class SNNWrapper(torch.nn.Module):
             model: torch.nn.Module,
             decoder: typing.Callable[[torch.Tensor], torch.Tensor],
             *,
-            return_state: bool = DEFAULT_RETURN_STATE
+            return_state: bool = DEFAULT_RETURN_STATE,
+            encoding_flag: bool = DEFAULT_ENCODING_FLAG,
+            decoding_flag: bool = DEFAULT_DECODING_FLAG,
     ):
         super().__init__()
 
         self.encoder = encoder
         self.model = model
         self.decoder = decoder
+
+        self.encoding_flag = encoding_flag
+        self.decoding_flag = decoding_flag
 
         self.register_snn_parameters()
 
@@ -41,8 +48,8 @@ class SNNWrapper(torch.nn.Module):
                 if hasattr(p, '_asdict'):
                     for p_name, p_value in p._asdict().items():
                         if getattr(p_value, 'requires_grad', False):
-                            self.register_parameter(
-                                module_name.replace('.', '_') + '_' + p_name,
+                            module.register_parameter(
+                                'p_' + p_name,
                                 p_value
                             )
 
@@ -59,8 +66,11 @@ class SNNWrapper(torch.nn.Module):
             torch.Tensor,
             SNNReturnTuple
     ]:
-        # we encode the inputs
-        encoded_inputs = self.encoder(inputs)
+        # we encode the inputs, if enabled
+        if self.encoding_flag:
+            encoded_inputs = self.encoder(inputs)
+        else:
+            encoded_inputs = inputs
         # we save the sequence length from the shape of the inputs
         seq_length = encoded_inputs.size()[0]
         # states will contain the states at each time step, and the second
@@ -90,8 +100,11 @@ class SNNWrapper(torch.nn.Module):
 
         # we stack the output to a torch tensor
         torch_out = torch.stack(out)
-        # we decode the outputs
-        decoded_output = self.decoder(torch_out)
+        # we decode the outputs, if enabled
+        if self.decoding_flag:
+            decoded_output = self.decoder(torch_out)
+        else:
+            decoded_output = output
 
         if self.return_state:
             return SNNReturnTuple(output=decoded_output, state=states)
@@ -138,7 +151,7 @@ class SNNWrapper(torch.nn.Module):
         )
 
     @staticmethod
-    def decode(x):
+    def max_log_softmax_proability(x):
         x, _ = torch.max(x, 0)
         log_p_y = torch.nn.functional.log_softmax(x, dim=-1)
         return log_p_y
