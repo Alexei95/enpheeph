@@ -188,13 +188,13 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
         # we need to get the first index using the interface
         # the returned type is a tuple with the indices
         sequence_time_step_index = self.\
-        get_norse_sequence_time_step_from_index(
-                self.fault.tensor_index_conversion(
-                    tensor_index=time_tensor_index,
-                    tensor_shape=[self._counter + 1],
-                    force_index=True,
-                )
-        )
+            get_norse_sequence_time_step_from_index(
+                    self.fault.tensor_index_conversion(
+                            tensor_index=time_tensor_index,
+                            tensor_shape=[self._counter + 1],
+                            force_index=True,
+                    )
+            )
         if self._counter in sequence_time_step_index:
             state_variable = None
             state_variable_name = None
