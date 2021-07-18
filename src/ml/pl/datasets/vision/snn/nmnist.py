@@ -22,7 +22,7 @@ class NMNISTDataModule(
                 tonic.datasets.nmnist
         )
     name = "nmnist"
-    dims = (1, 32, 32)
+    dims = (1, 34, 34)
 
     def __init__(
             self,
