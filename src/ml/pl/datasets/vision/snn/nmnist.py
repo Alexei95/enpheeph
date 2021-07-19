@@ -1,4 +1,5 @@
 import copy
+import functools
 import pathlib
 
 import typing
@@ -40,7 +41,8 @@ class NMNISTDataModule(
             train_transforms: typing.Optional[typing.Callable] = None,
             val_transforms: typing.Optional[typing.Callable] = None,
             test_transforms: typing.Optional[typing.Callable] = None,
-            # tonic specific arguments for collate_fn
+            # tonic specific arguments for collate_fn and target transform
+            target_transform: typing.Optional[typing.Callable] = None,
             collate_fn: typing.Optional[typing.Callable] = None,
             # N-MNIST specific arguments
             first_saccade_only: bool = False,
@@ -65,6 +67,12 @@ class NMNISTDataModule(
         self.test_transforms = test_transforms
         self.val_transforms = val_transforms
 
+        self.target_transform = target_transform
+        # to pass the custom target transform
+        self.dataset_cls = functools.partial(
+                self.dataset_cls,
+                target_transform=self.target_transform
+        )
         self.collate_fn = collate_fn
 
         self.first_saccade_only = first_saccade_only
