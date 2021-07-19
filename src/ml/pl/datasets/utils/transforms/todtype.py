@@ -7,7 +7,13 @@ class ToDtype(src.ml.pl.datasets.utils.transforms.transformabc.TransformABC):
     def __init__(self, dtype):
         super().__init__()
 
-        self._dtype = dtype
+        # this is a workaround to YAML-serialize the dtype
+        # the dtype itself cannot be serialized in YAML, and it is required
+        # as the transform may be a hparam to be serialized
+        self._dtype_holder = torch.zeros(0, dtype=dtype)
 
     def call(self, element):
-        return torch.Tensor.to(element, dtype=self._dtype)
+        if element.dtype != self._dtype_holder.dtype:
+            return torch.Tensor.to(element, dtype=self._dtype_holder.dtype)
+        else:
+            return element
