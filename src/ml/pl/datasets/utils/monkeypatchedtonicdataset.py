@@ -5,7 +5,11 @@ import typing
 # this decorator is useful for monkey-patching the dataset
 def monkey_patching_tonic_dataset(dataset_class, dataset_module):
     class MonkeyPatchedTonicDataset(dataset_class):
-        def check_integrity(self, fpath: str, md5: typing.Optional[str] = None) -> bool:
+        def check_integrity(
+                self,
+                fpath: str,
+                md5: typing.Optional[str] = None
+        ) -> bool:
             if self._check_dataset_existence():
                 # FIXME: improve this message
                 print(
@@ -18,14 +22,14 @@ def monkey_patching_tonic_dataset(dataset_class, dataset_module):
 
         def __init__(self, *args, **kwargs):
             self._original_check_integrity = copy.deepcopy(
-                dataset_module.check_integrity
+                    dataset_module.check_integrity
             )
             dataset_module.check_integrity = self.check_integrity
             super().__init__(*args, **kwargs)
 
         # with this function we check the existence of the directories for the
-        # testing and training subsets, by also checking the high-level directory
-        # structure to match with the expected one
+        # testing and training subsets, by also checking the high-level
+        # directory structure to match with the expected one
         def _check_dataset_existence(self):
             for file_ in (self.test_filename, self.train_filename):
                 path_file = pathlib.Path(self.location_on_system) / file_
