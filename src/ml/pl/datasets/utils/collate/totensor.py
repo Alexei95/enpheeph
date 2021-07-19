@@ -1,8 +1,8 @@
-import collections
 import torch
 
+import src.ml.pl.datasets.utils.collate.collateabc
 
-class ToTensor(object):
-    def __call__(self, batch, *args, **kwargs):
-        batch_in, batch_target = batch
-        return torch.as_tensor(batch_in), torch.as_tensor(batch_target)
+
+class ToTensor(src.ml.pl.datasets.utils.collate.collateabc.CollateABC):
+    def call(self, input_, target):
+        return torch.as_tensor(input_), torch.as_tensor(target)
