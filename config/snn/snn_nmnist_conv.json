@@ -7,6 +7,8 @@
             "auto_scale_batch_size": true,
             "auto_lr_find": true,
             "default_root_dir": "model_training/lightning/snn_nmnist_conv",
+            "accelerator": null,
+            "plugins": null,
 
             "callbacks": {
                 "__kwargs__": {
@@ -87,9 +89,43 @@
                         "__custom__": true,
                         "__custom_decoder__": "callable",
                         "__import__": true,
-                        "__callable__": "src.ml.pl.datasets.utils.transforms.permute.Permute",
+                        "__callable__": "torchvision.transforms.Compose",
                         "__args__": [
-                            1, 0, 2, 3, 4
+                            [
+                                {
+                                    "__custom__": true,
+                                    "__custom_decoder__": "callable",
+                                    "__import__": true,
+                                    "__callable__": "src.ml.pl.datasets.utils.transforms.todense.ToDense",
+                                    "__args__": [],
+                                    "__kwargs__": {}
+                                },
+                                {
+                                    "__custom__": true,
+                                    "__custom_decoder__": "callable",
+                                    "__import__": true,
+                                    "__callable__": "src.ml.pl.datasets.utils.transforms.todtype.ToDtype",
+                                    "__args__": [],
+                                    "__kwargs__": {
+                                        "dtype": {
+                                            "__custom__": true,
+                                            "__custom_decoder__": "object",
+                                            "__import__": true,
+                                            "__object__": "torch.float"
+                                        }
+                                    }
+                                },
+                                {
+                                    "__custom__": true,
+                                    "__custom_decoder__": "callable",
+                                    "__import__": true,
+                                    "__callable__": "src.ml.pl.datasets.utils.transforms.permute.Permute",
+                                    "__args__": [
+                                        1, 0, 2, 3, 4
+                                    ],
+                                    "__kwargs__": {}
+                                }
+                            ]
                         ],
                         "__kwargs__": {}
                     },
@@ -608,7 +644,7 @@
                     "return_state": false
                 }
             },
-            "learning_rate": 2e-3,
+            "learning_rate": 1e-3,
             "batch_size": 1,
             "example_input_array_size": [1, 1, 1, 34, 34],
             "optimizer_classes": [
@@ -666,7 +702,7 @@
                             "__callable__": "tonic.transforms.TimeSkew",
                             "__args__": [],
                             "__kwargs__": {
-                                "coefficient": 0.02
+                                "coefficient": 0.005
                             }
                         },
                         {
@@ -677,29 +713,6 @@
                             "__args__": [],
                             "__kwargs__": {
                                 "merge_polarities": true
-                            }
-                        },
-                        {
-                            "__custom__": true,
-                            "__custom_decoder__": "callable",
-                            "__import__": true,
-                            "__callable__": "src.ml.pl.datasets.utils.transforms.todense.ToDense",
-                            "__args__": [],
-                            "__kwargs__": {}
-                        },
-                        {
-                            "__custom__": true,
-                            "__custom_decoder__": "callable",
-                            "__import__": true,
-                            "__callable__": "src.ml.pl.datasets.utils.transforms.todtype.ToDtype",
-                            "__args__": [],
-                            "__kwargs__": {
-                                "dtype": {
-                                    "__custom__": true,
-                                    "__custom_decoder__": "object",
-                                    "__import__": true,
-                                    "__object__": "torch.float"
-                                }
                             }
                         }
                     ]
@@ -720,7 +733,7 @@
                             "__callable__": "tonic.transforms.TimeSkew",
                             "__args__": [],
                             "__kwargs__": {
-                                "coefficient": 0.02
+                                "coefficient": 0.005
                             }
                         },
                         {
@@ -731,29 +744,6 @@
                             "__args__": [],
                             "__kwargs__": {
                                 "merge_polarities": true
-                            }
-                        },
-                        {
-                            "__custom__": true,
-                            "__custom_decoder__": "callable",
-                            "__import__": true,
-                            "__callable__": "src.ml.pl.datasets.utils.transforms.todense.ToDense",
-                            "__args__": [],
-                            "__kwargs__": {}
-                        },
-                        {
-                            "__custom__": true,
-                            "__custom_decoder__": "callable",
-                            "__import__": true,
-                            "__callable__": "src.ml.pl.datasets.utils.transforms.todtype.ToDtype",
-                            "__args__": [],
-                            "__kwargs__": {
-                                "dtype": {
-                                    "__custom__": true,
-                                    "__custom_decoder__": "object",
-                                    "__import__": true,
-                                    "__object__": "torch.float"
-                                }
                             }
                         }
                     ]
@@ -774,7 +764,7 @@
                             "__callable__": "tonic.transforms.TimeSkew",
                             "__args__": [],
                             "__kwargs__": {
-                                "coefficient": 0.02
+                                "coefficient": 0.005
                             }
                         },
                         {
@@ -786,29 +776,32 @@
                             "__kwargs__": {
                                 "merge_polarities": true
                             }
+                        }
+                    ]
+                ],
+                "__kwargs__": {}
+            },
+            "target_transform": null,
+            "collate_fn": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torchvision.transforms.Compose",
+                "__args__": [
+                    [
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "object",
+                            "__import__": true,
+                            "__object__": "tonic.utils.pad_tensors"
                         },
                         {
                             "__custom__": true,
                             "__custom_decoder__": "callable",
                             "__import__": true,
-                            "__callable__": "src.ml.pl.datasets.utils.transforms.todense.ToDense",
+                            "__callable__": "src.ml.pl.datasets.utils.collate.totensor.ToTensor",
                             "__args__": [],
                             "__kwargs__": {}
-                        },
-                        {
-                            "__custom__": true,
-                            "__custom_decoder__": "callable",
-                            "__import__": true,
-                            "__callable__": "src.ml.pl.datasets.utils.transforms.todtype.ToDtype",
-                            "__args__": [],
-                            "__kwargs__": {
-                                "dtype": {
-                                    "__custom__": true,
-                                    "__custom_decoder__": "object",
-                                    "__import__": true,
-                                    "__object__": "torch.float"
-                                }
-                            }
                         }
                     ]
                 ],
@@ -818,10 +811,10 @@
             "normalize": false,
             "seed": 42,
             "shuffle": true,
-            "pin_memory": true,
+            "pin_memory": false,
             "drop_last": false,
             "batch_size": 1,
-            "num_workers": 64
+            "num_workers": 0
         }
     }
 }
