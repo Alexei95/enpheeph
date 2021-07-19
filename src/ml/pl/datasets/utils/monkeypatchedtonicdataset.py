@@ -3,8 +3,20 @@ import pathlib
 import typing
 
 # this decorator is useful for monkey-patching the dataset
-def monkey_patching_tonic_dataset(dataset_class, dataset_module):
+def monkey_patching_tonic_dataset(
+        dataset_class,
+        dataset_module,
+        train_dir,
+        test_dir,
+):
     class MonkeyPatchedTonicDataset(dataset_class):
+        # these are the train and test directories to be checked for integrity
+        TEST_DIR = test_dir
+        TRAIN_DIR = train_dir
+
+        # this function is used to update the check_integrity, to simply
+        # check the directories and then download, instead of downloading all
+        # the time
         def check_integrity(
                 self,
                 fpath: str,
@@ -25,20 +37,22 @@ def monkey_patching_tonic_dataset(dataset_class, dataset_module):
                     dataset_module.check_integrity
             )
             dataset_module.check_integrity = self.check_integrity
+
             super().__init__(*args, **kwargs)
 
         # with this function we check the existence of the directories for the
         # testing and training subsets, by also checking the high-level
         # directory structure to match with the expected one
         def _check_dataset_existence(self):
-            for file_ in (self.test_filename, self.train_filename):
+            for file_ in (self.TEST_DIR, self.TRAIN_DIR):
                 path_file = pathlib.Path(self.location_on_system) / file_
                 path_dir = path_file.with_suffix('')
 
-                expected_dir_list = {str(i) for i in range(len(self.classes))}
-                dir_list = set(path_dir.glob('*'))
+                expected_dir_list_length = len(self.classes)
+                dir_list_length = len(list(path_dir.glob('*')))
+                different_n_dirs = expected_dir_list_length != dir_list_length
 
-                if not path_dir.is_dir() or expected_dir_list.issubset(dir_list):
+                if not path_dir.is_dir() or different_n_dirs:
                     return False
             return True
 
