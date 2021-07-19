@@ -150,8 +150,16 @@ class SNNWrapper(torch.nn.Module):
                 y
         )
 
+    # must be used if the target is one-hot encoded
     @staticmethod
-    def max_log_softmax_proability(x):
+    def custom_one_hot_argmax_accuracy(y_hat, y):
+        return torchmetrics.Accuracy().to(y_hat.device)(
+                torch.argmax(y_hat, dim=-1),
+                torch.max(y, dim=-1)[1],
+        )
+
+    @staticmethod
+    def max_log_softmax_probability(x):
         x, _ = torch.max(x, 0)
         log_p_y = torch.nn.functional.log_softmax(x, dim=-1)
         return log_p_y
