@@ -1,7 +1,5 @@
 import abc
 
-import torch
-
 
 class TransformABC(abc.ABC):
     def __init__(self, *args, **kwargs):
