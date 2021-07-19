@@ -35,9 +35,9 @@ class SNNWrapper(torch.nn.Module):
         self.encoding_flag = encoding_flag
         self.decoding_flag = decoding_flag
 
-        self.register_snn_parameters()
-
         self.return_state = return_state
+
+        self.register_snn_parameters()
 
     # this method is used to register possible hidden parameters inside the
     # SNN configurations
