@@ -3,17 +3,14 @@ channels:
   - defaults
   - conda-forge
   - anaconda
-  - pytorch
 dependencies:
-  - cudatoolkit=10.1
-  - cudatoolkit-dev=10.1
-  - cupy>=9
+  - cudatoolkit=10.1.*
+  - cudatoolkit-dev=10.1.*
+  - cupy>=9.*
   - openblas-devel
-  - torchvision
   - gcc_linux-64
   - gxx_linux-64
-  - python=3.9
-  - pytorch=1.8.1
+  - python=3.9.*
   - pip=21
   - pip:
     - norse
@@ -21,3 +18,8 @@ dependencies:
     - pytorch-lightning-bolts
     - tonic
     - torchsummary
+    # for Windows change linux_x86_64 to win_amd64
+    # for other torch versions/configurations, check out
+    # https://download.pytorch.org/whl/torch_stable.html
+    - https://download.pytorch.org/whl/cu101/torch-1.8.1%2Bcu101-cp39-cp39-linux_x86_64.whl
+    - https://download.pytorch.org/whl/cu101/torchvision-0.9.1%2Bcu101-cp39-cp39-linux_x86_64.whl
