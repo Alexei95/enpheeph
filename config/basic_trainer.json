@@ -33,7 +33,7 @@
             "limit_val_batches": 1.0,
             "log_every_n_steps": 10,
             "log_gpu_memory": null,
-            "max_epochs": 100,
+            "max_epochs": 1000,
             "max_steps": null,
             "max_time": null,
             "min_steps": null,
@@ -144,7 +144,7 @@
                                     "__callable__": "pytorch_lightning.callbacks.EarlyStopping",
                                     "__args__": [],
                                     "__kwargs__": {
-                                        "monitor": "val_loss",
+                                        "monitor": "val_loss_epoch",
                                         "min_delta": 0.001,
                                         "patience": 5,
                                         "verbose": true,
