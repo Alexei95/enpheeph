@@ -883,7 +883,7 @@
                 ],
                 "__kwargs__": {}
             },
-            "data_dir": "/shared/ml/datasets//N-CARS/",
+            "data_dir": "/shared/ml/datasets/N-CARS/",
             "normalize": false,
             "seed": 42,
             "shuffle": true,
