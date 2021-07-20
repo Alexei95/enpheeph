@@ -711,7 +711,7 @@
                 }
             },
             "learning_rate": 1e-4,
-            "batch_size": 128,
+            "batch_size": 96,
             "example_input_array_size": [1, 1, 1, 120, 100],
             "optimizer_classes": [
                 {
@@ -890,7 +890,7 @@
             "shuffle": true,
             "pin_memory": false,
             "drop_last": false,
-            "batch_size": 128,
+            "batch_size": 96,
             "num_workers": 0
         }
     }
