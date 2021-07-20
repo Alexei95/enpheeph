@@ -4,10 +4,11 @@
 
     "trainer": {
         "__kwargs__": {
+            "accelerator": null,
             "auto_scale_batch_size": true,
             "auto_lr_find": true,
             "default_root_dir": "model_training/lightning/snn_ncars_conv",
-            "accelerator": null,
+            "gpus": 0,
             "plugins": null,
 
             "callbacks": {
