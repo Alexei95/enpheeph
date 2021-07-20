@@ -327,7 +327,7 @@
                                             "method": "super"
                                         }
                                     },
-                                    "dt": 0.001
+                                    "dt": 0.01
                                 }
                             },
 
@@ -523,7 +523,7 @@
                                             "method": "super"
                                         }
                                     },
-                                    "dt": 0.001
+                                    "dt": 0.01
                                 }
                             },
 
@@ -693,7 +693,8 @@
                                                 "__kwargs__": {}
                                             }
                                         }
-                                    }
+                                    },
+                                    "dt": 0.01
                                 }
                             }
                         ],
@@ -708,8 +709,8 @@
                     "return_state": false
                 }
             },
-            "learning_rate": 1e-3,
-            "batch_size": 16,
+            "learning_rate": 1e-4,
+            "batch_size": 128,
             "example_input_array_size": [1, 1, 1, 120, 100],
             "optimizer_classes": [
                 {
@@ -743,17 +744,15 @@
                 "__custom__": true,
                 "__custom_decoder__": "callable",
                 "__import__": true,
-                "__callable__": "torch.nn.MSELoss",
+                "__callable__": "torch.nn.NLLLoss",
                 "__args__": [],
-                "__kwargs__": {
-                    "reduction": "mean"
-                }
+                "__kwargs__": {}
             },
             "accuracy_func": {
                 "__custom__": true,
                 "__custom_decoder__": "object",
                 "__import__": true,
-                "__object__": "src.ml.models.snnwrapper.SNNWrapper.custom_one_hot_argmax_accuracy"
+                "__object__": "src.ml.models.snnwrapper.SNNWrapper.custom_argmax_accuracy"
             }
         }
     },
@@ -879,65 +878,18 @@
                             "__callable__": "src.ml.pl.datasets.utils.collate.totensor.ToTensor",
                             "__args__": [],
                             "__kwargs__": {}
-                        },
-                        {
-                            "__custom__": true,
-                            "__custom_decoder__": "callable",
-                            "__import__": true,
-                            "__callable__": "src.ml.pl.datasets.utils.collate.targettodtype.TargetToDtype",
-                            "__args__": [],
-                            "__kwargs__": {
-                                "dtype": {
-                                    "__custom__": true,
-                                    "__custom_decoder__": "object",
-                                    "__import__": true,
-                                    "__object__": "torch.int64"
-                                }
-                            }
-                        },
-                        {
-                            "__custom__": true,
-                            "__custom_decoder__": "callable",
-                            "__import__": true,
-                            "__callable__": "src.ml.pl.datasets.utils.collate.targettoonehot.TargetToOneHot",
-                            "__args__": [],
-                            "__kwargs__": {
-                                "num_classes": {
-                                    "__custom__": true,
-                                    "__custom_decoder__": "callable",
-                                    "__import__": true,
-                                    "__callable__": "src.ml.pl.datasets.vision.snn.ncars.NCARSDataModule.dataset_cls.classes.__len__",
-                                    "__args__": [],
-                                    "__kwargs__": {}
-                                }
-                            }
-                        },
-                        {
-                            "__custom__": true,
-                            "__custom_decoder__": "callable",
-                            "__import__": true,
-                            "__callable__": "src.ml.pl.datasets.utils.collate.targettodtype.TargetToDtype",
-                            "__args__": [],
-                            "__kwargs__": {
-                                "dtype": {
-                                    "__custom__": true,
-                                    "__custom_decoder__": "object",
-                                    "__import__": true,
-                                    "__object__": "torch.float"
-                                }
-                            }
                         }
                     ]
                 ],
                 "__kwargs__": {}
             },
-            "data_dir": "data/N-CARS/",
+            "data_dir": "/shared/ml/datasets//N-CARS/",
             "normalize": false,
             "seed": 42,
             "shuffle": true,
             "pin_memory": false,
             "drop_last": false,
-            "batch_size": 16,
+            "batch_size": 128,
             "num_workers": 0
         }
     }
