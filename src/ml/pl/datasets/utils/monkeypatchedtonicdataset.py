@@ -1,14 +1,17 @@
 import copy
 import pathlib
+import sys
 import typing
+
 
 # this decorator is useful for monkey-patching the dataset
 def monkey_patching_tonic_dataset(
         dataset_class,
-        dataset_module,
         train_dir,
         test_dir,
 ):
+    dataset_module = sys.modules[dataset_class.__module__]
+
     class MonkeyPatchedTonicDataset(dataset_class):
         # these are the train and test directories to be checked for integrity
         TEST_DIR = test_dir

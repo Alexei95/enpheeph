@@ -22,7 +22,6 @@ class NCARSDataModule(
     dataset_cls = src.ml.pl.datasets.utils.\
         monkeypatchedtonicdataset.monkey_patching_tonic_dataset(
                 tonic.datasets.ncars.NCARS,
-                tonic.datasets.ncars,
                 'ncars-train',
                 'ncars-test',
         )

@@ -28,7 +28,6 @@ class NMNISTDataModule(
     dataset_cls = src.ml.pl.datasets.utils.\
         monkeypatchedtonicdataset.monkey_patching_tonic_dataset(
                 tonic.datasets.nmnist.NMNIST,
-                tonic.datasets.nmnist,
                 tonic.datasets.nmist.NMNIST.train_filename,
                 tonic.datasets.nmist.NMNIST.test_filename,
         )
