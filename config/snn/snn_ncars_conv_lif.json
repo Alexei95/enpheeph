@@ -1,13 +1,13 @@
 {
     "seed_everything": 42,
-    "logging_file": "model_training/lightning/snn_ncars_conv/pl_log.log",
+    "logging_file": "model_training/lightning/snn_ncars_conv_lif/pl_log.log",
 
     "trainer": {
         "__kwargs__": {
             "accelerator": null,
             "auto_scale_batch_size": true,
             "auto_lr_find": true,
-            "default_root_dir": "model_training/lightning/snn_ncars_conv",
+            "default_root_dir": "model_training/lightning/snn_ncars_conv_lif",
             "gpus": 1,
             "plugins": null,
 
@@ -38,13 +38,13 @@
                                                     "__args__": [],
                                                     "__kwargs__": {
                                                         "self": {
-                                                            "2": "config/snn/snn_ncars_conv.json"
+                                                            "2": "config/snn/snn_ncars_conv_lif.json"
                                                         }
                                                     }
                                                 }
                                             }
                                         },
-                                        "dest_dir": "model_training/lightning/snn_ncars_conv",
+                                        "dest_dir": "model_training/lightning/snn_ncars_conv_lif",
                                         "subdirectory": "configs"
                                     }
                                 }
@@ -60,7 +60,7 @@
                             "self": {
                                 "1": {
                                     "__kwargs__": {
-                                        "save_dir": "model_training/lightning/snn_ncars_conv",
+                                        "save_dir": "model_training/lightning/snn_ncars_conv_lif",
                                         "log_graph": false
                                     }
                                 }
