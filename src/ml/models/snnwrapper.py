@@ -42,16 +42,48 @@ class SNNWrapper(torch.nn.Module):
     # this method is used to register possible hidden parameters inside the
     # SNN configurations
     def register_snn_parameters(self):
-        for module_name, module in self.named_modules():
+        # we get all the Parameter elements from the modules
+        # some Parameters have nested Parameters, like LIFRefrac has
+        # a nested LIFParameters in it
+        # we need a counter as many parameters may have the same name
+        p_list = []
+        counter = 0
+
+        # we populate the list with direct children to the modules,
+        # using 'p' as variable name
+        # only if it is a namedtuple, with _asdict, or if it is a
+        # torch.nn.Module
+        for module in self.modules():
             if hasattr(module, 'p'):
                 p = getattr(module, 'p')
                 if hasattr(p, '_asdict'):
-                    for p_name, p_value in p._asdict().items():
-                        if getattr(p_value, 'requires_grad', False):
-                            module.register_parameter(
-                                'p_' + p_name,
-                                p_value
-                            )
+                    p_list.extend(list(p._asdict().items()))
+                elif isinstance(p, torch.nn.Module):
+                    p_list.extend(list(p.named_modules()))
+
+        # we iterate over the list until it's empty
+        while len(p_list) > 0:
+            p_name, p_value = p_list.pop()
+
+            # if the value is a namedtuple or a torch.nn.Module we extend the
+            # list
+            if hasattr(p_value, '_asdict'):
+                p_list.extend(list(p_value._asdict().items()))
+            elif isinstance(p_value, torch.nn.Module):
+                p_list.extend(list(p_value.named_modules()))
+            # we check wheter it is a tensor which requires gradient and
+            # it is not already registered
+            tensor_flag = isinstance(p_value, torch.Tensor)
+            grad_flag = getattr(p_value, 'requires_grad', False)
+            id_param_list = [id(param) for param in self.parameters()]
+            parameter_flag = id(p_value) not in id_param_list
+            # if True we increase the counter and register the new parameter
+            if tensor_flag and grad_flag and parameter_flag:
+                counter += 1
+                module.register_parameter(
+                    'p_' + p_name + '_' + str(counter),
+                    p_value
+                )
 
     def forward(
             self,
