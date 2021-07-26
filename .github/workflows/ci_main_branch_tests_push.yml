@@ -48,7 +48,7 @@ jobs:
 
     - name: Run pytest
       run: |
-        python -m pytest -vvv --durations=0 --full-trace --junitxml=junit/test-results-${{ runner.os }}-py${{ matrix.python-version }}.xml
+        python -m pytest -n auto -vvv --durations=0 --full-trace --junitxml=junit/test-results-${{ runner.os }}-py${{ matrix.python-version }}.xml
 
     # this is required for sharing data with other jobs, as each job has a
     # different runner
