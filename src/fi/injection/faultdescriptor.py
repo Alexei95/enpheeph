@@ -6,6 +6,7 @@ import src.fi.utils.enums.bitvalue
 import src.fi.utils.enums.endianness
 import src.fi.utils.enums.parametertype
 
+
 # FIXME: fix the way hash is computed, as this solution is very sketchy
 # a better idea could be to use frozen
 # this is a container for the module name and the index for where the fault
@@ -124,6 +125,11 @@ class FaultDescriptor(object):
                     for i in sorted(set(bit_index))
                     if 0 <= i < bit_width
             )
+        else:
+            raise ValueError(
+                    "Wrong argument passed, it should be one among "
+                    "Ellipsis, slice or list of indices"
+                    )
 
     # NOTE: in our case here, Ellipsis (...) is used as non-greedy, so you need
     # one ... per dimension you want to skip. In numpy instead ... is greedy,
