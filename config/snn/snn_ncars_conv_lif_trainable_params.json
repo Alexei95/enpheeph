@@ -83,7 +83,7 @@
                 "__custom__": true,
                 "__custom_decoder__": "callable",
                 "__import__": true,
-                "__callable__": "src.ml.models.snnwrapper.SNNWrapper",
+                "__callable__": "src.ml.models.snn.snnwrapper.SNNWrapper",
                 "__args__": [],
                 "__kwargs__": {
                     "encoder": {
@@ -275,14 +275,7 @@
                                                         "__args__": [],
                                                         "__kwargs__": {
                                                             "size": [32, 30, 25],
-                                                            "fill_value": {
-                                                                "__custom__": true,
-                                                                "__custom_decoder__": "callable",
-                                                                "__import__": true,
-                                                                "__callable__": "norse.torch.LIFParameters._field_defaults.get",
-                                                                "__args__": ["v_th"],
-                                                                "__kwargs__": {}
-                                                            }
+                                                            "fill_value": 0.4
                                                         }
                                                     }
                                                 ],
@@ -471,14 +464,7 @@
                                                         "__args__": [],
                                                         "__kwargs__": {
                                                             "size": [32, 15, 12],
-                                                            "fill_value": {
-                                                                "__custom__": true,
-                                                                "__custom_decoder__": "callable",
-                                                                "__import__": true,
-                                                                "__callable__": "norse.torch.LIFParameters._field_defaults.get",
-                                                                "__args__": ["v_th"],
-                                                                "__kwargs__": {}
-                                                            }
+                                                            "fill_value": 0.4
                                                         }
                                                     }
                                                 ],
@@ -724,7 +710,7 @@
                         "__custom__": true,
                         "__custom_decoder__": "object",
                         "__import__": true,
-                        "__object__": "src.ml.models.snnwrapper.SNNWrapper.max_log_softmax_probability"
+                        "__object__": "src.ml.models.snn.snnwrapper.SNNWrapper.max_log_softmax_probability"
                     },
                     "return_state": false
                 }
@@ -772,7 +758,7 @@
                 "__custom__": true,
                 "__custom_decoder__": "object",
                 "__import__": true,
-                "__object__": "src.ml.models.snnwrapper.SNNWrapper.custom_argmax_accuracy"
+                "__object__": "src.ml.models.snn.snnwrapper.SNNWrapper.custom_argmax_accuracy"
             }
         }
     },
