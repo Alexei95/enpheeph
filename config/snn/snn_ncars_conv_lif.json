@@ -83,7 +83,7 @@
                 "__custom__": true,
                 "__custom_decoder__": "callable",
                 "__import__": true,
-                "__callable__": "src.ml.models.snnwrapper.SNNWrapper",
+                "__callable__": "src.ml.models.snn.snnwrapper.SNNWrapper",
                 "__args__": [],
                 "__kwargs__": {
                     "encoder": {
@@ -329,7 +329,7 @@
                         "__custom__": true,
                         "__custom_decoder__": "object",
                         "__import__": true,
-                        "__object__": "src.ml.models.snnwrapper.SNNWrapper.max_log_softmax_probability"
+                        "__object__": "src.ml.models.snn.snnwrapper.SNNWrapper.max_log_softmax_probability"
                     },
                     "return_state": false
                 }
@@ -377,7 +377,7 @@
                 "__custom__": true,
                 "__custom_decoder__": "object",
                 "__import__": true,
-                "__object__": "src.ml.models.snnwrapper.SNNWrapper.custom_argmax_accuracy"
+                "__object__": "src.ml.models.snn.snnwrapper.SNNWrapper.custom_argmax_accuracy"
             }
         }
     },
