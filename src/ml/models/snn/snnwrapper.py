@@ -143,6 +143,15 @@ class SNNWrapper(torch.nn.Module):
         else:
             return decoded_output
 
+    # we delegate the weight initialization to each component
+    # decoder, model, encoder
+    def init_weights(self):
+        for mod in (self.decoder, self.model, self.encoder):
+            if (
+                    init_weights := getattr(mod, 'init_weights', None)
+            ) is not None:
+                init_weights()
+
     # NOTE: this is a temporary solution, as it is difficult to implement
     # temporary function with JSON
     @staticmethod
