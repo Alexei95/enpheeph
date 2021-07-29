@@ -81,7 +81,7 @@ class SNNWrapper(torch.nn.Module):
             if tensor_flag and grad_flag and parameter_flag:
                 counter += 1
                 module.register_parameter(
-                    'p_' + p_name + '_' + str(counter),
+                    'p/' + p_name + '/' + str(counter),
                     p_value
                 )
 
