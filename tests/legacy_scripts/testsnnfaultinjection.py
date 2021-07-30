@@ -41,7 +41,7 @@ src.utils.functions.enable_determinism(DETERMINISTIC_FLAG)
 # we load the model and define the PL wrapper with it
 # we can use VGG11_bn as the model dict is saved in the same directory
 # this is trained on CIFAR10
-model = src.ml.pl.models.vision.plvisionwrapper.PLVisionWrapper.load_from_checkpoint(str(MODEL_CHECKPOINT))
+model = src.ml.pl.models.plwrapper.PLWrapper.load_from_checkpoint(str(MODEL_CHECKPOINT))
 # we used the pytorch_lightning CIFAR 10 datamodule
 datamodule = pl_bolts.datamodules.MNISTDataModule(
         data_dir=str(DATASET_DIR),
