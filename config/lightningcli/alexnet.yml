@@ -1,0 +1,30 @@
+### DEFAULT CUSTOM CONFIG ###
+seed_everything: 42
+
+trainer: custom_trainer_config.yml
+
+### END OF DEFAULT CUSTOM CONFIG ###
+
+model:
+  class_path: src.ml.pl.models.vision.plvisionwrapper.PLVisionWrapper
+  init_args:
+    model:
+      class_path: torchvision.models.AlexNet
+      init_args: {}
+    optimizer_class_name: adam
+    optimizer_extra_args: {}
+    lr: 1e-3
+    normalize_prob_func_name: softmax
+    normalize_prob_func_extra_args:
+      dim: -1
+    loss_func_name: crossentropyloss
+    loss_func_extra_args: {}
+    accuracy_func_name: accuracy
+    accuracy_func_extra_args: {}
+
+data:
+  class_path: pl_bolts.datamodules.ImagenetDataModule
+  init_args:
+    data_dir: /shared/ml/datasets/ImageNet_2012/
+    shuffle: true
+    pin_memory: true
