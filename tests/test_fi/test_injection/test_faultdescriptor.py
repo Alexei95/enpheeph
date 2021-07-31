@@ -18,6 +18,7 @@ MISSING_PARAMETER_NAME_NO_ERROR_TYPES = (
     SNN_STATE_TYPE,
 )
 
+
 # we test only the conversions in the class, as well as the hashability
 # but we do not test the dataclasss
 class TestFaultDescriptor:
@@ -443,46 +444,14 @@ class TestFaultDescriptor:
         'bit_index,bit_width',
         [
             pytest.param(
-                    [],
+                    1,
                     32,
-                    (),
-                    id=str(([], 32))
+                    id=str((1, 32))
             ),
             pytest.param(
-                    slice(0, 10, 2),
-                    16,
-                    (0, 2, 4, 6, 8),
-                    id=str((slice(0, 10, 2), 16))
-            ),
-            pytest.param(
-                    slice(0, 10, 2),
-                    7,
-                    (0, 2, 4, 6),
-                    id=str((slice(0, 10, 2), 7))
-            ),
-            pytest.param(
-                    [0, 2, 10],
-                    16,
-                    (0, 2, 10),
-                    id=str(([0, 2, 10], 16))
-            ),
-            pytest.param(
-                    [0, 2, 10],
-                    7,
-                    (0, 2),
-                    id=str(([0, 2, 10], 7))
-            ),
-            pytest.param(
-                    ...,
-                    7,
-                    (0, 1, 2, 3, 4, 5, 6),
-                    id=str((..., 7))
-            ),
-            pytest.param(
-                    [1, 1, 2, 0, 4, 7, 5, 1, 1, 1, 1, 1],
-                    10,
-                    (0, 1, 2, 4, 5, 7),
-                    id=str(([1, 1, 2, 0, 4, 7, 5, 1, 1, 1, 1, 1], 10))
+                    '',
+                    32,
+                    id=str(('', 32))
             ),
         ]
     )
@@ -500,51 +469,48 @@ class TestFaultDescriptor:
                     )
             )
 
-    @pytest.mark.skip("Not ready yet")
     @pytest.mark.parametrize(
-        'tensor_index,tensor_shape,converted_tensor_index',
+        'tensor_index,tensor_shape,force_index,converted_tensor_index',
         [
             pytest.param(
-                    [],
-                    32,
-                    (),
-                    id=str(([], 32))
-            ),
-            pytest.param(
-                    slice(0, 10, 2),
-                    16,
-                    (0, 2, 4, 6, 8),
-                    id=str((slice(0, 10, 2), 16))
-            ),
-            pytest.param(
-                    slice(0, 10, 2),
-                    7,
-                    (0, 2, 4, 6),
-                    id=str((slice(0, 10, 2), 7))
-            ),
-            pytest.param(
-                    [0, 2, 10],
-                    16,
-                    (0, 2, 10),
-                    id=str(([0, 2, 10], 16))
-            ),
-            pytest.param(
-                    [0, 2, 10],
-                    7,
-                    (0, 2),
-                    id=str(([0, 2, 10], 7))
+                    ...,
+                    [3, 5, 6],
+                    False,
+                    (slice(0, 3), slice(0, 5), slice(0, 6)),
+                    id=str((..., [3, 5, 6], False))
             ),
             pytest.param(
                     ...,
-                    7,
-                    (0, 1, 2, 3, 4, 5, 6),
-                    id=str((..., 7))
+                    [3, 5, 6],
+                    True,
+                    (tuple(range(3)), tuple(range(5)), tuple(range(6))),
+                    id=str((..., [3, 5, 6], True))
             ),
             pytest.param(
-                    [1, 1, 2, 0, 4, 7, 5, 1, 1, 1, 1, 1],
-                    10,
-                    (0, 1, 2, 4, 5, 7),
-                    id=str(([1, 1, 2, 0, 4, 7, 5, 1, 1, 1, 1, 1], 10))
+                    [2, ..., slice(1, 10, 2)],
+                    [3, 5, 6],
+                    False,
+                    ((2, ), slice(0, 5), slice(1, 6, 2)),
+                    id=str(
+                            (
+                                    [2, ..., slice(1, 10, 2)],
+                                    [3, 5, 6],
+                                    False,
+                            )
+                    )
+            ),
+            pytest.param(
+                    [5, ..., slice(0, 10)],
+                    [3, 5, 6],
+                    True,
+                    (tuple(), tuple(range(5)), tuple(range(6))),
+                    id=str(
+                            (
+                                    [5, ..., slice(0, 10)],
+                                    [3, 5, 6],
+                                    True,
+                            )
+                    )
             ),
         ]
     )
@@ -564,3 +530,47 @@ class TestFaultDescriptor:
                 )
         )
         assert conv_tensor_index == converted_tensor_index
+
+    @pytest.mark.parametrize(
+        "force_index",
+        [
+            pytest.param(
+                    False,
+                    id=str(False),
+            ),
+            pytest.param(
+                    True,
+                    id=str(True),
+            ),
+        ]
+    )
+    @pytest.mark.parametrize(
+        'tensor_index,tensor_shape',
+        [
+            pytest.param(
+                    ['', 1, 2],
+                    [3, 5, 6],
+                    id=str((['', 1, 2], [3, 5, 6]))
+            ),
+            pytest.param(
+                    [1, 2],
+                    [3, 5, 6],
+                    id=str(([1, 2], [3, 5, 6]))
+            ),
+        ]
+    )
+    def test_tensor_index_coversion_value_error(
+            self,
+            tensor_index,
+            tensor_shape,
+            force_index
+    ):
+        with pytest.raises(ValueError):
+            (
+                    src.fi.injection.faultdescriptor.
+                    FaultDescriptor.tensor_index_conversion(
+                            tensor_index,
+                            tensor_shape,
+                            force_index
+                    )
+            )
