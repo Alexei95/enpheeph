@@ -115,7 +115,9 @@ class FaultDescriptor(object):
             # in this way we can return all of the affected indices in a tuple
             return tuple(range(*bit_index.indices(bit_width)))
         # if instead it is a sequence
-        elif isinstance(bit_index, collections.abc.Sequence):
+        elif isinstance(
+                bit_index, collections.abc.Sequence
+        ) and not isinstance(bit_index, str):
             # we remove all duplicates by constructing a set
             # we sort the list
             # we filter it to be between 0 (included) and the bit_width
@@ -179,22 +181,30 @@ class FaultDescriptor(object):
             # then we limit the ending of the slice to the maximum range
             # of the current dimension
             if isinstance(index, slice):
-                new_index = index.indices(dim_range - 1)
+                # since we use slices, the stop index is excluded, no need
+                # to further decrease the range
+                new_index = slice(*index.indices(dim_range))
                 if force_index:
-                    new_index = tuple(range(*new_index))
+                    new_index = tuple(range(
+                            *new_index.indices(new_index.stop)
+                    ))
             # if we get an Ellipsis, then we set it up as a slice from 0 to
             # max dimension range
             elif isinstance(index, type(Ellipsis)):
-                new_index = slice(0, dim_range - 1)
+                # since we use slices, the stop index is excluded, no need
+                # to further decrease the range
+                new_index = slice(0, dim_range)
                 if force_index:
                     new_index = tuple(range(
-                            new_index.start if new_index.start else 0,
-                            new_index.stop,
-                            new_index.step if new_index.step else 1
+                            *new_index.indices(new_index.stop)
                     ))
             # if it is int we copy it in a tuple
             elif isinstance(index, int):
-                new_index = (index, )
+                # check to avoid index if beyond the dimension
+                if index < dim_range:
+                    new_index = (index, )
+                else:
+                    new_index = tuple()
             # as fallback we raise ValueError
             else:
                 raise ValueError('Wrong index value, use slice, int or ...')
