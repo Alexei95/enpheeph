@@ -76,7 +76,7 @@ deterministic: true
 # we use a handle to copy it in the other directory settings
 # default is os.getcwd
 default_root_dir: &root_dir
-  model_training/lightning/
+  model_training/lightning/lightningclitest
 # set the distributed backed
 # NOTE: it has been superseded by accelerator
 distributed_backend: null
@@ -436,7 +436,9 @@ logger:
 # flags
 # non-standard plugins may be more helpful in this sense, but there aren't
 # many available
-plugins:
-  - class_path: pytorch_lightning.plugins.DDPPlugin
-    init_args:
-      find_unused_parameters: false
+# FOR NOW IT DOES NOT WORK SINCE THIS RELIES ON KWARGS, NOT SUPPORTED BY
+# jsonargparse
+# plugins:
+#   - class_path: pytorch_lightning.plugins.DDPPlugin
+#     init_args:
+#       find_unused_parameters: false
