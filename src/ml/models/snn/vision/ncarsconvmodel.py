@@ -51,10 +51,11 @@ class NCARSConvModel(torch.nn.Module):
                                     torch.full(
                                             size=[32, 30, 25],
                                             fill_value=(
-                                                    norse.torch.LIFParameters.
-                                                    _field_defaults.get(
-                                                            "v_th"
-                                                    )
+                                                    0.4
+                                                    # norse.torch.LIFParameters.
+                                                    # _field_defaults.get(
+                                                    #         "v_th"
+                                                    # )
                                             ),
                                     ),
                             ),
@@ -113,10 +114,11 @@ class NCARSConvModel(torch.nn.Module):
                                     torch.full(
                                             size=[32, 15, 12],
                                             fill_value=(
-                                                    norse.torch.LIFParameters.
-                                                    _field_defaults.get(
-                                                            "v_th"
-                                                    )
+                                                    0.4
+                                                    # norse.torch.LIFParameters.
+                                                    # _field_defaults.get(
+                                                    #         "v_th"
+                                                    # )
                                             ),
                                     ),
                             ),
@@ -258,6 +260,28 @@ class NCARSConvModel(torch.nn.Module):
                 li,
 
         )
+
+    def init_weights(self):
+        # this initialization is similar to the ResNet one
+        # taken from https://github.com/Lornatang/AlexNet-PyTorch/
+        # @ alexnet_pytorch/model.py#L63
+        for m in self.modules():
+            if isinstance(m, torch.nn.Conv2d):
+                torch.nn.init.kaiming_normal_(
+                        m.weight,
+                        mode='fan_out',
+                        nonlinearity='relu'
+                )
+                if m.bias is not None:
+                    torch.nn.init.constant_(m.bias, 0)
+            elif isinstance(m, torch.nn.BatchNorm2d):
+                torch.nn.init.constant_(m.weight, 1)
+                if m.bias is not None:
+                    torch.nn.init.constant_(m.bias, 0)
+            elif isinstance(m, torch.nn.Linear):
+                torch.nn.init.normal_(m.weight, 0, 0.01)
+                if m.bias is not None:
+                    torch.nn.init.constant_(m.bias, 0)
 
     def forward(self, x, state=None):
         if self._debug:
