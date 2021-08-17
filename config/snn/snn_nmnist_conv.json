@@ -75,7 +75,7 @@
         "__custom__": true,
         "__custom_decoder__": "callable",
         "__import__": true,
-        "__callable__": "src.ml.pl.models.vision.plvisionwrapper.PLVisionWrapper",
+        "__callable__": "src.ml.pl.models.plwrapper.PLWrapper",
         "__args__": [],
         "__kwargs__": {
             "model": {

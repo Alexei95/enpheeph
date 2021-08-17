@@ -18,7 +18,9 @@ class AlexNet(torchvision.models.AlexNet):
                     torch.nn.init.constant_(m.bias, 0)
             elif isinstance(m, torch.nn.BatchNorm2d):
                 torch.nn.init.constant_(m.weight, 1)
-                torch.nn.init.constant_(m.bias, 0)
+                if m.bias is not None:
+                    torch.nn.init.constant_(m.bias, 0)
             elif isinstance(m, torch.nn.Linear):
                 torch.nn.init.normal_(m.weight, 0, 0.01)
-                torch.nn.init.constant_(m.bias, 0)
+                if m.bias is not None:
+                    torch.nn.init.constant_(m.bias, 0)

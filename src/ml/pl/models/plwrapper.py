@@ -6,7 +6,7 @@ import torch
 import torchmetrics
 
 
-class PLVisionWrapper(
+class PLWrapper(
         pytorch_lightning.LightningModule,
 ):
     SCHEDULER_KEY = "scheduler"
