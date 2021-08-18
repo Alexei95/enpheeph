@@ -7,9 +7,6 @@ import io
 import json
 import typing
 
-import numpy
-import onnx
-import onnxruntime
 import torch
 import torchprof
 import torchinfo
@@ -123,7 +120,7 @@ class LayerInfo(object):
 class NNModelSummary(object):
     model: torch.nn.Module
     # input size must have the first element as batch size, which can be also 1
-    input_size: typing.Sequence[int, ...]
+    input_size: typing.Sequence[int]
 
     # if we don't want fields, just put normal values
     _torchinfo_summary = None
