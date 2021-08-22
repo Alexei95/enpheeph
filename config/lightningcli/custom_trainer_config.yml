@@ -1,0 +1,444 @@
+## NOTE: this is the custom configuration for the Trainer class
+# it is defined here so that it can be used in common across all the models
+
+# to select a distributed backend accelerator
+# since we train on a single system with multiple GPU, we can use dp
+# however this may lead to memory bottleneck, as it would move parts of each
+# batch to different GPUs
+# so to use each GPU independently but sync gradients we use ddp
+# default is None, to determine automatically, or it can accept a custom
+# accelerator object
+# if some options need to be changed just switch this to None and
+# add the pytorch_lightning.plugins.DDPPlugin to the plugins list
+# NOTE: we are switching this to None to allow for find_unused_parameters to
+# be False, so that we gain in performance
+accelerator: null
+# number of batches to accumulate before propagating the gradients
+# in this way we multiply the effective batch size by this number
+# it can be also a dict mentioning the epoch at which a new accumulation
+# number starts, with 1 being used at the beginning as default
+accumulate_grad_batches: 1
+# to select the backend for limited-precision training
+# native is torch.cuda.amp, apex for NVIDIA apex
+# the backend cannot be disabled here, but it must be changed with the
+# options
+# default is native
+amp_backend: native
+# to select the type of limited-precision training
+# O0 is FP-32 training
+# O1 is mixed-precision, with internal whitelist/blacklist
+# it modifies most operations to be done on FP16, except where additional
+# precision may be helpful, e.g. softmax
+# O2 instead modifies the weights and the activations but not the functions
+# having lower precision while running but updates are done on FP32
+# O3 does both O1 and O2, thus running only on FP16, and may be unstable but
+# it is the fastest available
+# default is O2, but in our case we want FP32 training, which is O0
+amp_level: O0
+# to autoscale the batch size to the optimal depending on the memory
+# if None it is not done, otherwise it must be an algorithm like binsearch
+# default None, but actually None is not allowed, only False
+# the result is saved in hparams.batch_size
+# the model or the datamodule must contain the name used for the parameter
+# NOTE: this passage is not done if we don't call Trainer.tune(), as it
+# happens with the LightningCli in PyTorch Lightning v1.3.2
+auto_scale_batch_size: false
+# to automatically choose the unoccupied GPUs
+auto_select_gpus: true
+# to find the optimal learning rate, if True it is saved in
+# hparams.learning_rate, otherwise it is saved in hparams.<string> if it is
+# a string, default False
+# the model or the datamodule must contain the name used for the parameter
+# NOTE: this passage is not done if we don't call Trainer.tune(), as it
+# happens with the LightningCli in PyTorch Lightning v1.3.2
+auto_lr_find: false
+# this flag enables cudnn.benchmark to find the best algorithm for the system
+# but it is static, i.e. it does not check all the possible input sizes, so
+# it may make the system slower
+# default is False
+benchmark: false
+# how many training epochs pass in-between runs of validation
+# default is 1
+check_val_every_n_epoch: 1
+# this is the default checkpointing callback, which is enabled if no custom
+# checkpointing is used
+# it must be True if we use checkpointing
+# NOTE: it is unsupported since PyTorch Lightning v1.3
+checkpoint_callback: true
+# this flag forces the reproducibility flags to be turned on if True, but
+# it may make the system slower
+# default is False, but we want to ensure reproducibility so we set it to
+# True
+deterministic: true
+#
+# the default root dir for checkpoints and logging, with respect to the
+# project root
+# we use a handle to copy it in the other directory settings
+# default is os.getcwd
+default_root_dir: &root_dir
+  model_training/lightning/lightningclitest
+# set the distributed backed
+# NOTE: it has been superseded by accelerator
+distributed_backend: null
+# this sets the number of runs to do to check that everything is working
+# properly, as it disables callbacks and logging
+# it must be disabled in production, can be set to any integer > 0 in
+# development
+# defualt is False
+fast_dev_run: false
+# how many training steps to flush the logs to disk
+# default is 100
+flush_logs_every_n_steps: 100
+# GPUs to be used
+# either int as number, list for selection, -1 to select all the available
+# ones
+# if None it runs on CPU, default is None
+gpus: -1
+# value to be used to clip gradients
+# if 0.0, the default, they are not clipped
+gradient_clip_val: 0.0
+# which algorithm to use for gradient clipping, value for clip_by_value,
+# norm for clip_by_norm
+# default is norm
+# we cannot use None, we must use a valid string
+gradient_clip_algorithm: norm
+# to use only a percentage of the prediction set, float for percentage and
+# int for number of batches, default is 1.0
+limit_predict_batches: 1.0
+# to use only a percentage of the training set, useful for debugging the
+# training loop, if int is the number of batches, if float is the ratio
+# default is 1.0
+limit_train_batches: 1.0
+# limit test and validation datasets, the same as for training batches
+# if multiple dataloaders are used, the limit is intended for each one of
+# them separately
+limit_test_batches: 1.0
+limit_val_batches: 1.0
+# how often a new logging row should be added, without writing to disk
+# directly
+# default is 50
+log_every_n_steps: 10
+# to log the memory usage on GPU
+# None to disable, min_max to get the limit or all to monitor it
+# its usage is limited on the master node only, and it uses nvidia-smi, so it
+# may slow performance
+# default is None
+# we disable it as we are using the custom callback
+log_gpu_memory: null
+# number of epochs to run, default is 1000, we use 100 here
+max_epochs: 100
+# maximum number of training steps to execute, None as default to disable it
+# it will stop the training depending on the earliest occurrence of
+# steps/epochs
+max_steps: null
+# maximum number of time to run, stopping mid-epoch
+# it takes precedence over max steps/epochs, and it can be written as dict,
+# i.e. {"days": 1, "hours": 5} or "01:05:00:00"
+# default is None to disable it, and the minimum requirements always take
+# precedence
+max_time: null
+# minimum number of epochs to execute, default is 1
+min_epochs: 1
+# minimum number of training steps to execute, default is None to disable it
+# it will stop at the latest between min steps/epochs
+min_steps: null
+# if True the metrics are done on CPU, which implies memory transfers but
+# also a lower GPU/TPU memory usage
+# default is False
+move_metrics_to_cpu: false
+# max_size_cycle ends training with the longest dataloader, and the smaller
+# ones are reloaded when they end
+# min_size instead stops the training with the shortest one, reloading all
+# of them
+# this is useful only with multiple dataloaders
+# default is max_size_cycle, but we prefer min_size
+multiple_trainloader_mode: min_size
+# number of nodes to use for training, default is 1
+# in our case we have only 1 node, so 1 is fine
+num_nodes: 1
+# number of processes to use, useful when using ddp_cpu or ddp, however
+# it does not provide any speed-up compared to single process when running
+# on CPU only, as multi-threading by PyTorch is already optimized
+# it is set to the number of GPUs when using ddp
+# default is 1, or the number of GPUs for ddp
+num_processes: 1
+# number of validation steps to run before starting the training, to check
+# whether everything is working
+# default is 2, it can be disabled with 0, or check the whole validation
+# dataloader with -1
+# if the check is run, the dataloader is reset before starting the validation
+# we use the default of 2
+num_sanity_val_steps: 2
+# how many batches to use to overfit the model
+# it will train on a set if float or number of batches if int and use the
+# rest of the training set as validation and test sets, to allow overfitting
+# it disables shuffling when enabled
+# default is 0.0, to disable it
+# we use 0.0 as we don't need to test overfitting
+overfit_batches: 0.0
+# if set to True it calls prepare_data on the first CPU process/GPU/TPU
+# of each node, set with LOCAL_RANK=0, if False it runs only once on the
+# master node, NODE_RANK=0 and LOCAL_RANK=0
+# default is True, we can use it as we train on a single node
+prepare_data_per_node: true
+# precision to use for training, 64/32 for CPU/GPU/TPU, also 16 on GPU/TPU
+# 16 on TPU uses torch.bfloat16, but it shows torch.float32
+# default is 32, we can use this default unless a better precision is
+# required
+precision: 32
+# moves the lines of the integrated progress bar, ignored if a custom
+# callback is used
+# default is 0
+process_position: 0
+# profiling to use, it prints the training profiling at the end of a fit()
+# call
+# default is None, options are simple and advanced, or a custom profiler
+# we don't need it in production
+profiler: null
+# refresh rate for the progress bar, default is 1, but 20 is good for Colab
+# ignored if custom callbacks, 0 to disable progress bar
+# we disable it as we are using a custom one
+progress_bar_refresh_rate: 0
+# if True it reloads the dataloaders at every epoch, if False it does not
+# default is False
+# for now we test it with the default, it can be changed later
+reload_dataloaders_every_epoch: false
+# add a custom distributed sampler from
+# torch.utils.data.distributed.DistributedSampler for the dataloaders
+# the default uses shuffle=True for training and shuffle=False for
+# test/validation
+# default is False, using the default configuration
+# if True, it must be added manually to the dataloaders
+replace_sampler_ddp: false
+# to load a checkpoint from which to resume training
+# it always loads the next epoch
+# default is None
+# it can be useful for specific situations
+resume_from_checkpoint: null
+# to enable automatic stochastic weight averaging, to improve performance
+# by averaging different runs with different quantizations, check docs for
+# more info
+# default is False
+# we set it to False as there is a corresponding callback with more
+# configurations, hence it will be added there if required
+stochastic_weight_avg: false
+# to synchronize batch normalization across GPUs, default is True
+sync_batchnorm: true
+# if True it terminates training with ValueError if any of the loss, accuracy
+# or parameters contain any N(ot)aN(number)
+# default is False, but we want it to True to check if there are any issues
+terminate_on_nan: true
+# tracks the norm of the gradients, -1 for no tracking, int for the order
+# default is -1
+track_grad_norm: -1
+# number of TPU cores to use, effective batch size is #TPU cores * batch size
+# int for a single core, list for a set of cores, if bigger than 8 (TPU POD)
+# the script is duplicated and passed to the different core sets
+# default is None, CPU training
+# we don't have TPUs so we set it to None
+tpu_cores: null
+# useful for splitting the backpropagation of a long sequence, useful for
+# time sequences for LSTM
+# default is None, for disabling it
+# NOTE: for more info refer to the official docs and the supporting paper
+truncated_bptt_steps: null
+# how often to check the validation dataset
+# if float is a percentage of the training epoch steps, if int it represents
+# the number of batches
+# the use case for the int is when the training sequence is infinite, to
+# allow some validation every so often
+# default is 1.0, once per epoch
+val_check_interval: 1.0
+# the path where to save the weights, overridden by a checkpoint callback
+# default is os.getcwd()
+# we disable it as we are using a custom checkpoint callback
+weights_save_path: null
+# whether to print a weight summary before training
+# top covers only the high-level modules, full covers all the sub-modules
+# default is top, but we want all the info so we set it to full
+weights_summary: full
+
+# here we have a list of the callbacks we are using, some are custom versions
+# of the default ones, like progress bar and checkpoint
+# the CLI interface automatically adds
+# pytorch_lightning.utilities.cli.SaveConfigCallback, which is used to save
+# the current configuration in the logging directory
+callbacks:
+
+  # this callback prints the results of the training on the stdout,
+  # using tqdm
+  - class_path: pytorch_lightning.callbacks.ProgressBar
+    init_args:
+      # number of batches between updates
+      refresh_rate: 1
+      # number of lines to displace the counter, so that other counters can
+      # be shown
+      process_position: 0
+
+  # this callback can be customized to checkpoint the trained model
+  # depending on different parameters
+  - class_path: pytorch_lightning.callbacks.ModelCheckpoint
+    init_args:
+      # where the models will be saved, by default if None it relates to
+      # the Trainer default_root_dir
+      dirpath: null
+      # the filename to use for saving the checkpoints
+      # it can use variable expansion
+      filename: null
+      # this indicates the quantity to monitor
+      # if None it saves only the last model
+      monitor: val_loss
+      # to toggle verbosity mode
+      verbose: true
+      # to always save the last model
+      save_last: true
+      # to keep the top-k models depending on the monitored quantity
+      # if 0 none is saved, if -1 all of them, if multiple savings per epoch
+      # each call will have a v1, v2, ... appended
+      save_top_k: 3
+      # whether to min(imize) or max(imize) the monitoreq quantity
+      mode: min
+      # whether to save only the weights
+      save_weights_only: false
+      # number of training steps between checkpoints
+      # if 0 or None it is skipped
+      every_n_train_steps: null
+      # saves a checkpoint every n validation epochs
+      every_n_val_epochs: 1
+
+  # this callback monitors the learning rate of the model
+  # it is useful for dynamic learning rates, a bit useless if the learning
+  # rate is constant
+  - class_path: pytorch_lightning.callbacks.LearningRateMonitor
+    init_args:
+      # whether to log the learning rate every epoch or every step
+      logging_interval: epoch
+      # whether to log also the momentum of the learning rate
+      log_momentum: true
+
+  # this callback logs the stats of the GPU, it must be disabled if running
+  # without one, otherwise it will block the execution
+  # NOTE: it may slow down execution as it uses nvidia-smi output
+  - class_path: pytorch_lightning.callbacks.GPUStatsMonitor
+    init_args:
+      # each of the following flags enable the corresponding resource logging
+      memory_utilization: true
+      gpu_utilization: true
+      intra_step_time: true
+      inter_step_time: true
+      fan_speed: true
+      temperature: true
+
+  # this callback implements early stopping, that is stopping the training
+  # once a monitored validation metric has not improved for a certain number
+  # of epochs
+  - class_path: pytorch_lightning.callbacks.EarlyStopping
+    init_args:
+      # string of monitored metric
+      # default is early_stop_on
+      monitor: val_loss
+      # minimum difference to consider as improvement, an absolute change
+      # smaller than delta will not be considered as an improvement
+      # default is 0.0, all improvements are considered
+      min_delta: 0.001
+      # number of epochs to continue running without improvements before
+      # stopping
+      # default is 3
+      patience: 5
+      # if True we print more info about it
+      # default is False
+      verbose: true
+      # min minimizes the target, max maximizes it
+      # default is min, since we are usign a loss we want to minimize it
+      mode: min
+      # if True it crashes if the monitored metric is not found
+      # default is True
+      strict: true
+      # if True it checks the monitored metric to be finite, stopping when
+      # it becomes NaN or infinite
+      # default is True
+      check_finite: true
+      # if the monitored metric reaches this threshold, training is stopped
+      # default is None to disable it
+      stopping_threshold: null
+      # if the monitored metric becomes worse than this threshold the
+      # training is stopped
+      # default is None to disable it
+      divergence_threshold: null
+      # if True the monitored metric is compared at the end of the training
+      # epoch, if False it is checked after the validation phase
+      # default is False, to check after validation
+      check_on_train_epoch_end: false
+
+  # # NOTE: this callback is disabled for now
+  # # this callback implements the stochastic weight averaging
+  # # however it is in beta and for now it must be applied at each epoch
+  # # it does not support multiple optimizers/schedulers
+  # - class_path: pytorch_lightning.callbacks.StochasticWeightAveraging
+  #   init_args:
+  #     # if int it starts at the corresponding epoch, if float it starts at
+  #     # float * max_epochs
+  #     # default is 0.8, starting when 80% of the training is done, to
+  #     # stabilize the results
+  #     swa_epoch_start: 0.8
+  #     # the learning rate for the parameter groups, either as a float if
+  #     # unique or a list if different
+  #     # default is None, using the same learning rate
+  #     swa_lrs: null
+  #     # number of annealing epochs in the annealing phase
+  #     # default is 10
+  #     annealing_epochs: 10
+  #     # the strategy to use for the annealing, either cos or lin
+  #     # default is cos
+  #     annealing_strategy: cos
+  #     # the function to be used for averaging the parameters, if None, the
+  #     # default, it uses the static function in the callback, which is
+  #     # equally averaged otherwise it must accept an AveragedModel parameter,
+  #     # the current model parameter and the number of averaged models
+  #     # default is None
+  #     avg_fn: null
+  #     # device to use for the averaged model, if None it tries
+  #     # to infer it from the model
+  #     # default is cpu
+  #     # we want it to be the same as the normal models
+  #     device: null
+
+# a true flag enables the default TensorboardLogger, for logging results
+# we pass our custom logger here
+# to pass a custom object, use class_path to describe the class location
+# and init_args to create a dict of the init arguments to pass to the class
+logger:
+
+  # this is the default logger included in pytorch-lightning, check the docs
+  # for different loggers
+  - class_path: pytorch_lightning.loggers.TensorBoardLogger
+    init_args:
+      # the main directory for loggers
+      save_dir: *root_dir
+      # experiment name, in this custom configuration it is default
+      name: default
+      # version of the experiment, if not assigned it is increasing
+      # automatically based on the logging directory
+      # if a string it is used, otherwise 'version_{$version}' is used
+      version: null
+      # this enables the saving of the computational graph
+      # it requires example_input_array in the model
+      log_graph: true
+      # enables a placeholder for log_hyperparams metrics, if none is provide
+      default_hp_metric: true
+      # prefix for the metrics
+      prefix: ""
+
+# a list of the plugins we are using, mostly depending on backend and
+# training method
+# plugins are not used as the standard plugins do not offer any extra
+# customizability, but simply implement the interface used by some of the
+# flags
+# non-standard plugins may be more helpful in this sense, but there aren't
+# many available
+# FOR NOW IT DOES NOT WORK SINCE THIS RELIES ON KWARGS, NOT SUPPORTED BY
+# jsonargparse
+# plugins:
+#   - class_path: pytorch_lightning.plugins.DDPPlugin
+#     init_args:
+#       find_unused_parameters: false

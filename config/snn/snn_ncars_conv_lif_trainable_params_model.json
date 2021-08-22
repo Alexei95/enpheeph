@@ -1,0 +1,337 @@
+{
+    "seed_everything": 42,
+    "logging_file": "model_training/lightning/snn_ncars_conv_lif_trainable_params_model/pl_log.log",
+
+    "trainer": {
+        "__kwargs__": {
+            "accelerator": null,
+            "auto_scale_batch_size": true,
+            "auto_lr_find": true,
+            "default_root_dir": "model_training/lightning/snn_ncars_conv_lif_trainable_params_model",
+            "gpus": 1,
+            "plugins": null,
+
+            "callbacks": {
+                "__kwargs__": {
+                    "initlist": {
+                        "__kwargs__": {
+                            "self": {
+                                "save_config_callback": {
+                                    "__custom__": true,
+                                    "__custom_decoder__": "callable",
+                                    "__import__": true,
+                                    "__callable__": "src.ml.pl.utils.callbacks.saveconfigcallback.SaveConfigCallback",
+                                    "__args__": [],
+                                    "__kwargs__": {
+                                        "configs": {
+                                            "__custom__": true,
+                                            "__custom_decoder__": "callable",
+                                            "__import__": true,
+                                            "__callable__": "collections.UserList",
+                                            "__args__": [],
+                                            "__kwargs__": {
+                                                "initlist": {
+                                                    "__custom__": true,
+                                                    "__custom_decoder__": "callable",
+                                                    "__import__": true,
+                                                    "__callable__": "collections.UserDict.values",
+                                                    "__args__": [],
+                                                    "__kwargs__": {
+                                                        "self": {
+                                                            "2": "config/snn/snn_ncars_conv_lif_trainable_params_model.json"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "dest_dir": "model_training/lightning/snn_ncars_conv_lif_trainable_params_model",
+                                        "subdirectory": "configs"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "logger": {
+                "__kwargs__": {
+                    "initlist": {
+                        "__kwargs__": {
+                            "self": {
+                                "1": {
+                                    "__kwargs__": {
+                                        "save_dir": "model_training/lightning/snn_ncars_conv_lif_trainable_params_model",
+                                        "log_graph": false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    "model": {
+        "__custom__": true,
+        "__custom_decoder__": "callable",
+        "__import__": true,
+        "__callable__": "src.ml.pl.models.plwrapper.PLWrapper",
+        "__args__": [],
+        "__kwargs__": {
+            "model": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "src.ml.models.snn.snnwrapper.SNNWrapper",
+                "__args__": [],
+                "__kwargs__": {
+                    "encoder": {
+                        "__custom__": true,
+                        "__custom_decoder__": "callable",
+                        "__import__": true,
+                        "__callable__": "torchvision.transforms.Compose",
+                        "__args__": [
+                            [
+                                {
+                                    "__custom__": true,
+                                    "__custom_decoder__": "callable",
+                                    "__import__": true,
+                                    "__callable__": "src.ml.pl.datasets.utils.transforms.todense.ToDense",
+                                    "__args__": [],
+                                    "__kwargs__": {}
+                                },
+                                {
+                                    "__custom__": true,
+                                    "__custom_decoder__": "callable",
+                                    "__import__": true,
+                                    "__callable__": "src.ml.pl.datasets.utils.transforms.todtype.ToDtype",
+                                    "__args__": [],
+                                    "__kwargs__": {
+                                        "dtype": {
+                                            "__custom__": true,
+                                            "__custom_decoder__": "object",
+                                            "__import__": true,
+                                            "__object__": "torch.float32"
+                                        }
+                                    }
+                                },
+                                {
+                                    "__custom__": true,
+                                    "__custom_decoder__": "callable",
+                                    "__import__": true,
+                                    "__callable__": "src.ml.pl.datasets.utils.transforms.permute.Permute",
+                                    "__args__": [
+                                        1, 0, 2, 3, 4
+                                    ],
+                                    "__kwargs__": {}
+                                }
+                            ]
+                        ],
+                        "__kwargs__": {}
+                    },
+                    "model": {
+                        "__custom__": true,
+                        "__custom_decoder__": "callable",
+                        "__import__": true,
+                        "__callable__": "src.ml.models.snn.vision.ncarsconvmodel.NCARSConvModel",
+                        "__args__": [],
+                        "__kwargs__": {
+                            "trainable_parameters": true,
+                            "debug": false
+                        }
+                    },
+                    "decoder": {
+                        "__custom__": true,
+                        "__custom_decoder__": "object",
+                        "__import__": true,
+                        "__object__": "src.ml.models.snn.snnwrapper.SNNWrapper.max_log_softmax_probability"
+                    },
+                    "return_state": false
+                }
+            },
+            "learning_rate": 1e-4,
+            "batch_size": 96,
+            "example_input_array_size": [1, 1, 1, 120, 100],
+            "optimizer_classes": [
+                {
+                    "__custom__": true,
+                    "__custom_decoder__": "callable",
+                    "__import__": true,
+                    "__callable__": "functools.partial",
+                    "__args__": [
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "object",
+                            "__import__": true,
+                            "__object__": "torch.optim.Adam"
+                        }
+                    ],
+                    "__kwargs__": {
+                        "amsgrad": false
+                    }
+                }
+            ],
+            "lr_scheduler_classes": [],
+            "normalize_prob_func": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torch.nn.Identity",
+                "__args__": [],
+                "__kwargs__": {}
+            },
+            "loss_func": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torch.nn.NLLLoss",
+                "__args__": [],
+                "__kwargs__": {}
+            },
+            "accuracy_func": {
+                "__custom__": true,
+                "__custom_decoder__": "object",
+                "__import__": true,
+                "__object__": "src.ml.models.snn.snnwrapper.SNNWrapper.custom_argmax_accuracy"
+            }
+        }
+    },
+
+    "datamodule": {
+        "__custom__": true,
+        "__custom_decoder__": "callable",
+        "__import__": true,
+        "__callable__": "src.ml.pl.datasets.vision.snn.ncars.NCARSDataModule",
+        "__args__": [],
+        "__kwargs__": {
+            "train_transforms": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "tonic.transforms.Compose",
+                "__args__": [
+                    [
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "tonic.transforms.TimeSkew",
+                            "__args__": [],
+                            "__kwargs__": {
+                                "coefficient": 0.001
+                            }
+                        },
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "tonic.transforms.ToSparseTensor",
+                            "__args__": [],
+                            "__kwargs__": {
+                                "merge_polarities": true
+                            }
+                        }
+                    ]
+                ],
+                "__kwargs__": {}
+            },
+            "test_transforms": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "tonic.transforms.Compose",
+                "__args__": [
+                    [
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "tonic.transforms.TimeSkew",
+                            "__args__": [],
+                            "__kwargs__": {
+                                "coefficient": 0.001
+                            }
+                        },
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "tonic.transforms.ToSparseTensor",
+                            "__args__": [],
+                            "__kwargs__": {
+                                "merge_polarities": true
+                            }
+                        }
+                    ]
+                ],
+                "__kwargs__": {}
+            },
+            "val_transforms": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "tonic.transforms.Compose",
+                "__args__": [
+                    [
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "tonic.transforms.TimeSkew",
+                            "__args__": [],
+                            "__kwargs__": {
+                                "coefficient": 0.001
+                            }
+                        },
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "tonic.transforms.ToSparseTensor",
+                            "__args__": [],
+                            "__kwargs__": {
+                                "merge_polarities": true
+                            }
+                        }
+                    ]
+                ],
+                "__kwargs__": {}
+            },
+            "target_transform": null,
+            "collate_fn": {
+                "__custom__": true,
+                "__custom_decoder__": "callable",
+                "__import__": true,
+                "__callable__": "torchvision.transforms.Compose",
+                "__args__": [
+                    [
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "object",
+                            "__import__": true,
+                            "__object__": "tonic.utils.pad_tensors"
+                        },
+                        {
+                            "__custom__": true,
+                            "__custom_decoder__": "callable",
+                            "__import__": true,
+                            "__callable__": "src.ml.pl.datasets.utils.collate.totensor.ToTensor",
+                            "__args__": [],
+                            "__kwargs__": {}
+                        }
+                    ]
+                ],
+                "__kwargs__": {}
+            },
+            "data_dir": "/shared/ml/datasets/N-CARS/",
+            "normalize": false,
+            "seed": 42,
+            "shuffle": true,
+            "pin_memory": false,
+            "drop_last": false,
+            "batch_size": 96,
+            "num_workers": 0
+        }
+    }
+}
