@@ -2,14 +2,14 @@ import random
 
 import pytest
 
-import src.fi.injection.faultdescriptor
-import src.fi.utils.enums.bitvalue
-import src.fi.utils.enums.parametertype
+import enpheeph.fi.injection.faultdescriptor
+import enpheeph.fi.utils.enums.bitvalue
+import enpheeph.fi.utils.enums.parametertype
 
 
-ACTIVATION_TYPE = src.fi.utils.enums.parametertype.ParameterType.Activation
+ACTIVATION_TYPE = enpheeph.fi.utils.enums.parametertype.ParameterType.Activation
 SNN_STATE_TYPE = (
-        src.fi.utils.enums.parametertype.ParameterType.SNN | src.fi.utils.
+        enpheeph.fi.utils.enums.parametertype.ParameterType.SNN | enpheeph.fi.utils.
         enums.parametertype.ParameterType.State
 )
 
@@ -39,7 +39,7 @@ class TestFaultDescriptor:
                 bit_value,
                 id=bit_value.name
             )
-            for bit_value in src.fi.utils.enums.bitvalue.BitValue
+            for bit_value in enpheeph.fi.utils.enums.bitvalue.BitValue
         ]
     )
     def test_init_exceptions_parameter_name_missing_but_valid(
@@ -50,7 +50,7 @@ class TestFaultDescriptor:
         # here we have a missing parameter name
         # it can be omitted only for SNN state or activation injection
         # so we check it is None for those types, which is the default value
-        assert src.fi.injection.faultdescriptor.FaultDescriptor(
+        assert enpheeph.fi.injection.faultdescriptor.FaultDescriptor(
                 module_name='',
                 parameter_type=parameter_type,
                 tensor_index=[],
@@ -66,7 +66,7 @@ class TestFaultDescriptor:
                     id=parameter_type.name,
             )
             for parameter_type in (
-                    src.fi.utils.enums.parametertype.ParameterType
+                    enpheeph.fi.utils.enums.parametertype.ParameterType
             )
             if all(
                     no_error_type not in parameter_type
@@ -81,7 +81,7 @@ class TestFaultDescriptor:
                 bit_value,
                 id=bit_value.name
             )
-            for bit_value in src.fi.utils.enums.bitvalue.BitValue
+            for bit_value in enpheeph.fi.utils.enums.bitvalue.BitValue
         ]
     )
     def test_init_exceptions_parameter_name_missing_invalid(
@@ -92,7 +92,7 @@ class TestFaultDescriptor:
         with pytest.raises(ValueError):
             # here we have a missing parameter name
             # it can be omitted only for SNN state or activation injection
-            src.fi.injection.faultdescriptor.FaultDescriptor(
+            enpheeph.fi.injection.faultdescriptor.FaultDescriptor(
                     module_name='',
                     parameter_type=parameter_type,
                     tensor_index=[],
@@ -108,7 +108,7 @@ class TestFaultDescriptor:
                     id=repr(parameter_type),
             )
             for parameter_type in (
-                    src.fi.utils.enums.parametertype.ParameterType
+                    enpheeph.fi.utils.enums.parametertype.ParameterType
             )
         ]
     )
@@ -119,7 +119,7 @@ class TestFaultDescriptor:
                 bit_value,
                 id=bit_value.name
             )
-            for bit_value in src.fi.utils.enums.bitvalue.BitValue
+            for bit_value in enpheeph.fi.utils.enums.bitvalue.BitValue
         ]
     )
     @pytest.mark.parametrize(
@@ -138,7 +138,7 @@ class TestFaultDescriptor:
             bit_index,
             bit_value
     ):        # it can be omitted only for SNN state or activation injection
-        assert src.fi.injection.faultdescriptor.FaultDescriptor(
+        assert enpheeph.fi.injection.faultdescriptor.FaultDescriptor(
                 module_name='',
                 parameter_type=parameter_type,
                 parameter_name="",
@@ -155,7 +155,7 @@ class TestFaultDescriptor:
                     id=repr(parameter_type),
             )
             for parameter_type in (
-                    src.fi.utils.enums.parametertype.ParameterType
+                    enpheeph.fi.utils.enums.parametertype.ParameterType
             )
         ]
     )
@@ -166,7 +166,7 @@ class TestFaultDescriptor:
                 bit_value,
                 id=bit_value.name
             )
-            for bit_value in src.fi.utils.enums.bitvalue.BitValue
+            for bit_value in enpheeph.fi.utils.enums.bitvalue.BitValue
         ]
     )
     @pytest.mark.parametrize(
@@ -185,7 +185,7 @@ class TestFaultDescriptor:
             tensor_index,
             bit_value
     ):
-        assert src.fi.injection.faultdescriptor.FaultDescriptor(
+        assert enpheeph.fi.injection.faultdescriptor.FaultDescriptor(
                 module_name='',
                 parameter_type=parameter_type,
                 parameter_name="",
@@ -202,7 +202,7 @@ class TestFaultDescriptor:
                     id=repr(parameter_type),
             )
             for parameter_type in (
-                    src.fi.utils.enums.parametertype.ParameterType
+                    enpheeph.fi.utils.enums.parametertype.ParameterType
             )
         ]
     )
@@ -239,7 +239,7 @@ class TestFaultDescriptor:
                 bit_value,
                 id=bit_value.name
             )
-            for bit_value in src.fi.utils.enums.bitvalue.BitValue
+            for bit_value in enpheeph.fi.utils.enums.bitvalue.BitValue
         ]
     )
     def test_init(
@@ -269,7 +269,7 @@ class TestFaultDescriptor:
                 'bit_index': bit_index,
                 'bit_value': bit_value,
         }
-        fd = src.fi.injection.faultdescriptor.FaultDescriptor(
+        fd = enpheeph.fi.injection.faultdescriptor.FaultDescriptor(
                 **values
         )
         correct_values = values.copy()
@@ -291,7 +291,7 @@ class TestFaultDescriptor:
                     id=repr(parameter_type),
             )
             for parameter_type in (
-                    src.fi.utils.enums.parametertype.ParameterType
+                    enpheeph.fi.utils.enums.parametertype.ParameterType
             )
         ]
     )
@@ -322,7 +322,7 @@ class TestFaultDescriptor:
                 bit_value,
                 id=bit_value.name
             )
-            for bit_value in src.fi.utils.enums.bitvalue.BitValue
+            for bit_value in enpheeph.fi.utils.enums.bitvalue.BitValue
         ]
     )
     def test_hashability(
@@ -350,7 +350,7 @@ class TestFaultDescriptor:
                 'bit_index': bit_index,
                 'bit_value': bit_value,
         }
-        fd_one = src.fi.injection.faultdescriptor.FaultDescriptor(
+        fd_one = enpheeph.fi.injection.faultdescriptor.FaultDescriptor(
                 **values_one
         )
 
@@ -372,7 +372,7 @@ class TestFaultDescriptor:
                 'bit_index': bit_index,
                 'bit_value': bit_value,
         }
-        fd_two = src.fi.injection.faultdescriptor.FaultDescriptor(
+        fd_two = enpheeph.fi.injection.faultdescriptor.FaultDescriptor(
                 **values_two
         )
 
@@ -432,7 +432,7 @@ class TestFaultDescriptor:
             converted_bit_index
     ):
         conv_bit_index = (
-                src.fi.injection.faultdescriptor.
+                enpheeph.fi.injection.faultdescriptor.
                 FaultDescriptor.bit_index_conversion(
                         bit_index,
                         bit_width
@@ -462,7 +462,7 @@ class TestFaultDescriptor:
     ):
         with pytest.raises(ValueError):
             (
-                    src.fi.injection.faultdescriptor.
+                    enpheeph.fi.injection.faultdescriptor.
                     FaultDescriptor.bit_index_conversion(
                             bit_index,
                             bit_width
@@ -522,7 +522,7 @@ class TestFaultDescriptor:
             converted_tensor_index
     ):
         conv_tensor_index = (
-                src.fi.injection.faultdescriptor.
+                enpheeph.fi.injection.faultdescriptor.
                 FaultDescriptor.tensor_index_conversion(
                         tensor_index,
                         tensor_shape,
@@ -567,7 +567,7 @@ class TestFaultDescriptor:
     ):
         with pytest.raises(ValueError):
             (
-                    src.fi.injection.faultdescriptor.
+                    enpheeph.fi.injection.faultdescriptor.
                     FaultDescriptor.tensor_index_conversion(
                             tensor_index,
                             tensor_shape,

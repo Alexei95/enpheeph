@@ -11,14 +11,14 @@ SRC_PARENT_DIR = (CURRENT_DIR / '..').resolve()
 
 sys.path.append(str(SRC_PARENT_DIR))
 
-import src.dispatcherabc
+import enpheeph.dispatcherabc
 
 
-class DispatcherTest(src.dispatcherabc.DispatcherABC):
+class DispatcherTest(enpheeph.dispatcherabc.DispatcherABC):
     pass
 
 
-class DispatcherTest2(src.dispatcherabc.DispatcherABC):
+class DispatcherTest2(enpheeph.dispatcherabc.DispatcherABC):
     pass
 
 

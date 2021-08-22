@@ -3,16 +3,16 @@ import typing
 
 import torch
 
-import src.fi.injection.injectioncallback
-import src.fi.utils.enums.parametertype
-import src.fi.utils.mixins.injectionhandlers.numpylikehandler
-import src.fi.utils.mixins.converters.numpylikeconverter
-import src.fi.utils.mixins.converters.pytorchdeviceawareconverter
+import enpheeph.fi.injection.injectioncallback
+import enpheeph.fi.utils.enums.parametertype
+import enpheeph.fi.utils.mixins.injectionhandlers.numpylikehandler
+import enpheeph.fi.utils.mixins.converters.numpylikeconverter
+import enpheeph.fi.utils.mixins.converters.pytorchdeviceawareconverter
 
 
 # we map the class to the activation injection
-@src.fi.injection.injectioncallback.InjectionCallback.register_decorator(
-        src.fi.utils.enums.parametertype.ParameterType.DNNActivationDense
+@enpheeph.fi.injection.injectioncallback.InjectionCallback.register_decorator(
+        enpheeph.fi.utils.enums.parametertype.ParameterType.DNNActivationDense
 )
 # NOTE: we can only have one of the following module per layer, as the parsing
 # of the top module is done statically on the original structure, not on the
@@ -22,15 +22,15 @@ import src.fi.utils.mixins.converters.pytorchdeviceawareconverter
 # FIXME: implement also backward for fault-aware training
 class DNNActivationDenseInjectionModule(
         torch.nn.Module,
-        src.fi.utils.mixins.injectionhandlers.
+        enpheeph.fi.utils.mixins.injectionhandlers.
                 numpylikehandler.NumpyLikeHandler,
-        src.fi.utils.mixins.converters.numpylikeconverter.NumpyLikeConverter,
-        src.fi.utils.mixins.converters.
+        enpheeph.fi.utils.mixins.converters.numpylikeconverter.NumpyLikeConverter,
+        enpheeph.fi.utils.mixins.converters.
                 pytorchdeviceawareconverter.PyTorchDeviceAwareConverter,
 ):
     def __init__(
                 self,
-                fault: 'src.fi.injection.faultdescriptor.FaultDescriptor',
+                fault: 'enpheeph.fi.injection.faultdescriptor.FaultDescriptor',
                 module: 'torch.nn.Module',
     ):
         super().__init__()

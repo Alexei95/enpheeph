@@ -4,7 +4,7 @@ import functools
 import inspect
 import typing
 
-import src.utils.instance_or_classmethod
+import enpheeph.utils.instance_or_classmethod
 
 
 # with this base class we implement a way of dispatching calls to the correct
@@ -16,7 +16,7 @@ class Dispatcher(object):
 
     # the solution was to use a method to return a copy of the dispatching dict
     # while all the operations are done on the hidden class attribute
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def get_dispatching_dict(self_of_cls) -> typing.Dict[
             typing.Any, typing.Callable
     ]:
@@ -26,7 +26,7 @@ class Dispatcher(object):
     # we use this function to init the dispatching dict
     # it must be done in this way so that each subclass has a different dict
     # otherwise it would be the common dict of the ABC class
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def _init_dispatching_dict(self_of_cls):
         # we init the dispatching dict only if it does not exist
         if not hasattr(self_of_cls, '_dispatching_dict'):
@@ -46,7 +46,7 @@ class Dispatcher(object):
 
     # this decorator registers the decorated callable with the given name
     # or it falls back to the callable name if required
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def register_decorator(self_of_cls, name: typing.Any = None):
         # check and init the dispatching dict
         self_of_cls._init_dispatching_dict()
@@ -75,7 +75,7 @@ class Dispatcher(object):
 
     # with this class method we can register a new callable using a name
     # name is supposed to be either a string or an enum
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def register(
             self_of_cls,
             name: typing.Any,
@@ -86,7 +86,7 @@ class Dispatcher(object):
         self_of_cls._dispatching_dict[name] = callable_
 
     # with this class method we can remove a registered callable
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def deregister(self_of_cls, name: typing.Any):
         # check and init the dispatching dict
         self_of_cls._init_dispatching_dict()
@@ -95,7 +95,7 @@ class Dispatcher(object):
 
     # this is the dispatcher method call, where we dispatch the call to the
     # class to the correct function, with also all the arguments we get extra
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def dispatch_call(self_of_cls, name, *args, **kwargs):
         # check and init the dispatching dict
         self_of_cls._init_dispatching_dict()
@@ -104,7 +104,7 @@ class Dispatcher(object):
 
     # this method is used to register similar method names, based around
     # the same template
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def register_string_methods(
             self_of_cls,
             object_: typing.Any,

@@ -2,29 +2,29 @@ import typing
 
 import torch
 
-import src.utils.mixins.dispatcher
-import src.fi.injection.injectioncallback
-import src.fi.utils.enums.parametertype
-import src.fi.utils.enums.faultmaskop
-import src.fi.utils.mixins.injectionhandlers.numpylikehandler
-import src.fi.utils.mixins.converters.numpylikeconverter
-import src.fi.utils.mixins.converters.pytorchdeviceawareconverter
+import enpheeph.utils.mixins.dispatcher
+import enpheeph.fi.injection.injectioncallback
+import enpheeph.fi.utils.enums.parametertype
+import enpheeph.fi.utils.enums.faultmaskop
+import enpheeph.fi.utils.mixins.injectionhandlers.numpylikehandler
+import enpheeph.fi.utils.mixins.converters.numpylikeconverter
+import enpheeph.fi.utils.mixins.converters.pytorchdeviceawareconverter
 
 
 class DNNWeightDenseInjection(
         # not required if we use PyTorchDeviceAwareConverter, otherwise we
         # get MRO error
-        # src.utils.mixins.dispatcher.Dispatcher,
-        src.fi.utils.mixins.injectionhandlers.
+        # enpheeph.utils.mixins.dispatcher.Dispatcher,
+        enpheeph.fi.utils.mixins.injectionhandlers.
                 numpylikehandler.NumpyLikeHandler,
-        src.fi.utils.mixins.converters.numpylikeconverter.NumpyLikeConverter,
-        src.fi.utils.mixins.converters.
+        enpheeph.fi.utils.mixins.converters.numpylikeconverter.NumpyLikeConverter,
+        enpheeph.fi.utils.mixins.converters.
                 pytorchdeviceawareconverter.PyTorchDeviceAwareConverter,
 ):
     @classmethod
     def init_weight_mask_pytorch(
             cls,
-            fault: 'src.fi.injection.faultdescriptor.FaultDescriptor',
+            fault: 'enpheeph.fi.injection.faultdescriptor.FaultDescriptor',
             module: 'torch.nn.Module',
             in_place: bool = True,
     ) -> 'torch.nn.Module':
@@ -76,7 +76,7 @@ class DNNWeightDenseInjection(
         return module
 
 
-src.fi.injection.injectioncallback.InjectionCallback.register(
-        src.fi.utils.enums.parametertype.ParameterType.DNNWeightDense,
+enpheeph.fi.injection.injectioncallback.InjectionCallback.register(
+        enpheeph.fi.utils.enums.parametertype.ParameterType.DNNWeightDense,
         DNNWeightDenseInjection.init_weight_mask_pytorch
 )

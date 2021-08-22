@@ -22,7 +22,7 @@ DEFAULT_DETERMINISM = True
 # main project dir
 PROJECT_DIR = pathlib.Path(__file__).resolve().parent.parent
 # package dir
-PACKAGE_DIR = PROJECT_DIR / 'src'
+PACKAGE_DIR = PROJECT_DIR / 'enpheeph'
 # main datasets directory
 DEFAULT_DATASET_PATH = PROJECT_DIR / 'data' / 'datasets'
 # main directory for saving models

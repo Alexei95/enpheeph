@@ -21,11 +21,11 @@ DATASET_DIR = (CURRENT_DIR / '../data').resolve()
 
 sys.path.append(str(SRC_PARENT_DIR))
 
-import src.fi.injection.injectioncallback
-import src.fi.utils.enums.bitvalue
-import src.fi.utils.enums.endianness
-import src.fi.utils.enums.parametertype
-import src.utils.functions
+import enpheeph.fi.injection.injectioncallback
+import enpheeph.fi.utils.enums.bitvalue
+import enpheeph.fi.utils.enums.endianness
+import enpheeph.fi.utils.enums.parametertype
+import enpheeph.utils.functions
 
 sys.path.append(str(DATA_DIR))
 
@@ -36,7 +36,7 @@ import vgg
 # this flag is used for determinism in PyTorch Lightning Trainer
 DETERMINISTIC_FLAG = True
 # we call this function to enable reproducibility
-src.utils.functions.enable_determinism(DETERMINISTIC_FLAG)
+enpheeph.utils.functions.enable_determinism(DETERMINISTIC_FLAG)
 ### REPRODUCIBILITY
 
 
@@ -93,36 +93,36 @@ faults = []
 
 # this is the weight fault, setting all the weights in the last fully-connected
 # layer to zero, covering all the bits
-weight_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
+weight_fault = enpheeph.fi.injection.faultdescriptor.FaultDescriptor(
         module_name='model.classifier.0',
-        parameter_type=src.fi.utils.enums.parametertype.ParameterType.DNNWeightDense,
+        parameter_type=enpheeph.fi.utils.enums.parametertype.ParameterType.DNNWeightDense,
         tensor_index=[0, 0],
         bit_index=[0],
-        bit_value=src.fi.utils.enums.bitvalue.BitValue.StuckAtZero,
+        bit_value=enpheeph.fi.utils.enums.bitvalue.BitValue.StuckAtZero,
         # default parameter name for weight injection
         parameter_name='weight',
         # default endianness, little, so 31 is MSB
-        endianness=src.fi.utils.enums.endianness.Endianness.Little,
+        endianness=enpheeph.fi.utils.enums.endianness.Endianness.Little,
 )
 
 # here we have the activation fault on the first conv layer output
-activation_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
+activation_fault = enpheeph.fi.injection.faultdescriptor.FaultDescriptor(
     module_name='model.features.0',
-    parameter_type=src.fi.utils.enums.parametertype.ParameterType.DNNActivationDense,
+    parameter_type=enpheeph.fi.utils.enums.parametertype.ParameterType.DNNActivationDense,
     tensor_index=[0, ..., ...],
     bit_index=[0, 10, 32],
-    bit_value=src.fi.utils.enums.bitvalue.BitValue.BitFlip,
+    bit_value=enpheeph.fi.utils.enums.bitvalue.BitValue.BitFlip,
     # we don't need any parameter_name, as we use the whole tensor for
     # the output
     # parameter_name=None,
     # default endianness, little, so 31 is MSB
-    endianness=src.fi.utils.enums.endianness.Endianness.Little,
+    endianness=enpheeph.fi.utils.enums.endianness.Endianness.Little,
 )
 
 faults.append(weight_fault)
 faults.append(activation_fault)
 
-callback = src.fi.injection.injectioncallback.InjectionCallback(
+callback = enpheeph.fi.injection.injectioncallback.InjectionCallback(
         fault_descriptor_list=faults,
         enabled=False,
         auto_model_init_on_test_start=True,

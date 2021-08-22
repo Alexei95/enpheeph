@@ -5,17 +5,17 @@ import typing
 import norse
 import torch
 
-import src.fi.injection.injectioncallback
-import src.fi.utils.enums.parametertype
-import src.fi.utils.mixins.injectionhandlers.numpylikehandler
-import src.fi.utils.mixins.converters.numpylikeconverter
-import src.fi.utils.mixins.converters.norsedeviceawareconverter
+import enpheeph.fi.injection.injectioncallback
+import enpheeph.fi.utils.enums.parametertype
+import enpheeph.fi.utils.mixins.injectionhandlers.numpylikehandler
+import enpheeph.fi.utils.mixins.converters.numpylikeconverter
+import enpheeph.fi.utils.mixins.converters.norsedeviceawareconverter
 
 
 # we map the class to the SNN LIF state voltage injection
 # only for dense arrays
-@src.fi.injection.injectioncallback.InjectionCallback.register_decorator(
-        src.fi.utils.enums.parametertype.
+@enpheeph.fi.injection.injectioncallback.InjectionCallback.register_decorator(
+        enpheeph.fi.utils.enums.parametertype.
         ParameterType.SNNStateLIFStateVoltageDense
 )
 # NOTE: we can only have one of the following module per layer, as the parsing
@@ -26,10 +26,10 @@ import src.fi.utils.mixins.converters.norsedeviceawareconverter
 # FIXME: implement also backward for fault-aware training
 class SNNStateLIFStateVoltageDenseInjectionModule(
         torch.nn.Module,
-        src.fi.utils.mixins.injectionhandlers.
+        enpheeph.fi.utils.mixins.injectionhandlers.
         numpylikehandler.NumpyLikeHandler,
-        src.fi.utils.mixins.converters.numpylikeconverter.NumpyLikeConverter,
-        src.fi.utils.mixins.converters.
+        enpheeph.fi.utils.mixins.converters.numpylikeconverter.NumpyLikeConverter,
+        enpheeph.fi.utils.mixins.converters.
         norsedeviceawareconverter.NorseDeviceAwareConverter,
 ):
     ARGS_KWARGS_NAMES = ('args', 'kwargs')
@@ -39,7 +39,7 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
 
     def __init__(
                 self,
-                fault: 'src.fi.injection.faultdescriptor.FaultDescriptor',
+                fault: 'enpheeph.fi.injection.faultdescriptor.FaultDescriptor',
                 module: typing.Union['norse.torch.SNN', 'norse.torch.SNNCell'],
     ):
         super().__init__()
@@ -201,7 +201,7 @@ class SNNStateLIFStateVoltageDenseInjectionModule(
 
             # we select the target for injection
             if (
-                    src.fi.utils.enums.parametertype.
+                    enpheeph.fi.utils.enums.parametertype.
                     ParameterType.Voltage in self.fault.parameter_type
             ):
                 state_variable = state.v

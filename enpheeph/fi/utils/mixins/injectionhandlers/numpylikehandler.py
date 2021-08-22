@@ -1,16 +1,16 @@
 import copy
 import typing
 
-import src.fi.utils.dataclasses.faultmask
-import src.fi.utils.enums.faultmaskop
-import src.fi.utils.enums.bitvalue
-import src.fi.utils.enums.endianness
-import src.fi.utils.mixins.converters.numpylikeconverter
+import enpheeph.fi.utils.dataclasses.faultmask
+import enpheeph.fi.utils.enums.faultmaskop
+import enpheeph.fi.utils.enums.bitvalue
+import enpheeph.fi.utils.enums.endianness
+import enpheeph.fi.utils.mixins.converters.numpylikeconverter
 
 
 # this class injects faults in numpy-like objects, using the defined converter
 class NumpyLikeHandler(
-        src.fi.utils.mixins.converters.numpylikeconverter.NumpyLikeConverter
+        enpheeph.fi.utils.mixins.converters.numpylikeconverter.NumpyLikeConverter
 ):
     # NOTE: the returned dtype will be the same as the one passed, not the
     # actual dtype for the operation, which must be done manually
@@ -20,11 +20,11 @@ class NumpyLikeHandler(
             cls,
             dtype: typing.Union['numpy.dtype', 'cupy.dtype'],
             bit_index: typing.Sequence[int],
-            endianness: src.fi.utils.enums.endianness.Endianness,
-            bit_value: src.fi.utils.enums.bitvalue.BitValue,
+            endianness: enpheeph.fi.utils.enums.endianness.Endianness,
+            bit_value: enpheeph.fi.utils.enums.bitvalue.BitValue,
             library: str,
             device: 'cupy.cuda.Device' = None,
-    ) -> src.fi.utils.dataclasses.faultmask.FaultMask:
+    ) -> enpheeph.fi.utils.dataclasses.faultmask.FaultMask:
         # if we are using little endian we invert the index, as the LSB is
         # at the end of the list
         # as bitwidth we use the corresponding one for the dtype
@@ -66,9 +66,9 @@ class NumpyLikeHandler(
             mask += power_of_2_mask_numpy_like
 
             if bit_value == bit_value.StuckAtOne:
-                mask_op = src.fi.utils.enums.faultmaskop.FaultMaskOp.OR
+                mask_op = enpheeph.fi.utils.enums.faultmaskop.FaultMaskOp.OR
             elif bit_value == bit_value.BitFlip:
-                mask_op = src.fi.utils.enums.faultmaskop.FaultMaskOp.XOR
+                mask_op = enpheeph.fi.utils.enums.faultmaskop.FaultMaskOp.XOR
         elif bit_value == bit_value.StuckAtZero:
             # for StuckAtZero the mask must be all 1s, as we use AND operation
             mask = cls.expand_bit_to_numpy_like_dtype(
@@ -81,10 +81,10 @@ class NumpyLikeHandler(
             # we subtract the mask as we need the selected indices at 0
             mask -= power_of_2_mask_numpy_like
 
-            mask_op = src.fi.utils.enums.faultmaskop.FaultMaskOp.AND
+            mask_op = enpheeph.fi.utils.enums.faultmaskop.FaultMaskOp.AND
         else:
             raise ValueError('Unsupported injection type.')
-        return src.fi.utils.dataclasses.faultmask.FaultMask(
+        return enpheeph.fi.utils.dataclasses.faultmask.FaultMask(
             mask=mask,
             operation=mask_op,
         )
@@ -98,11 +98,11 @@ class NumpyLikeHandler(
             bit_index: typing.Sequence[int],
             tensor_index: typing.Sequence[typing.Union[int, slice]],
             tensor_shape: typing.Sequence[int],
-            endianness: src.fi.utils.enums.endianness.Endianness,
-            bit_value: src.fi.utils.enums.bitvalue.BitValue,
+            endianness: enpheeph.fi.utils.enums.endianness.Endianness,
+            bit_value: enpheeph.fi.utils.enums.bitvalue.BitValue,
             library: str,
             device: 'cupy.cuda.Device' = None,
-    ) -> src.fi.utils.dataclasses.faultmask.FaultMask:
+    ) -> enpheeph.fi.utils.dataclasses.faultmask.FaultMask:
         element_mask = cls.generate_fault_mask(
                 dtype=dtype,
                 bit_index=bit_index,
@@ -121,7 +121,7 @@ class NumpyLikeHandler(
             fill_value=element_mask.fill_value,
         )
 
-        return src.fi.utils.dataclasses.faultmask.FaultMask(
+        return enpheeph.fi.utils.dataclasses.faultmask.FaultMask(
             mask=tensor_mask,
             operation=element_mask.operation,
         )
@@ -133,8 +133,8 @@ class NumpyLikeHandler(
             bit_index: typing.Sequence[int],
             tensor_index: typing.Sequence[typing.Union[int, slice]],
             tensor_shape: typing.Sequence[int],
-            endianness: src.fi.utils.enums.endianness.Endianness,
-            bit_value: src.fi.utils.enums.bitvalue.BitValue,
+            endianness: enpheeph.fi.utils.enums.endianness.Endianness,
+            bit_value: enpheeph.fi.utils.enums.bitvalue.BitValue,
             in_place: bool = True,
     ) -> typing.Union['numpy.ndarray', 'cupy.ndarray']:
         # we gather the information from the element
@@ -169,7 +169,7 @@ class NumpyLikeHandler(
     def inject_fault_tensor_from_mask(
             cls,
             numpy_like_element: typing.Union['numpy.ndarray', 'cupy.ndarray'],
-            mask: src.fi.utils.dataclasses.faultmask.FaultMask,
+            mask: enpheeph.fi.utils.dataclasses.faultmask.FaultMask,
             in_place: bool = True,
     ):
         # if in_place is False, then we generate and return a copy for the
@@ -214,13 +214,13 @@ class NumpyLikeHandler(
         )
         # we clear the associations
         cls.deregister(
-                src.fi.utils.enums.faultmaskop.FaultMaskOp.AND
+                enpheeph.fi.utils.enums.faultmaskop.FaultMaskOp.AND
         )
         cls.deregister(
-                src.fi.utils.enums.faultmaskop.FaultMaskOp.OR
+                enpheeph.fi.utils.enums.faultmaskop.FaultMaskOp.OR
         )
         cls.deregister(
-                src.fi.utils.enums.faultmaskop.FaultMaskOp.XOR
+                enpheeph.fi.utils.enums.faultmaskop.FaultMaskOp.XOR
         )
 
         # we convert back to the original dtype

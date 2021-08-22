@@ -7,21 +7,21 @@ import typing
 import pytorch_lightning
 import torch
 
-import src.utils.mixins.dispatcher
-import src.fi.injection.faultdescriptor
-import src.fi.utils.mixins.pytorchmoduleupdater
-import src.utils.mixins.modulegatherer
+import enpheeph.utils.mixins.dispatcher
+import enpheeph.fi.injection.faultdescriptor
+import enpheeph.fi.utils.mixins.pytorchmoduleupdater
+import enpheeph.utils.mixins.modulegatherer
 
 
 # we integrate both the basic injection callback together with the dispatcher
 @dataclasses.dataclass(init=True, repr=True)
 class InjectionCallback(
         pytorch_lightning.Callback,
-        src.utils.mixins.dispatcher.Dispatcher,
-        src.fi.utils.mixins.pytorchmoduleupdater.PyTorchModuleUpdater,
-        src.utils.mixins.modulegatherer.ModuleGatherer
+        enpheeph.utils.mixins.dispatcher.Dispatcher,
+        enpheeph.fi.utils.mixins.pytorchmoduleupdater.PyTorchModuleUpdater,
+        enpheeph.utils.mixins.modulegatherer.ModuleGatherer
 ):
-    TYPES_PACKAGE = 'src.fi.injection.types'
+    TYPES_PACKAGE = 'enpheeph.fi.injection.types'
     # we define the root as the main folder before the current package
     # hence we have to get the absolute path of the parent, split it into parts
     # and remove all the elements which are present in the __name__, to have
@@ -44,7 +44,7 @@ class InjectionCallback(
     # list of all faults to be injected, do not use two active faults on the
     # same module
     fault_descriptor_list: typing.Sequence[
-            'src.fi.injection.faultdescriptor.FaultDescriptor'
+            'enpheeph.fi.injection.faultdescriptor.FaultDescriptor'
     ] = dataclasses.field(
             init=True,
             repr=True,
@@ -62,7 +62,7 @@ class InjectionCallback(
     enabled_faults: typing.Union[
             type(Ellipsis),
             typing.Sequence[
-                    'src.fi.injection.faultdescriptor.FaultDescriptor'
+                    'enpheeph.fi.injection.faultdescriptor.FaultDescriptor'
             ],
     ] = dataclasses.field(
             init=True,
@@ -87,7 +87,7 @@ class InjectionCallback(
     _active: bool = dataclasses.field(init=False, repr=False, default=False)
     # dict of injected modules to be loaded in the main model
     _modules: typing.Dict[
-            'src.fi.injection.faultdescriptor.FaultDescriptor',
+            'enpheeph.fi.injection.faultdescriptor.FaultDescriptor',
             'torch.nn.Module',
     ] = dataclasses.field(
             init=False,
@@ -96,7 +96,7 @@ class InjectionCallback(
     # dict containing the original modules, before substituting them for
     # the injection
     _modules_backup: typing.Dict[
-            'src.fi.injection.faultdescriptor.FaultDescriptor',
+            'enpheeph.fi.injection.faultdescriptor.FaultDescriptor',
             'torch.nn.Module',
     ] = dataclasses.field(
             init=False,
@@ -203,7 +203,7 @@ class InjectionCallback(
     # (weight, activations, ...)
     def init_module(
             self,
-            fault: 'src.fi.injection.faultdescriptor.FaultDescriptor',
+            fault: 'enpheeph.fi.injection.faultdescriptor.FaultDescriptor',
             module: 'torch.nn.Module'
             ):
         # we copy the original module
@@ -233,9 +233,9 @@ class InjectionCallback(
     def enable_faults(self, fault_list: typing.Union[
             type(Ellipsis),
             typing.Sequence[
-                    'src.fi.injection.faultdescriptor.FaultDescriptor'
+                    'enpheeph.fi.injection.faultdescriptor.FaultDescriptor'
             ],
-    ]) -> typing.List['src.fi.injection.faultdescriptor.FaultDescriptor']:
+    ]) -> typing.List['enpheeph.fi.injection.faultdescriptor.FaultDescriptor']:
         # if we get an ... we enable all the faults
         if isinstance(fault_list, type(Ellipsis)):
             self.enabled_faults = self.fault_descriptor_list
@@ -269,9 +269,9 @@ class InjectionCallback(
     def disable_faults(self, fault_list: typing.Union[
             type(Ellipsis),
             typing.Sequence[
-                    'src.fi.injection.faultdescriptor.FaultDescriptor'
+                    'enpheeph.fi.injection.faultdescriptor.FaultDescriptor'
             ],
-    ]) -> typing.List['src.fi.injection.faultdescriptor.FaultDescriptor']:
+    ]) -> typing.List['enpheeph.fi.injection.faultdescriptor.FaultDescriptor']:
         # if we get an ... we enable all the faults
         if isinstance(fault_list, type(Ellipsis)):
             self.enabled_faults = []

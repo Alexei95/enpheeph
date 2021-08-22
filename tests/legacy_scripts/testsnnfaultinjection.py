@@ -21,27 +21,27 @@ DATASET_DIR = (SRC_PARENT_DIR / 'data/mnist').resolve()
 
 sys.path.append(str(SRC_PARENT_DIR))
 
-import src.fi.injection.injectioncallback
-import src.fi.utils.enums.bitvalue
-import src.fi.utils.enums.endianness
-import src.fi.utils.enums.parametertype
-#import src.ml.models.snnwrapper
-import src.ml.pl.models.vision.plvisionwrapper
-import src.utils.functions
+import enpheeph.fi.injection.injectioncallback
+import enpheeph.fi.utils.enums.bitvalue
+import enpheeph.fi.utils.enums.endianness
+import enpheeph.fi.utils.enums.parametertype
+#import enpheeph.ml.models.snnwrapper
+import enpheeph.ml.pl.models.vision.plvisionwrapper
+import enpheeph.utils.functions
 
 
 ### REPRODUCIBILITY
 # this flag is used for determinism in PyTorch Lightning Trainer
 DETERMINISTIC_FLAG = True
 # we call this function to enable reproducibility
-src.utils.functions.enable_determinism(DETERMINISTIC_FLAG)
+enpheeph.utils.functions.enable_determinism(DETERMINISTIC_FLAG)
 ### REPRODUCIBILITY
 
 
 # we load the model and define the PL wrapper with it
 # we can use VGG11_bn as the model dict is saved in the same directory
 # this is trained on CIFAR10
-model = src.ml.pl.models.plwrapper.PLWrapper.load_from_checkpoint(str(MODEL_CHECKPOINT))
+model = enpheeph.ml.pl.models.plwrapper.PLWrapper.load_from_checkpoint(str(MODEL_CHECKPOINT))
 # we used the pytorch_lightning CIFAR 10 datamodule
 datamodule = pl_bolts.datamodules.MNISTDataModule(
         data_dir=str(DATASET_DIR),
@@ -50,19 +50,19 @@ datamodule = pl_bolts.datamodules.MNISTDataModule(
 # here we define our faults to be tested
 faults = []
 
-voltage_state_fault = src.fi.injection.faultdescriptor.FaultDescriptor(
+voltage_state_fault = enpheeph.fi.injection.faultdescriptor.FaultDescriptor(
         module_name='model.model.1',
-        parameter_type=src.fi.utils.enums.parametertype.ParameterType.SNNStateLIFStateVoltageDense,
+        parameter_type=enpheeph.fi.utils.enums.parametertype.ParameterType.SNNStateLIFStateVoltageDense,
         tensor_index=...,
         bit_index=...,
-        bit_value=src.fi.utils.enums.bitvalue.BitValue.BitFlip,
+        bit_value=enpheeph.fi.utils.enums.bitvalue.BitValue.BitFlip,
         # default endianness, little, so 31 is MSB
-        endianness=src.fi.utils.enums.endianness.Endianness.Little,
+        endianness=enpheeph.fi.utils.enums.endianness.Endianness.Little,
 )
 
 faults.append(voltage_state_fault)
 
-callback = src.fi.injection.injectioncallback.InjectionCallback(
+callback = enpheeph.fi.injection.injectioncallback.InjectionCallback(
         fault_descriptor_list=faults,
         enabled=False,
         auto_model_init_on_test_start=True,

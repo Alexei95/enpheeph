@@ -1,11 +1,11 @@
 import copy
 import typing
 
-import src.fi.utils.mixins.converters.pytorchconverter
+import enpheeph.fi.utils.mixins.converters.pytorchconverter
 
 
 class NorseConverter(
-        src.fi.utils.mixins.converters.pytorchconverter.PyTorchConverter
+        enpheeph.fi.utils.mixins.converters.pytorchconverter.PyTorchConverter
 ):
     @classmethod
     def remove_norse_sequence_time_step_from_shape(

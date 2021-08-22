@@ -5,8 +5,8 @@ import pathlib
 import types
 import typing
 
-import src.utils.instance_or_classmethod
-import src.utils.mixins.dispatcher
+import enpheeph.utils.instance_or_classmethod
+import enpheeph.utils.mixins.dispatcher
 
 
 # to be able to encode JSON, we need to subclass the encoder
@@ -60,7 +60,7 @@ class JSONParser(
     # or the default one is suffiecient
     # we check against the default values, so that they can be customized
     # as well as changing the function itself to have a different type of check
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def DEFAULT_CUSTOM_FUNCTION_CHECKER(
             self_or_cls,
             dict_: typing.Dict[str, typing.Any],
@@ -85,7 +85,7 @@ class JSONParser(
     # this classmethod is used to get the function to be used when decoding
     # from the dict
     # as for the checker, it can be customized or substituted entirely
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def DEFAULT_CUSTOM_DECODER_GETTER(
             self_or_cls,
             dict_: typing.Dict[str, typing.Any],
@@ -109,7 +109,7 @@ class JSONParser(
     # this classmethod is used to get the function to be used when
     # postprocessing from the dict
     # as for the checker, it can be customized or substituted entirely
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def DEFAULT_CUSTOM_POSTPROCESSOR_GETTER(
             self_or_cls,
             dict_: typing.Union[typing.Dict[str, typing.Any], typing.Any],
@@ -128,8 +128,8 @@ class JSONParser(
 
     # we use two instances of Dispatcher, one for the decoders and one for the
     # encoders
-    DecoderDispatcher = src.utils.mixins.dispatcher.Dispatcher()
-    PostprocessorDispatcher = src.utils.mixins.dispatcher.Dispatcher()
+    DecoderDispatcher = enpheeph.utils.mixins.dispatcher.Dispatcher()
+    PostprocessorDispatcher = enpheeph.utils.mixins.dispatcher.Dispatcher()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -214,7 +214,7 @@ class JSONParser(
     # value set in the __init__
     # we make it into a instance- or class- method so that it can be run on
     # a class- or instance- basis
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def decode(self_or_cls, d):
         # if there is a definition for a custom function
         if self_or_cls.DEFAULT_CUSTOM_FUNCTION_CHECKER(d):
@@ -230,7 +230,7 @@ class JSONParser(
         else:
             return d
 
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def postprocess(self_or_cls, d, complete):
         # if there is a definition for a custom function
         if self_or_cls.DEFAULT_CUSTOM_FUNCTION_CHECKER(d):
@@ -249,7 +249,7 @@ class JSONParser(
         else:
             return d
 
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def post_process_decoding(
             self_or_cls,
             element: typing.Any,

@@ -3,8 +3,8 @@ import functools
 import operator
 import typing
 
-import src.utils.mixins.classutils
-import src.utils.mixins.dispatcher
+import enpheeph.utils.mixins.classutils
+import enpheeph.utils.mixins.dispatcher
 
 # FIXME: check whether we can improve this
 # here we create a dict with all the base classes
@@ -12,32 +12,32 @@ import src.utils.mixins.dispatcher
 # extra checks for GPU availability for Cupy
 ConverterBaseClasses = {}
 try:
-    import src.fi.utils.mixins.converters.cupyconverter
+    import enpheeph.fi.utils.mixins.converters.cupyconverter
 except ImportError:
     CUPY_STRING = None
 else:
     cuda_support = \
-        src.fi.utils.mixins.\
+        enpheeph.fi.utils.mixins.\
         converters.cupyconverter.CupyConverter.cuda_support()
     if cuda_support:
         CUPY_STRING = 'cupy'
         ConverterBaseClasses[CUPY_STRING] = \
-            src.fi.utils.mixins.converters.cupyconverter.CupyConverter
+            enpheeph.fi.utils.mixins.converters.cupyconverter.CupyConverter
     else:
         CUPY_STRING = None
 try:
-    import src.fi.utils.mixins.converters.numpyconverter
+    import enpheeph.fi.utils.mixins.converters.numpyconverter
 except ImportError:
     NUMPY_STRING = None
 else:
     NUMPY_STRING = 'numpy'
     ConverterBaseClasses[NUMPY_STRING] = \
-        src.fi.utils.mixins.converters.numpyconverter.NumpyConverter
+        enpheeph.fi.utils.mixins.converters.numpyconverter.NumpyConverter
 
 
 class NumpyLikeConverter(
-        src.utils.mixins.classutils.ClassUtils,
-        src.utils.mixins.dispatcher.Dispatcher,
+        enpheeph.utils.mixins.classutils.ClassUtils,
+        enpheeph.utils.mixins.dispatcher.Dispatcher,
         # to unroll the base classes
         *ConverterBaseClasses.values(),
 ):

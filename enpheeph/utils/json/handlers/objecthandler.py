@@ -3,15 +3,15 @@ import importlib
 import types
 import typing
 
-import src.utils.instance_or_classmethod
-import src.utils.mixins.dispatcher
-import src.utils.mixins.importutils
+import enpheeph.utils.instance_or_classmethod
+import enpheeph.utils.mixins.dispatcher
+import enpheeph.utils.mixins.importutils
 
 
 class ObjectHandler(
     # to dispatch the operation to other object handlers
-    src.utils.mixins.dispatcher.Dispatcher,
-    src.utils.mixins.importutils.ImportUtils,
+    enpheeph.utils.mixins.dispatcher.Dispatcher,
+    enpheeph.utils.mixins.importutils.ImportUtils,
 ):
     # this is the default that should be used to get the name associated to
     # this decoder/encoder
@@ -19,19 +19,19 @@ class ObjectHandler(
     OBJECT_HANDLER_KEYS = ['__object__']
     OBJECT_HANDLER_EXTRA_KEYS = ['__import__']
 
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def get_default_string(self_or_cls):
         return self_or_cls.OBJECT_HANDLER_DEFAULT_STRING
 
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def get_keys(self_or_cls):
         return self_or_cls.OBJECT_HANDLER_KEYS
 
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def get_extra_keys(self_or_cls):
         return self_or_cls.OBJECT_HANDLER_EXTRA_KEYS
 
-    @src.utils.instance_or_classmethod.instance_or_classmethod
+    @enpheeph.utils.instance_or_classmethod.instance_or_classmethod
     def decode_json(
             self_or_cls,
             dict_: typing.Dict[str, typing.Any],

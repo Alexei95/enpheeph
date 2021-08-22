@@ -3,15 +3,15 @@ import typing
 
 import torch
 
-import src.utils.mixins.classutils
-import src.utils.mixins.dispatcher
-import src.fi.utils.mixins.converters.pytorchconverter
+import enpheeph.utils.mixins.classutils
+import enpheeph.utils.mixins.dispatcher
+import enpheeph.fi.utils.mixins.converters.pytorchconverter
 
 
 class PyTorchDeviceAwareConverter(
-        src.utils.mixins.classutils.ClassUtils,
-        src.utils.mixins.dispatcher.Dispatcher,
-        src.fi.utils.mixins.converters.pytorchconverter.PyTorchConverter,
+        enpheeph.utils.mixins.classutils.ClassUtils,
+        enpheeph.utils.mixins.dispatcher.Dispatcher,
+        enpheeph.fi.utils.mixins.converters.pytorchconverter.PyTorchConverter,
 ):
     # FIXME: check whether these methods can be moved
     # this method is used to remove all the associations after calling a

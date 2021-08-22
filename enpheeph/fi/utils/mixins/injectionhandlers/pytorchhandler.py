@@ -1,10 +1,10 @@
 import copy
 import typing
 
-import src.fi.utils.dataclasses.binaryfaultmask
-import src.fi.utils.enums.binaryfaultmaskop
-import src.fi.utils.enums.bitvalue
-import src.fi.utils.enums.endianness
+import enpheeph.fi.utils.dataclasses.binaryfaultmask
+import enpheeph.fi.utils.enums.binaryfaultmaskop
+import enpheeph.fi.utils.enums.bitvalue
+import enpheeph.fi.utils.enums.endianness
 
 
 # this class is the base as it handles the injection on a binary string
@@ -14,8 +14,8 @@ class BinaryHandler(object):
             cls,
             binary: str,
             bit_index: typing.Sequence[int],
-            endianness: src.fi.utils.enums.endianness.Endianness,
-            bit_value: src.fi.utils.enums.bitvalue.BitValue,
+            endianness: enpheeph.fi.utils.enums.endianness.Endianness,
+            bit_value: enpheeph.fi.utils.enums.bitvalue.BitValue,
     ) -> str:
         # we need to convert the binary string into a list of characters
         # otherwise we cannot update the values
@@ -40,8 +40,8 @@ class BinaryHandler(object):
     def inject_fault_multi(cls,
             binaries: typing.Sequence[str],
             bit_index: typing.Sequence[int],
-            endianness: src.fi.utils.enums.endianness.Endianness,
-            bit_value: src.fi.utils.enums.bitvalue.BitValue,
+            endianness: enpheeph.fi.utils.enums.endianness.Endianness,
+            bit_value: enpheeph.fi.utils.enums.bitvalue.BitValue,
     ) -> str:
         injected_binaries = []
         for binary in binaries:
@@ -58,9 +58,9 @@ class BinaryHandler(object):
             cls,
             bit_width: int,
             bit_index: typing.Sequence[int],
-            endianness: src.fi.utils.enums.endianness.Endianness,
-            bit_value: src.fi.utils.enums.bitvalue.BitValue,
-    ) -> src.fi.utils.dataclasses.binaryfaultmask.BinaryFaultMask:
+            endianness: enpheeph.fi.utils.enums.endianness.Endianness,
+            bit_value: enpheeph.fi.utils.enums.bitvalue.BitValue,
+    ) -> enpheeph.fi.utils.dataclasses.binaryfaultmask.BinaryFaultMask:
         # if we are using little endian we invert the index, as the LSB is
         # at the end of the list
         if endianness == endianness.Little:
@@ -74,20 +74,20 @@ class BinaryHandler(object):
             for index in bit_index:
                 binary_mask[index] = '1'
             if bit_value == bit_value.StuckAtOne:
-                binary_mask_op = src.fi.utils.enums.\
+                binary_mask_op = enpheeph.fi.utils.enums.\
                         binaryfaultmaskop.BinaryFaultMaskOp.OR
             elif bit_value == bit_value.BitFlip:
-                binary_mask_op = src.fi.utils.enums.\
+                binary_mask_op = enpheeph.fi.utils.enums.\
                         binaryfaultmaskop.BinaryFaultMaskOp.XOR
         elif bit_value == bit_value.StuckAtZero:
             binary_mask = ['1'] * bit_width
             for index in bit_index:
                 binary_mask[index] = '0'
             binary_mask_op = \
-                    src.fi.utils.enums.binaryfaultmaskop.BinaryFaultMaskOp.AND
+                    enpheeph.fi.utils.enums.binaryfaultmaskop.BinaryFaultMaskOp.AND
         else:
             raise ValueError('Unsupported injection type.')
-        return src.fi.utils.dataclasses.binaryfaultmask.BinaryFaultMask(
+        return enpheeph.fi.utils.dataclasses.binaryfaultmask.BinaryFaultMask(
             mask=''.join(binary_mask),
             operation=binary_mask_op,
         )

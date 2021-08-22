@@ -2,9 +2,9 @@ import collections.abc
 import dataclasses
 import typing
 
-import src.fi.utils.enums.bitvalue
-import src.fi.utils.enums.endianness
-import src.fi.utils.enums.parametertype
+import enpheeph.fi.utils.enums.bitvalue
+import enpheeph.fi.utils.enums.endianness
+import enpheeph.fi.utils.enums.parametertype
 
 
 # FIXME: fix the way hash is computed, as this solution is very sketchy
@@ -20,7 +20,7 @@ class FaultDescriptor(object):
     # name of the module to inject
     module_name: str
     # type of parameter to inject, weight, activation, ...
-    parameter_type: src.fi.utils.enums.parametertype.ParameterType
+    parameter_type: enpheeph.fi.utils.enums.parametertype.ParameterType
     # index of the tensor to be injected, it will be converted to a tuple
     tensor_index: typing.Union[
             type(Ellipsis),
@@ -47,7 +47,7 @@ class FaultDescriptor(object):
             hash=False
     )
     # type of bit injection to be carried out
-    bit_value: src.fi.utils.enums.bitvalue.BitValue
+    bit_value: enpheeph.fi.utils.enums.bitvalue.BitValue
 
     # way to interpret the binary representation, as big endian or little
     # endian
@@ -55,10 +55,10 @@ class FaultDescriptor(object):
     # little endian means the bit index 0 is instead mapped to the LSB
     # by default we use little endian, as this is the most common
     # representation
-    endianness: src.fi.utils.enums.endianness.Endianness = dataclasses.field(
+    endianness: enpheeph.fi.utils.enums.endianness.Endianness = dataclasses.field(
             init=True,
             repr=True,
-            default=src.fi.utils.enums.endianness.Endianness.Little)
+            default=enpheeph.fi.utils.enums.endianness.Endianness.Little)
     # name of the parameter, if the module is a base module (conv, fc),
     # it generally coincides with 'weight' for weight injection
     # not required for activation injection
