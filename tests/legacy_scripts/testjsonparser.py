@@ -2,9 +2,9 @@ import pathlib
 import sys
 
 CURRENT_DIR = pathlib.Path(__file__).parent.resolve()
-SRC_PARENT_DIR = (CURRENT_DIR / '..').resolve()
+enpheeph_PARENT_DIR = (CURRENT_DIR / '..').resolve()
 
-sys.path.append(str(SRC_PARENT_DIR))
+sys.path.append(str(enpheeph_PARENT_DIR))
 
 import enpheeph.utils.json.jsonparser
 import enpheeph.utils.json.handlers.callablehandler
@@ -54,4 +54,4 @@ print(parser.load_strings(["""
         }
     }
 }"""]))
-print(parser.load_paths([pathlib.Path(SRC_PARENT_DIR / 'config' / 'dnn' / 'basic_trainer.json')]))
+print(parser.load_paths([pathlib.Path(enpheeph_PARENT_DIR / 'config' / 'dnn' / 'basic_trainer.json')]))

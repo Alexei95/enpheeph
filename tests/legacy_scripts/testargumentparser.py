@@ -2,9 +2,9 @@ import pathlib
 import sys
 
 CURRENT_DIR = pathlib.Path(__file__).parent.resolve()
-SRC_PARENT_DIR = (CURRENT_DIR / '..').resolve()
+enpheeph_PARENT_DIR = (CURRENT_DIR / '..').resolve()
 
-sys.path.append(str(SRC_PARENT_DIR))
+sys.path.append(str(enpheeph_PARENT_DIR))
 
 import enpheeph.cli.utils.argumentparser
 

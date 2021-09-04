@@ -15,11 +15,11 @@ import torch
 import torchvision
 
 CURRENT_DIR = pathlib.Path(__file__).parent.resolve()
-SRC_PARENT_DIR = (CURRENT_DIR / '..' / '..').resolve()
-MODEL_CHECKPOINT = (SRC_PARENT_DIR / "model_training/lightning/snn_mnist_conv/default/12/checkpoints/epoch=3-step=2999.ckpt").resolve()
-DATASET_DIR = (SRC_PARENT_DIR / 'data/mnist').resolve()
+enpheeph_PARENT_DIR = (CURRENT_DIR / '..' / '..').resolve()
+MODEL_CHECKPOINT = (enpheeph_PARENT_DIR / "model_training/lightning/snn_mnist_conv/default/12/checkpoints/epoch=3-step=2999.ckpt").resolve()
+DATASET_DIR = (enpheeph_PARENT_DIR / 'data/mnist').resolve()
 
-sys.path.append(str(SRC_PARENT_DIR))
+sys.path.append(str(enpheeph_PARENT_DIR))
 
 import enpheeph.fi.injection.injectioncallback
 import enpheeph.fi.utils.enums.bitvalue
