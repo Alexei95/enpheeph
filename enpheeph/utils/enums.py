@@ -1,6 +1,27 @@
 import enum
 
 
+class BitFaultValue(enum.Enum):
+    Random = enum.auto()
+    StuckAtZero = enum.auto()
+    StuckAtOne = enum.auto()
+    BitFlip = enum.auto()
+
+
+class Endianness(enum.Flag):
+    Little = enum.auto()
+    Big = enum.auto()
+
+    MSBAtIndexZero = Big
+    LSBAtIndexZero = Little
+
+
+class FaultMaskOp(enum.Enum):
+    XOR = enum.auto()
+    AND = enum.auto()
+    OR = enum.auto()
+
+
 class ParameterType(enum.Flag):
 
     # network type
