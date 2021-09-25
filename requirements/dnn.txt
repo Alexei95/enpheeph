@@ -1,3 +1,0 @@
-pytorch-lightning-bolts>=0.3.2
-torchmetrics>=0.3.2
-torchvision>=0.9.1

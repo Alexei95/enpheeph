@@ -1,18 +1,9 @@
-class FaultABC:
-    def __init__(self, fault_locator):
+import abc
+
+import enpheeph.injections.injectionabc
+
+
+class FaultABC(enpheeph.injections.injectionabc.InjectionABC):
+    def __init__(self, fault_locator, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.fault_locator = fault_locator
-
-    def setup(self, module):
-        pass
-
-    def teardown(self, module):
-        pass
-
-
-class PyTorchFaultABC(FaultABC):
-    def make_mask(self, tensor):
-        pass
-
-
-class ActivationPyTorchFault(PyTorchFaultABC):
-    pass

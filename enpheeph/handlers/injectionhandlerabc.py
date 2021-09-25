@@ -13,15 +13,29 @@ class HandlerStatus(enum.Enum):
 
 
 class InjectionHandlerABC(abc.ABC):
-    @abc.abstractmethod
-    def setup(self, *args, **kwargs):
-        self.lock_running_status()
+    def on_setup_start(self, *args, **kwargs):
         return NotImplemented
 
-    @abc.abstractmethod
+    def on_setup_end(self, output, *args, **kwargs):
+        return NotImplemented
+
+    def on_teardown_start(self, *args, **kwargs):
+        return NotImplemented
+
+    def on_teardown_end(self, output, *args, **kwargs):
+        return NotImplemented
+
+    def setup(self, *args, **kwargs):
+        self.lock_running_status()
+        output = self.on_setup_start(*args, **kwargs)
+        output = self.on_setup_end(output, *args, **kwargs)
+        return output
+
     def teardown(self, *args, **kwargs):
         self.unlock_running_status()
-        return NotImplemented
+        output = self.on_teardown_start(*args, **kwargs)
+        output = self.on_teardown_end(output, *args, **kwargs)
+        return output
 
     def __init__(
             self,
@@ -33,8 +47,12 @@ class InjectionHandlerABC(abc.ABC):
 
         self.status = HandlerStatus.Idle
 
-        self.active_faults = []
-        self.active_monitors = []
+        self.active_faults : typing.List[
+                enpheeph.faults.faultabc.FaultABC
+        ] = []
+        self.active_monitors: typing.List[
+                enpheeph.monitors.monitorabc.MonitorABC
+        ] = []
 
     def check_running_status(self):
         return self.status == self.status.Running
@@ -84,6 +102,7 @@ class InjectionHandlerABC(abc.ABC):
                 if m in self.monitors
         ]
 
+    # if None we will deactivate everything
     def deactivate(
             self,
             faults: typing.Optional[
