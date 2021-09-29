@@ -1,11 +1,12 @@
 import typing
 
 # we use Tuple and not Sequence to allow hashability
-BitIndexType = typing.Union[
+BitIndexType =typing.Union[
         int,
         slice,
-        Ellipsis,
-        typing.Tuple[
+        # NOTE: in Python 3.10 there is types.EllipsisType
+        type(Ellipsis),
+        typing.Sequence[
                 int,
                 ...
         ]
@@ -13,19 +14,21 @@ BitIndexType = typing.Union[
 IndexType = typing.Union[
         int,
         slice,
-        Ellipsis,
-        typing.Tuple[
+        type(Ellipsis),
+        typing.Sequence[
                 typing.Union[
                         int,
                         slice,
-                        Ellipsis,
+                        type(Ellipsis),
                         typing.Tuple[
                                 int,
                                 ...
                         ]
-                ]
+                ],
+                ...
         ]
 ]
-
-# module type for generic injection
-ModuleType = typing.TypeVar("ModuleType")
+MaskArrayType: object = typing.Union[
+    "cupy.ndarray",
+    "numpy.ndarray",
+]

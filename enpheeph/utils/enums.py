@@ -2,24 +2,48 @@ import enum
 
 
 class BitFaultValue(enum.Enum):
-    Random = enum.auto()
+    #Random = enum.auto()
     StuckAtZero = enum.auto()
     StuckAtOne = enum.auto()
     BitFlip = enum.auto()
 
 
-class Endianness(enum.Flag):
-    Little = enum.auto()
-    Big = enum.auto()
+class BitWidth(enum.IntEnum):
+    OneByte = 8
+    TwoBytes = 16
+    ThreeBytes = 24
+    FourBytes = 32
+    FiveBytes = 40
+    SixBytes = 48
+    SevenBytes = 56
+    EightBytes = 64
+
+    FloatingPoint16 = TwoBytes
+    FloatingPoint32 = FourBytes
+    FloatingPoint64 = EightBytes
+    Int32 = FourBytes
+    Int64 = EightBytes
+
+
+# this endianness does not represent the actual endianness of the machine,
+# only the endianness seen in the Python objects when accessing them
+class Endianness(enum.Enum):
+    Little = '<'
+    Big = '>'
 
     MSBAtIndexZero = Big
     LSBAtIndexZero = Little
 
 
-class FaultMaskOp(enum.Enum):
-    XOR = enum.auto()
-    AND = enum.auto()
-    OR = enum.auto()
+class FaultMaskOperation(enum.Enum):
+    Xor = enum.auto()
+    And = enum.auto()
+    Or = enum.auto()
+
+
+class FaultMaskValue(enum.IntEnum):
+    One = 1
+    Zero = 0
 
 
 class ParameterType(enum.Flag):
