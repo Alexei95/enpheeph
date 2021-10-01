@@ -2,4 +2,4 @@
 -r ../full.txt
 
 # install test dependencies
--r base.txt
+-r ./base.txt

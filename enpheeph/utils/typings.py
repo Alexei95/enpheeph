@@ -28,7 +28,13 @@ IndexType = typing.Union[
                 ...
         ]
 ]
-MaskArrayType: object = typing.Union[
-    "cupy.ndarray",
-    "numpy.ndarray",
-]
+LowLevelMaskArrayType = typing.TypeVar(
+        "LowLevelMaskArrayType",
+        "cupy.ndarray",
+        "numpy.ndarray",
+)
+ModelType = typing.TypeVar(
+        "ModelType",
+        "torch.nn.Module",
+)
+

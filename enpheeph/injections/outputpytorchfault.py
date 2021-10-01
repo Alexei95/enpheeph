@@ -1,27 +1,40 @@
 import torch
 
-import enpheeph.faults.pytorchfaultabc
+import enpheeph.injections.injectionabc
 
 
 class OutputPyTorchFault(
-        enpheeph.faults.pytorchfaultabc.PyTorchFaultABC,
+        enpheeph.injections.injectionabc.InjectionABC,
+        enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixIn,
 ):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+            self,
+            low_level_torch_plugin: enpheeph.injections.plugins.
+            lowleveltorchmaskpluginabc,
+    ):
+        super().__init__()
 
-        self._mask = None
+        self.low_level_plugin = low_level_torch_plugin
+
+        self.handle = None
+        self.mask = None
 
     def output_fault_hook(self, module, input, output):
-        if self._mask is None:
-            self.generate_mask(output)
+        self.generate_mask(output)
 
-        masked_output = 
+        masked_output = self.inject_mask()
 
         return masked_output
 
     def setup(self, module):
-        
-        
+        self.handle = module.register_forward_hook(self.output_fault_hook)
+
+        return module
 
     def teardown(self, module):
-        pass
+        self.handle.remove()
+
+        self.handle = None
+        self.mask = None
+
+        return module

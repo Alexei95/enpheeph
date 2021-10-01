@@ -1,0 +1,5 @@
+# install basic dependencies
+-r ../requirements.txt
+
+# install extra dependencies
+-r ./extra.txt

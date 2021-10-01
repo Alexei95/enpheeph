@@ -1,4 +1,5 @@
 import enum
+import operator
 
 
 class BitFaultValue(enum.Enum):
@@ -36,9 +37,12 @@ class Endianness(enum.Enum):
 
 
 class FaultMaskOperation(enum.Enum):
-    Xor = enum.auto()
-    And = enum.auto()
-    Or = enum.auto()
+    InPlaceXor = operator.ixor
+    InPlaceAnd = operator.iand
+    InPlaceOr = operator.ior
+    Xor = operator.xor
+    And = operator.and_
+    Or = operator.or_
 
 
 class FaultMaskValue(enum.IntEnum):
