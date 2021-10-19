@@ -2,6 +2,7 @@ import dataclasses
 import functools
 import typing
 
+import enpheeph.utils.classes
 import enpheeph.utils.enums
 import enpheeph.utils.typings
 
@@ -11,6 +12,25 @@ import enpheeph.utils.typings
 # a mask with fill values
 @dataclasses.dataclass
 class BitFaultMaskInfo(object):
+    # to convert bit faults into arguments for the fault mask
+    BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS = {
+            enpheeph.utils.enums.BitFaultValue.StuckAtZero: {
+                    "operation": enpheeph.utils.enums.FaultMaskOperation.And,
+                    "mask_value": enpheeph.utils.enums.FaultMaskValue.Zero,
+                    "fill_value": enpheeph.utils.enums.FaultMaskValue.One,
+            },
+            enpheeph.utils.enums.BitFaultValue.StuckAtOne: {
+                    "operation": enpheeph.utils.enums.FaultMaskOperation.Or,
+                    "mask_value": enpheeph.utils.enums.FaultMaskValue.One,
+                    "fill_value": enpheeph.utils.enums.FaultMaskValue.Zero,
+            },
+            enpheeph.utils.enums.BitFaultValue.BitFlip: {
+                    "operation": enpheeph.utils.enums.FaultMaskOperation.Xor,
+                    "mask_value": enpheeph.utils.enums.FaultMaskValue.One,
+                    "fill_value": enpheeph.utils.enums.FaultMaskValue.Zero,
+            },
+    }
+
     operation: enpheeph.utils.enums.FaultMaskOperation
     mask_value: enpheeph.utils.enums.FaultMaskValue
     fill_value: enpheeph.utils.enums.FaultMaskValue
@@ -19,8 +39,14 @@ class BitFaultMaskInfo(object):
     def from_bit_fault_value(
             cls,
             bit_fault_value: enpheeph.utils.enums.BitFaultValue,
-    ) -> BitFaultMaskInfo:
-        return cls.BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO[bit_fault_value]
+    ) -> 'BitFaultMaskInfo':
+        return cls(**(
+                cls.
+                BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS[
+                        bit_fault_value
+                ]
+        ))
+
 
 
 # we can safely assume that the dimension will be 1 only, as this is supposed
@@ -39,15 +65,9 @@ class BitIndexInfo(object):
 
 
 @dataclasses.dataclass
-class FaultLocation(object):
-    # location of the fault injection
-    injection_location: InjectionLocation
-    # value of fault to be injected
-    bit_fault_value: enpheeph.utils.enums.BitFaultValue
-
-
-@dataclasses.dataclass
 class InjectionLocation(object):
+    # name of the module to be targeted
+    module_name: str
     # type of parameter, activation or weight
     parameter_type: enpheeph.utils.enums.ParameterType
     # tensor index which can be represented using a numpy/pytorch indexing
@@ -55,29 +75,24 @@ class InjectionLocation(object):
     tensor_index: enpheeph.utils.typings.IndexType
     # same for the bit injection info
     bit_index: enpheeph.utils.typings.BitIndexType
+    # index used for time, optional as it is required only for SNNs
+    # NOTE: this solution limits the expressivity of InjectionLocation, as we
+    # cannot have different injections at different time-steps
+    # however, even supporting different masks at different time-steps would
+    # still require the creation of multiple masks, as they are created based 
+    # on the output at each time-step, hence nullifying the actual memory gains
+    # the only overhead is the different hooks as well as the multiple Python 
+    # objects
+    time_index: (
+            typing.Optional[
+                    enpheeph.utils.typings.TimeIndexType
+            ]
+    ) = dataclasses.field(default=None)
 
 
-setattr(
-        BitFaultMaskInfo,
-        "BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO",
-        {
-                enpheeph.utils.enums.BitFaultValue.
-                StuckAtZero: BitFaultMaskInfo(
-                        operation=enpheeph.utils.enums.FaultMaskOperation.And,
-                        mask_value=enpheeph.utils.enums.FaultMaskValue.Zero,
-                        fill_value=enpheeph.utils.enums.FaultMaskValue.One,
-                ),
-                enpheeph.utils.enums.BitFaultValue.
-                StuckAtOne: BitFaultMaskInfo(
-                        operation=enpheeph.utils.enums.FaultMaskOperation.Or,
-                        mask_value=enpheeph.utils.enums.FaultMaskValue.One,
-                        fill_value=enpheeph.utils.enums.FaultMaskValue.Zero,
-                ),
-                enpheeph.utils.enums.BitFaultValue.
-                BitFlip: BitFaultMaskInfo(
-                        operation=enpheeph.utils.enums.FaultMaskOperation.Xor,
-                        mask_value=enpheeph.utils.enums.FaultMaskValue.One,
-                        fill_value=enpheeph.utils.enums.FaultMaskValue.Zero,
-                ),
-        },
-)
+@dataclasses.dataclass
+class FaultLocation(object):
+    # location of the fault injection
+    injection_location: InjectionLocation
+    # value of fault to be injected
+    bit_fault_value: enpheeph.utils.enums.BitFaultValue

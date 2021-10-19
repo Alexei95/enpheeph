@@ -34,3 +34,8 @@ To run the tests, execute in the main project directory
 ```
 python -m pytest
 ```
+
+## Insights
+
+1. For now, fault injection requires explicitly specifying the correct plugin to be used, whether it is running on CPU/GPU. However in the future this aspect will be automatically addressed, instantiating the correct plugin depending on the context.
+2. 

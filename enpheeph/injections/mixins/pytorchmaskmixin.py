@@ -12,8 +12,8 @@ import enpheeph.utils.typings
 
 class PyTorchMaskMixIn(abc.ABC):
     # the used variables in the functions, must be initialized properly
-    fault_locator: enpheeph.utils.data_classes.FaultLocation
-    mask: enpheeph.utils.typings.MaskArrayType
+    fault_location: enpheeph.utils.data_classes.FaultLocation
+    mask: torch.Tensor
     low_level_plugin: enpheeph.injections.plugins.lowleveltorchmaskpluginabc.LowLevelTorchMaskPluginABC
 
     # mask is both set in self and returned
@@ -29,13 +29,13 @@ class PyTorchMaskMixIn(abc.ABC):
             # checked and verified against the PyTorch indexing capabilities
             # we get the dtype to compute its length in bytes, the return 
             # intermediate value is the dimension of the dtype in bytes
-            bytewidth = tensor.element_size
+            bytewidth = tensor.element_size()
             # we create the boolean mask in torch, depending on whether we
             # use 0 or 1 to fill the non-selected values
             bit_mask_info = (
                     enpheeph.utils.data_classes.BitFaultMaskInfo.
                     from_bit_fault_value(
-                            self.fault_locator.bit_fault_value
+                            self.fault_location.bit_fault_value
                     )
             )
             bool_mask = torch.tensor(
@@ -45,7 +45,7 @@ class PyTorchMaskMixIn(abc.ABC):
             # we set the selected bits to the value provided by the fault
             # locator
             bool_mask[
-                    self.fault_locator.injection_location.bit_index
+                    self.fault_location.injection_location.bit_index
             ] = bit_mask_info.mask_value
             # we get the correct indices from the boolean mask
             # we convert it to indices in standard Python to create the final
@@ -63,7 +63,7 @@ class PyTorchMaskMixIn(abc.ABC):
             # we create the low-level mask
             mask_array = self.low_level_plugin.make_mask_array(
                     int_mask,
-                    self.fault_locator.injection_location.tensor_index,
+                    self.fault_location.injection_location.tensor_index,
                     (2 ** (bytewidth * 8) - 1) * bit_mask_info.fill_value,
                     tensor.shape,
                     tensor_placeholder
@@ -80,22 +80,34 @@ class PyTorchMaskMixIn(abc.ABC):
             self,
             tensor: torch.Tensor,
             force_recompute: bool = False,
-    ) -> enpheeph.utils.typings.MaskArrayType:
+    ) -> torch.Tensor:
         self.generate_mask(tensor, force_recompute=force_recompute)
 
         bit_mask_info = (
                 enpheeph.utils.data_classes.BitFaultMaskInfo.
                 from_bit_fault_value(
-                        self.fault_locator.bit_fault_value
+                        self.fault_location.bit_fault_value
                 )
         )
 
         low_level_tensor = self.low_level_plugin.from_torch(tensor)
         low_level_mask = self.low_level_plugin.from_torch(self.mask)
 
-        low_level_injected_tensor = bit_mask_info.operation.value(
+        bitwise_tensor = self.low_level_plugin.to_bitwise_type(
+                low_level_tensor
+        )
+        bitwise_mask = self.low_level_plugin.to_bitwise_type(
+                low_level_mask
+        )
+
+        bitwise_injected_tensor = bit_mask_info.operation.value(
+                bitwise_tensor,
+                bitwise_mask,
+        )
+
+        low_level_injected_tensor = self.low_level_plugin.to_target_type(
+                bitwise_injected_tensor,
                 low_level_tensor,
-                low_level_mask,
         )
 
         injected_tensor = self.low_level_plugin.to_torch(

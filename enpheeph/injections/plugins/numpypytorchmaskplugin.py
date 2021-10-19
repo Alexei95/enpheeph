@@ -1,47 +1,42 @@
 import functools
+import typing
 
-try:
-    import numpy
-except ImportError:
-    numpy = None
 import torch
 
 import enpheeph.injections.plugins.lowleveltorchmaskpluginabc
+import enpheeph.utils.functions
 
+numpy = enpheeph.utils.functions.safe_import('numpy')
 
-def _test_numpy_access_wrapper(fn):
-    @functools.wraps(fn)
-    def wrapper(*args, **kwargs):
-        if numpy is None:
-            raise RuntimeError(
-                    "numpy cannot be imported, "
-                    "please check the installation to use this plugin"
-            )
-        return fn(*args, **kwargs)
-    return wrapper
-
-
-class NumpyTorchMaskPlugin(
-        enpheeph.injections.plugins.lowleveltorchmaskpluginabc.
-        LowLevelTorchMaskPluginABC,
+@enpheeph.utils.functions.test_library_access_wrapper(numpy, 'numpy')
+class NumPyPyTorchMaskPlugin(
+        (
+                enpheeph.injections.plugins.lowleveltorchmaskpluginabc.
+                LowLevelTorchMaskPluginABC
+        ),
 ):
-    @_test_numpy_access_wrapper
     def to_torch(self, array: 'numpy.ndarray') -> torch.Tensor:
-        self._test_numpy_access()
-        
         return torch.from_numpy(array)
 
-    @_test_numpy_access_wrapper
     def from_torch(self, tensor: torch.Tensor) -> 'numpy.ndarray':
         return tensor.numpy()
 
-    @_test_numpy_access_wrapper
+    def to_bitwise_type(self, array: 'numpy.ndarray') -> 'numpy.ndarray':
+        return array.view(numpy.dtype(f'u{array.dtype.itemsize}'))
+
+    def to_target_type(
+            self,
+            array: 'numpy.ndarray',
+            target: 'numpy.ndarray'
+    ) -> 'numpy.ndarray':
+        return array.view(target.dtype)
+
     def make_mask_array(
             self,
             int_mask: int,
-            mask_index: enpheeph.utils.typings.TensorIndex,
+            mask_index: enpheeph.utils.typings.IndexType,
             int_fill_value: int,
-            shape: typing.Sequence[int, ...],
+            shape: typing.Sequence[int],
             torch_placeholder: torch.Tensor
     ) -> 'numpy.ndarray':
         # we convert the placeholder
@@ -53,7 +48,9 @@ class NumpyTorchMaskPlugin(
                 dtype=numpy.dtype(f'u{str(placeholder.dtype.itemsize)}')
         )
         # we broadcast it onto the correct shape
-        mask = numpy.broadcast_to(fill_value, shape)
+        # NOTE: broadcast_to creates a view, so the view is not writeable
+        # we have to make a copy of it to be able to write the mask in it
+        mask = numpy.broadcast_to(fill_value, shape).copy()
         # we set the indices to the mask value
         mask[mask_index] = int_mask
         # we convert the mask to the right dtype

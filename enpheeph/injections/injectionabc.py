@@ -1,5 +1,4 @@
 import abc
-
 import typing
 
 import enpheeph.utils.typings

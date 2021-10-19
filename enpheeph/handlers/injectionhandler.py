@@ -2,10 +2,8 @@ import abc
 import enum
 import typing
 
-import enpheeph.faults.faultabc
 import enpheeph.handlers.plugins.libraryhandlerpluginabc
 import enpheeph.injections.injectionabc
-import enpheeph.monitors.monitorabc
 import enpheeph.utils.typings
 
 
@@ -15,49 +13,56 @@ class HandlerStatus(enum.Enum):
 
 
 class InjectionHandler(object):
-    injections: typing.List[
-            enpheeph.injections.injectionabc.InjectionABC
-    ]
     active_injections: typing.List[
             enpheeph.injections.injectionabc.InjectionABC
     ]
-    library_handler_plugin: enpheeph.handlers.plugins.libraryhandlerpluginabc.LibraryHandlerPluginABC
+    injections: typing.List[
+            enpheeph.injections.injectionabc.InjectionABC
+    ]
+    library_handler_plugin: (
+            enpheeph.handlers.plugins.libraryhandlerpluginabc.
+            LibraryHandlerPluginABC
+    )
+    status: HandlerStatus
+
+    def __init__(
+            self,
+            injections: typing.List[
+                    enpheeph.injections.injectionabc.InjectionABC
+            ],
+            library_handler_plugin: (
+                    enpheeph.handlers.plugins.
+                    libraryhandlerpluginabc.LibraryHandlerPluginABC
+            ),
+    ):
+        self.injections = list(injections)
+        self.library_handler_plugin = library_handler_plugin
+
+        self.active_injections = []
+
+        self.status = HandlerStatus.Idle
 
     def setup(
             self,
             model: enpheeph.utils.typings.ModelType
     ) -> enpheeph.utils.typings.ModelType:
         self.lock_running_status()
-        model = self.library_handler_plugin.library_setup(model)
+        model = self.library_handler_plugin.library_setup(
+                model,
+                self.active_injections
+        )
         return model
 
     def teardown(
             self,
             model: enpheeph.utils.typings.ModelType
     ) -> enpheeph.utils.typings.ModelType:
-        model = self.library_handler_plugin.library_teardown(model, self.injection_list)
-        self.lock_running_status()
-        return model
-
-    def teardown(self, *args, **kwargs):
+        model = self.library_handler_plugin.library_teardown(
+                model,
+                self.active_injections
+        )
         self.unlock_running_status()
-        output = self.library_handler_plugin.library_teardown(*args, **kwargs)
-        return output
-
-    def __init__(
-            self,
-            injections: typing.Sequence[
-                    enpheeph.injections.injectionabc.InjectionABC
-            ],
-            library_handler_plugin: enpheeph.handlers.plugins.libraryhandlerpluginabc.LibraryHandlerPluginABC
-    ):
-        self.library_handler_plugin = library_handler_plugin
-
-        self.injections = list(injections)
-
-        self.active_injections: typing.List[
-                enpheeph.injections.injectionabc.InjectionABC
-        ] = []
+        return model
 
     def check_running_status(self):
         return self.status == self.status.Running

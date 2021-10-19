@@ -1,14 +1,14 @@
+import pathlib
 import typing
 
 # we use Tuple and not Sequence to allow hashability
-BitIndexType =typing.Union[
+BitIndexType = typing.Union[
         int,
         slice,
         # NOTE: in Python 3.10 there is types.EllipsisType
         type(Ellipsis),
         typing.Sequence[
                 int,
-                ...
         ]
 ]
 IndexType = typing.Union[
@@ -22,12 +22,14 @@ IndexType = typing.Union[
                         type(Ellipsis),
                         typing.Tuple[
                                 int,
-                                ...
                         ]
                 ],
-                ...
         ]
 ]
+TimeIndexType = BitIndexType
+
+PathType = typing.Union[str, pathlib.Path]
+
 LowLevelMaskArrayType = typing.TypeVar(
         "LowLevelMaskArrayType",
         "cupy.ndarray",
@@ -36,5 +38,6 @@ LowLevelMaskArrayType = typing.TypeVar(
 ModelType = typing.TypeVar(
         "ModelType",
         "torch.nn.Module",
+        typing.Any,
 )
 

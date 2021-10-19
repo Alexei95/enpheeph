@@ -50,6 +50,15 @@ class FaultMaskValue(enum.IntEnum):
     Zero = 0
 
 
+# we use flag so that different metrics can be composed together
+class MonitorMetric(enum.Flag):
+    StandardDeviation = enum.auto()
+    Maximum = enum.auto()
+    Minimum = enum.auto()
+    ArithmeticMean = enum.auto()
+    GeometricMean = enum.auto()
+
+
 class ParameterType(enum.Flag):
 
     # network type

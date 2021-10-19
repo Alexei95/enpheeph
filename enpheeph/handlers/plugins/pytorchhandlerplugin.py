@@ -1,3 +1,5 @@
+import typing
+
 import torch
 
 import enpheeph.handlers.plugins.libraryhandlerpluginabc
@@ -6,8 +8,10 @@ import enpheeph.utils.typings
 
 
 class PyTorchHandlerPlugin(
-        enpheeph.handlers.plugins.libraryhandlerpluginabc.
-        LibraryHandlerPluginABC,
+        (
+                enpheeph.handlers.plugins.libraryhandlerpluginabc.
+                LibraryHandlerPluginABC
+        ),
 ):
     def library_setup(
             self,
