@@ -45,7 +45,7 @@ class PyTorchMaskMixIn(abc.ABC):
             # we set the selected bits to the value provided by the fault
             # locator
             bool_mask[
-                    self.fault_location.injection_location.bit_index
+                    self.fault_location.bit_index
             ] = bit_mask_info.mask_value
             # we get the correct indices from the boolean mask
             # we convert it to indices in standard Python to create the final
@@ -63,7 +63,7 @@ class PyTorchMaskMixIn(abc.ABC):
             # we create the low-level mask
             mask_array = self.low_level_plugin.make_mask_array(
                     int_mask,
-                    self.fault_location.injection_location.tensor_index,
+                    self.fault_location.tensor_index,
                     (2 ** (bytewidth * 8) - 1) * bit_mask_info.fill_value,
                     tensor.shape,
                     tensor_placeholder

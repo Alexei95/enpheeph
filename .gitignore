@@ -13,7 +13,29 @@ __pycache__
 
 #### PROJECT SETTINGS
 # VSCode settings
-.vscode/
+# NOTE: now that the project is becoming complex, it is better to save the
+# settings
+# as suggested in StackOverflow, it is better to save a default settings
+# without the absolute paths and other information
+# the final pattern to ignore nested folders
+.vscode/**/*
+# we still save these generic files
+!.vscode/settings.json.default
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide
+
+# End of https://www.toptal.com/developers/gitignore/api/visualstudiocode
+
 
 # Spyder settings
 .spyproject

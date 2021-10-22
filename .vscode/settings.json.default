@@ -1,0 +1,12 @@
+{
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "editor.scrollBeyondLastLine": false,
+    "python.linting.mypyEnabled": true,
+    "python.formatting.provider": "black",
+    "python.formatting.blackArgs": [
+        "--safe",
+        "--line-length=79"
+    ],
+    "python.linting.flake8Enabled": true
+}

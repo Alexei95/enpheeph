@@ -61,16 +61,11 @@ monitor_1 = enpheeph.injections.outputpytorchmonitor.OutputPyTorchMonitor(
 )
 fault_1 = enpheeph.injections.outputpytorchfault.OutputPyTorchFault(
         fault_location=enpheeph.utils.data_classes.FaultLocation(
-                injection_location=(
-                        enpheeph.utils.data_classes.
-                        InjectionLocation(
-                                module_name='feature_extractor.0',
-                                parameter_type=enpheeph.utils.enums.ParameterType.Activation,
-                                tensor_index=...,
-                                bit_index=...,
-                                time_index=None,
-                        )
-                ),
+                module_name='feature_extractor.0',
+                parameter_type=enpheeph.utils.enums.ParameterType.Activation,
+                tensor_index=...,
+                bit_index=...,
+                time_index=None,
                 bit_fault_value=enpheeph.utils.enums.BitFaultValue.StuckAtOne,
         ),
         low_level_torch_plugin=pytorch_mask_plugin,

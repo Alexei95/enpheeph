@@ -36,12 +36,14 @@ class ExperimentRun(Base):
     completed = sqlalchemy.Column(sqlalchemy.Bool, nullable=False)
     start_time = sqlalchemy.Column(sqlalchemy.Time)
     total_duration = sqlalchemy.Column(sqlalchemy.Time)
+
     # in this case we have a many-to-many relationship
     injections = sqlalchemy.relationship(
         "Injection",
         secondary=lambda: experiment_injection_association_table,
         back_populates="experiment_runs",
     )
+
     # here for each run we can have a single result, so we have
     # a one-to-one
     # to have a one-to-one we do a one-to-many with relationship and
@@ -52,34 +54,20 @@ class ExperimentRun(Base):
     experiment_result = sqlalchemy.relationship(
         "ExperimentResult", back_populates="experiment_run", uselist=False,
     )
-    # reference to the golden run to which the results of this run have to
-    # be compared
-    # this is a one-to-one
-    golden_run_reference = sqlalchemy.relationship(
-        "GoldenRun", back_populates="injected_runs",
-    )
-    golden_run_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("golden_run.id")
-    )
 
+    golden_run_flag = sqlalchemy.Column(sqlalchemy.Boolean)
 
-class GoldenRun(Base):
-    __tablename__ = "golden_run"
-
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    # in this way each entry here is mapped onto a single entry in
-    # experiment_run
-    # NOTE: check how to avoid repetitions -> might be done with unique=True
-    experiment_run = sqlalchemy.Column(
-        sqlalchemy.Integer,
-        sqlalchemy.ForeignKey("experiment_run.id"),
-        # to avoid repetitions
-        unique=True,
-    )
-    # instead for the injected runs we want a one-to-many, each golden run
-    # can be mapped to many injected runs
-    injected_runs = sqlalchemy.relationship(
+    # we generate a one-to-many relationship from the faulty runs
+    # back to the golden reference run
+    faulty_runs = sqlalchemy.relationship(
         "ExperimentRun", back_populates="golden_run_reference",
+    )
+
+    golden_run_id = sqlalchemy.Column(
+        sqlalchemy.Integer, sqlalchemy.ForeignKey("experiment_run.id"),
+    )
+    golden_run_reference = sqlalchemy.relationship(
+        "ExperimentRun", back_populates="faulty_runs",
     )
 
 
@@ -92,9 +80,19 @@ class Injection(Base):
         secondary=lambda: experiment_injection_association_table,
         back_populates="injections",
     )
-    tensor_index = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    tensor_index = sqlalchemy.Column(sqlalchemy.PickleType())
+    bit_index = sqlalchemy.Column(sqlalchemy.PickleType())
+    time_index = sqlalchemy.Column(sqlalchemy.PickleType())
+    module_name = sqlalchemy.Column(sqlalchemy.String())
+    parameter_type = sqlalchemy.Column(
+        sqlalchemy.Enum(enpheeph.utils.enums.ParameterType)
+    )
 
-    
+    # for fault, one-to-one with a fault table
+
+
+class Fault(Base):
+    __tablename__ = "fault"
 
 
 class ExperimentResult(Base):
@@ -105,7 +103,9 @@ class ExperimentResult(Base):
         "ExperimentRun", back_populates="experiment_result",
     )
     experiment_run_id = sqlalchemy.Column(
-        sqlalchemy.Integer, sqlalchemy.ForeignKey("experiment_run.id")
+        sqlalchemy.Integer,
+        sqlalchemy.ForeignKey("experiment_run.id"),
+        unique=True,
     )
 
     average_test_accuracy = sqlalchemy.Column(sqlalchemy.Float)
@@ -138,3 +138,43 @@ experiment_injection_association_table: sqlalchemy.Table = sqlalchemy.Table(
     ),
     sqlalchemy.Column("injection", sqlalchemy.ForeignKey("injection.id"),),
 )
+
+
+
+
+
+
+
+
+
+
+import dataclasses
+
+import enpheeph.utils.data_classes
+import enpheeph.utils.enums
+import enpheeph.utils.typings
+
+
+
+# redefine the fields using the declarative example
+# redefine the tables using dataclasses where required
+# consider adding a mixin for importing the fields from the parent class
+# e.g. from_parent_instance(FaultLocation(...))
+# just to copy the fields inside and use the sqlalchemy magic
+@dataclasses.dataclass
+class SQLFaultLocation(enpheeph.utils.data_classes.FaultLocation):
+    # name of the module to be targeted
+    module_name: str
+    # type of parameter, activation or weight
+    parameter_type: enpheeph.utils.enums.ParameterType
+    # tensor index which can be represented using a numpy/pytorch indexing
+    # array
+    tensor_index: enpheeph.utils.typings.IndexType
+    # same for the bit injection info
+    bit_index: enpheeph.utils.typings.BitIndexType
+
+    bit_fault_value: enpheeph.utils.enums.BitFaultValue
+
+    time_index: (
+        typing.Optional[enpheeph.utils.typings.TimeIndexType]
+    ) = dataclasses.field(default=None)

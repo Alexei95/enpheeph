@@ -3,3 +3,6 @@
 
 # install extra dependencies
 -r ./extra.txt
+
+# install development dependencies
+-r ./dev.txt

@@ -14,21 +14,21 @@ import enpheeph.utils.typings
 class BitFaultMaskInfo(object):
     # to convert bit faults into arguments for the fault mask
     BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS = {
-            enpheeph.utils.enums.BitFaultValue.StuckAtZero: {
-                    "operation": enpheeph.utils.enums.FaultMaskOperation.And,
-                    "mask_value": enpheeph.utils.enums.FaultMaskValue.Zero,
-                    "fill_value": enpheeph.utils.enums.FaultMaskValue.One,
-            },
-            enpheeph.utils.enums.BitFaultValue.StuckAtOne: {
-                    "operation": enpheeph.utils.enums.FaultMaskOperation.Or,
-                    "mask_value": enpheeph.utils.enums.FaultMaskValue.One,
-                    "fill_value": enpheeph.utils.enums.FaultMaskValue.Zero,
-            },
-            enpheeph.utils.enums.BitFaultValue.BitFlip: {
-                    "operation": enpheeph.utils.enums.FaultMaskOperation.Xor,
-                    "mask_value": enpheeph.utils.enums.FaultMaskValue.One,
-                    "fill_value": enpheeph.utils.enums.FaultMaskValue.Zero,
-            },
+        enpheeph.utils.enums.BitFaultValue.StuckAtZero: {
+            "operation": enpheeph.utils.enums.FaultMaskOperation.And,
+            "mask_value": enpheeph.utils.enums.FaultMaskValue.Zero,
+            "fill_value": enpheeph.utils.enums.FaultMaskValue.One,
+        },
+        enpheeph.utils.enums.BitFaultValue.StuckAtOne: {
+            "operation": enpheeph.utils.enums.FaultMaskOperation.Or,
+            "mask_value": enpheeph.utils.enums.FaultMaskValue.One,
+            "fill_value": enpheeph.utils.enums.FaultMaskValue.Zero,
+        },
+        enpheeph.utils.enums.BitFaultValue.BitFlip: {
+            "operation": enpheeph.utils.enums.FaultMaskOperation.Xor,
+            "mask_value": enpheeph.utils.enums.FaultMaskValue.One,
+            "fill_value": enpheeph.utils.enums.FaultMaskValue.Zero,
+        },
     }
 
     operation: enpheeph.utils.enums.FaultMaskOperation
@@ -37,16 +37,15 @@ class BitFaultMaskInfo(object):
 
     @classmethod
     def from_bit_fault_value(
-            cls,
-            bit_fault_value: enpheeph.utils.enums.BitFaultValue,
-    ) -> 'BitFaultMaskInfo':
-        return cls(**(
-                cls.
-                BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS[
-                        bit_fault_value
+        cls, bit_fault_value: enpheeph.utils.enums.BitFaultValue,
+    ) -> "BitFaultMaskInfo":
+        return cls(
+            **(
+                cls.BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS[
+                    bit_fault_value
                 ]
-        ))
-
+            )
+        )
 
 
 # we can safely assume that the dimension will be 1 only, as this is supposed
@@ -59,13 +58,13 @@ class BitIndexInfo(object):
     bitwidth: int
     # this is equivalent for big endian
     # NOTE: endianness is not required when we are working at Python level
-    # this is because all LSBs are positioned at bit 0 when accessing an 
+    # this is because all LSBs are positioned at bit 0 when accessing an
     # integer, while the corresponding string has MSB at 0
     endianness: enpheeph.utils.enums.Endianness = enpheeph.utils.enums.Endianness.MSBAtIndexZero
 
 
 @dataclasses.dataclass
-class InjectionLocation(object):
+class InjectionLocationNoTimeMixIn(object):
     # name of the module to be targeted
     module_name: str
     # type of parameter, activation or weight
@@ -75,24 +74,44 @@ class InjectionLocation(object):
     tensor_index: enpheeph.utils.typings.IndexType
     # same for the bit injection info
     bit_index: enpheeph.utils.typings.BitIndexType
+
+
+@dataclasses.dataclass
+class InjectionLocationTimeMixIn(object):
     # index used for time, optional as it is required only for SNNs
     # NOTE: this solution limits the expressivity of InjectionLocation, as we
     # cannot have different injections at different time-steps
     # however, even supporting different masks at different time-steps would
-    # still require the creation of multiple masks, as they are created based 
+    # still require the creation of multiple masks, as they are created based
     # on the output at each time-step, hence nullifying the actual memory gains
-    # the only overhead is the different hooks as well as the multiple Python 
+    # the only overhead is the different hooks as well as the multiple Python
     # objects
     time_index: (
-            typing.Optional[
-                    enpheeph.utils.typings.TimeIndexType
-            ]
+        typing.Optional[enpheeph.utils.typings.TimeIndexType]
     ) = dataclasses.field(default=None)
 
 
 @dataclasses.dataclass
-class FaultLocation(object):
-    # location of the fault injection
-    injection_location: InjectionLocation
+class FaultLocationMixIn(object):
     # value of fault to be injected
     bit_fault_value: enpheeph.utils.enums.BitFaultValue
+
+
+# the order of the parameters is from last to first
+# so the ones with defaults should be at the beginning
+@dataclasses.dataclass
+class InjectionLocation(
+    InjectionLocationTimeMixIn, InjectionLocationNoTimeMixIn
+):
+    pass
+
+
+# the order of the parameters is from last to first
+# so the ones with defaults should be at the beginning
+@dataclasses.dataclass
+class FaultLocation(
+    InjectionLocationTimeMixIn,
+    InjectionLocationNoTimeMixIn,
+    FaultLocationMixIn,
+):
+    pass

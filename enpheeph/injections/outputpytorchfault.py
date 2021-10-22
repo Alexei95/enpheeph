@@ -28,7 +28,7 @@ class OutputPyTorchFault(
 
     @property
     def module_name(self):
-        return self.fault_location.injection_location.module_name
+        return self.fault_location.module_name
 
     def output_fault_hook(self, module, input, output):
         self.generate_mask(output)

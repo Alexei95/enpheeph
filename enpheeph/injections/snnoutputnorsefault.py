@@ -21,7 +21,7 @@ class SNNOutputNorseFault(
     ):
         super().__init__()
 
-        if fault_location.injection_location.time_index is None:
+        if fault_location.time_index is None:
             raise ValueError(
                     "time_index must be passed in the injection for SNNs"
             )
@@ -35,7 +35,7 @@ class SNNOutputNorseFault(
 
     @property
     def module_name(self):
-        return self.fault_location.injection_location.module_name
+        return self.fault_location.module_name
 
     # this hook assumes that for each forward call, the initial state at the
     # first execution point is None
@@ -53,7 +53,7 @@ class SNNOutputNorseFault(
 
         # find a way to check if we are in the index range
         # we simply check the different possibilities
-        time_index = self.fault_location.injection_location.time_index
+        time_index = self.fault_location.time_index
         if isinstance(time_index, slice):
             index = range(time_index.start, time_index.stop, time_index.step)
         elif isinstance(time_index, typing.Sequence):
