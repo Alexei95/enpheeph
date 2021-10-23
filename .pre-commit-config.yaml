@@ -31,22 +31,24 @@ repos:
     rev: 3.7.9
     hooks:
     -   id: flake8
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.910-1  # Use the sha / tag you want to point at
-    hooks:
-    -   id: mypy
-        # the additional dependencies are installed if required in the
-        # execution
-        # additional_dependencies: [
-        #     cupy>=9.4.0,
-        #     numpy,
-        #     pytorch-lightning>=1.4.5,
-        #     sqlalchemy>=1.4.22,
-        #     torch>=1.9,
-        # ]
-        args: [
-            # --no-strict-optional,
-            # mypy is used from a venv, so it will not have all the
-            # dependencies available
-            --ignore-missing-imports
-        ]
+# mypy and pre-commit hooks are not nice together if the project
+# has dependencies which are difficult to install
+# for now we simply run it locally and later also in a CI
+# -   repo: https://github.com/pre-commit/mirrors-mypy
+#     rev: v0.910-1  # Use the sha / tag you want to point at
+#     hooks:
+#     -   id: mypy
+#         # the additional dependencies are installed if required in the
+#         # execution
+#         # additional_dependencies: [
+#         #     cupy>=9.4.0,
+#         #     numpy,
+#         #     pytorch-lightning>=1.4.5,
+#         #     sqlalchemy>=1.4.22,
+#         #     torch>=1.9,
+#         # ]
+#         args: [
+#             # mypy is used from a venv, so it will not have all the
+#             # dependencies available
+#             --ignore-missing-imports
+#         ]

@@ -29,7 +29,23 @@ extend-exclude = '''
 '''
 
 [tool.mypy]
+# Typing tests is low priority, but enabling type checking on the
+# untyped test functions (using `--check-untyped-defs`) is still
+# high-value because it helps test the typing.
+# taken from https://github.com/PyTorchLightning/pytorch-lightning/blob/1c8ad3a94bce2d0b5e62b5e5a4395bb6fb25642d/setup.cfg#L95
 python_version = "3.9"
+disallow_untyped_defs = true
+# ignore_missing_imports = true
+show_error_codes = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+# we skip the errors because of the import problems
+# however this needs to be added only for the pre-commit hook
+# [[tool.mypy.overrides]]
+# module = "enpheeph.*"
+# ignore_errors = true
 
 # use the following section as example for custom mypy module configurations
 # [[tool.mypy.overrides]]
