@@ -1,0 +1,37 @@
+# black configuration
+[tool.black]
+# we use 79 as line-break
+line-length = 79
+# we target also older python versions
+target-version = [
+    'py37',
+    'py38',
+    'py39',
+    # Python 3.10 is not yet supported
+    # 'py310'
+]
+# the include is the standard one for all the files ending in .py
+include = '\.pyi?$'
+# the directories and flies to exclude extra to the defaults
+extend-exclude = '''
+/(
+    # the version control directories
+    \.git
+  | \.github
+  | \.hg
+  # mypy cache
+  | \.mypy_cache
+  # vscode directory
+  | \.vscode
+  | docs
+  | requirements
+)/
+'''
+
+[tool.mypy]
+python_version = "3.9"
+
+# use the following section as example for custom mypy module configurations
+# [[tool.mypy.overrides]]
+# module = "mycode.foo.*"
+# disallow_untyped_defs = true
