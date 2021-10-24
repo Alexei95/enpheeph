@@ -6,3 +6,6 @@
 
 # install development dependencies
 -r ./dev.txt
+
+# install testing dependencies
+-r ./test.txt

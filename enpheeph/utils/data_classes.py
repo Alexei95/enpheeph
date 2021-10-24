@@ -1,5 +1,5 @@
+# -*- coding: utf-8 -*-
 import dataclasses
-import functools
 import typing
 
 import enpheeph.utils.classes
@@ -39,13 +39,8 @@ class BitFaultMaskInfo(object):
     def from_bit_fault_value(
         cls, bit_fault_value: enpheeph.utils.enums.BitFaultValue,
     ) -> "BitFaultMaskInfo":
-        return cls(
-            **(
-                cls.BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS[
-                    bit_fault_value
-                ]
-            )
-        )
+        dict_: typing.Dict[str, typing.Any] = cls.BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS[bit_fault_value]
+        return cls(**dict_)
 
 
 # we can safely assume that the dimension will be 1 only, as this is supposed
@@ -60,7 +55,9 @@ class BitIndexInfo(object):
     # NOTE: endianness is not required when we are working at Python level
     # this is because all LSBs are positioned at bit 0 when accessing an
     # integer, while the corresponding string has MSB at 0
-    endianness: enpheeph.utils.enums.Endianness = enpheeph.utils.enums.Endianness.MSBAtIndexZero
+    endianness: enpheeph.utils.enums.Endianness = (
+        enpheeph.utils.enums.Endianness.MSBAtIndexZero
+    )
 
 
 @dataclasses.dataclass
@@ -100,9 +97,7 @@ class FaultLocationMixIn(object):
 # the order of the parameters is from last to first
 # so the ones with defaults should be at the beginning
 @dataclasses.dataclass
-class InjectionLocation(
-    InjectionLocationTimeMixIn, InjectionLocationNoTimeMixIn
-):
+class InjectionLocation(InjectionLocationTimeMixIn, InjectionLocationNoTimeMixIn):
     pass
 
 
@@ -110,8 +105,6 @@ class InjectionLocation(
 # so the ones with defaults should be at the beginning
 @dataclasses.dataclass
 class FaultLocation(
-    InjectionLocationTimeMixIn,
-    InjectionLocationNoTimeMixIn,
-    FaultLocationMixIn,
+    InjectionLocationTimeMixIn, InjectionLocationNoTimeMixIn, FaultLocationMixIn,
 ):
     pass

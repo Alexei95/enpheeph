@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 import enum
 import operator
 
 
 class BitFaultValue(enum.Enum):
-    #Random = enum.auto()
+    # Random = enum.auto()
     StuckAtZero = enum.auto()
     StuckAtOne = enum.auto()
     BitFlip = enum.auto()
@@ -29,8 +30,8 @@ class BitWidth(enum.IntEnum):
 # this endianness does not represent the actual endianness of the machine,
 # only the endianness seen in the Python objects when accessing them
 class Endianness(enum.Enum):
-    Little = '<'
-    Big = '>'
+    Little = "<"
+    Big = ">"
 
     MSBAtIndexZero = Big
     LSBAtIndexZero = Little

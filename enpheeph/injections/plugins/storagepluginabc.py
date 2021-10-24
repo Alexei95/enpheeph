@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 import abc
 import typing
 
 
-class StoragePluginABC(abc.ABC):    
+class StoragePluginABC(abc.ABC):
     @abc.abstractmethod
     def add_element(self, element_name: str, element: typing.Any) -> None:
         pass

@@ -1,5 +1,0 @@
-# install all dependencies
--r ../full.txt
-
-# install test dependencies
--r ./base.txt

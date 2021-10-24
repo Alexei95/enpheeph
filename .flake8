@@ -1,12 +1,9 @@
 [flake8]
-max-line-length = 7988
+max-line-length = 88
 extend-ignore = E203
 exclude =
     # No need to traverse our git directory
     .git,
     # There's no value in checking cache directories
     __pycache__,
-    docs,
-    # This contains our built documentation
-    build,
 max-complexity = 10

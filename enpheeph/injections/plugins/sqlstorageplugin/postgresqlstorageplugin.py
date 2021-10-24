@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import typing
 
 import sqlalchemy
@@ -13,34 +14,28 @@ import enpheeph.utils.typings
 
 
 class PostgreSQLStoragePlugin(
-        enpheeph.injections.plugins.storagepluginabc.StoragePluginABC,
+    enpheeph.injections.plugins.storagepluginabc.StoragePluginABC,
 ):
     def __init__(
-            self,
-            db_url: str,
+        self, db_url: str,
     ):
         # we add the DB + API
-        self.db_url = 'postgresql+psycopg2://' + db_url
+        self.db_url = "postgresql+psycopg2://" + db_url
 
         self.engine = sqlalchemy.engine(
-                self.db_url,
-                future=True,
-                # we setup the highest isolation to avoid concurrent reads/
-                # writes, to prepare for multiprocessing
-                execution_options={'isolation_level': 'SERIALIZABLE'}
+            self.db_url,
+            future=True,
+            # we setup the highest isolation to avoid concurrent reads/
+            # writes, to prepare for multiprocessing
+            execution_options={"isolation_level": "SERIALIZABLE"},
         )
 
     def add_element(self, element_name: str, element: typing.Any) -> None:
         self.current_dict[element_name] = copy.deepcopy(element)
 
     def add_dict(self, dict_: typing.Dict[str, typing.Any]) -> None:
-        self.current_dict.update(
-                {
-                        key: copy.deepcopy(value)
-                        for key, value in dict_
-                }
-        )
-        
+        self.current_dict.update({key: copy.deepcopy(value) for key, value in dict_})
+
         if self.auto_submit_eol:
             self.submit_eol()
         # if auto_submit_eol is True then the auto_execute is delegated in
@@ -60,19 +55,15 @@ class PostgreSQLStoragePlugin(
     def execute(self) -> None:
         if not any(self.list_of_dicts) and not self.work_on_empty:
             return
-        
+
         self.pandas_df = pandas.DataFrame(self.list_of_dicts)
 
         if self.dask_df is None:
             self.dask_df = dask.dataframe.from_pandas(
-                    self.pandas_df,
-                    chunksize=self.dask_chunksize,
+                self.pandas_df, chunksize=self.dask_chunksize,
             )
         else:
-            self.dask_df = self.dask_df.append(
-                    self.pandas_df,
-                    ignore_index=True
-            )
+            self.dask_df = self.dask_df.append(self.pandas_df, ignore_index=True)
 
         self.dask_df.to_parquet(path=self.path, **self.dask_parquet_config)
 

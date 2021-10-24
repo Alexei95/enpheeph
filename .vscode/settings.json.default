@@ -1,6 +1,6 @@
 {
     "editor.rulers": [
-        79,
+        88,
     ],
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": false,
@@ -9,4 +9,5 @@
     "python.formatting.blackArgs": [],
     "python.linting.flake8Enabled": true,
     "git.allowNoVerifyCommit": true,
+    "python.linting.flake8Path": "pflake8",
 }

@@ -1,13 +1,19 @@
+# setuptools configuration
+# this is the default for setuptools and wheel
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
 # black configuration
 [tool.black]
-# we use 79 as line-break
-line-length = 79
+# we use 88 as line-break, which is the default
+line-length = 88
 # we target also older python versions
 target-version = [
-    'py37',
+    # 'py37',
     'py38',
     'py39',
-    # Python 3.10 is not yet supported
+    # Python 3.9/3.10 is not yet supported
     # 'py310'
 ]
 # the include is the standard one for all the files ending in .py
@@ -28,16 +34,50 @@ extend-exclude = '''
 )/
 '''
 
+# section for coverage.py config
+# [tool.coverage]
+
+
+# flake8 is not really ready for pyproject.toml, unless one uses pyproject-flake8
+# [tool.flake8]
+# the following one is the original .flake8 configuration
+# [tool.flake8]
+# max-line-length = 88
+# extend-ignore = E203
+# exclude =
+#     # No need to traverse our git directory
+#     .git,
+#     # There's no value in checking cache directories
+#     __pycache__,
+#     docs,
+#     # This contains our built documentation
+#     build,
+# max-complexity = 10
+# this config is a copy from .flake8, so that it can be used both with
+# flake8 and pflake8
+[tool.flake8]
+max-line-length = 88
+extend-ignore = "E203, "
+max-complexity = 10
+
+
 [tool.mypy]
 # Typing tests is low priority, but enabling type checking on the
 # untyped test functions (using `--check-untyped-defs`) is still
 # high-value because it helps test the typing.
 # taken from https://github.com/PyTorchLightning/pytorch-lightning/blob/1c8ad3a94bce2d0b5e62b5e5a4395bb6fb25642d/setup.cfg#L95
-python_version = "3.9"
+check_untyped_defs = true
+disallow_any_generics = true
 disallow_untyped_defs = true
-# ignore_missing_imports = true
+ignore_missing_imports = true
+no_implicit_optional = true
+no_implicit_reexport = true
+python_version = "3.9"
 show_error_codes = true
+strict_equality = true
 warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
 
@@ -47,7 +87,85 @@ warn_unused_ignores = true
 # module = "enpheeph.*"
 # ignore_errors = true
 
-# use the following section as example for custom mypy module configurations
-# [[tool.mypy.overrides]]
-# module = "mycode.foo.*"
-# disallow_untyped_defs = true
+
+# pytest config
+# check if required
+# [tool.pytest.ini_options]
+# minversion = "6.0"
+# addopts = "-ra -q"
+# testpaths = [
+#     "tests",
+#     "integration",
+# ]
+
+
+
+## EXAMPLES OF PEP-621-compliant pyproject.toml
+# [project]
+# name = "Django"
+# description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
+# readme = "README.rst"
+# classifiers = [
+#     "Development Status :: 2 - Pre-Alpha",
+#     "Environment :: Web Environment",
+#     "Framework :: Django",
+#     "Intended Audience :: Developers",
+#     "License :: OSI Approved :: BSD License",
+#     "Operating System :: OS Independent",
+#     "Programming Language :: Python",
+#     "Programming Language :: Python :: 3",
+#     "Programming Language :: Python :: 3 :: Only",
+#     "Programming Language :: Python :: 3.8",
+#     "Programming Language :: Python :: 3.9",
+#     "Topic :: Internet :: WWW/HTTP",
+#     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+#     "Topic :: Internet :: WWW/HTTP :: WSGI",
+#     "Topic :: Software Development :: Libraries :: Application Frameworks",
+#     "Topic :: Software Development :: Libraries :: Python Modules",
+# ]
+# dynamic = ["version"]
+# requires-python = ">=3.8"
+# dependencies = [
+#     "asgiref >= 3.3.2",
+#     "backports.zoneinfo; python_version<\"3.9\"",
+#     "sqlparse >= 0.2.2",
+#     "tzdata; sys_platform == 'win32'",
+# ]
+
+# [[project.author]]
+# name = "Django Software Foundation"
+# email = "foundation@djangoproject.com"
+
+# [project.license]
+# text = "BSD-3-Clause"
+
+# [project.urls]
+# Homepage = "https://www.djangoproject.com/"
+# Documentation = "https://docs.djangoproject.com/"
+# "Release notes" = "https://docs.djangoproject.com/en/stable/releases/"
+# Funding = "https://www.djangoproject.com/fundraising/"
+# Source = "https://github.com/django/django"
+# Tracker = "https://code.djangoproject.com/"
+
+# [project.optional-dependencies]
+# argon2 = ["argon2-cffi >= 19.1.0"]
+# bcrypt = ["bcrypt"]
+
+# [project.scripts]
+# django-admin = "django.core.management:execute_from_command_line"
+
+# [build-system]
+# requires = ["setuptools", "wheel"]
+# build-backend = "setuptools.build_meta"
+
+# [tool.setuptools]
+# packages = {find = {}}
+# include-package-data = true
+# zip-safe = false
+
+# [tool.setuptools.dynamic]
+# version = {attr = "django.__version__"}
+
+# [tool.distutils.bdist_rpm]
+# doc-files = "docs extras AUTHORS INSTALL LICENSE README.rst"
+# install-script = "scripts/rpm-install.sh"

@@ -1,2 +1,5 @@
+# This is an implicit value, here for clarity
+--index-url https://pypi.python.org/simple/
+
 pytorch-lightning>=1.4.5
 torch>=1.9

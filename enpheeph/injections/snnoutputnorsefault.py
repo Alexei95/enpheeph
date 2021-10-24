@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
+import typing
+
 import norse
-import torch
 
 import enpheeph.injections.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmaskmixin
@@ -8,23 +10,21 @@ import enpheeph.utils.data_classes
 
 
 class SNNOutputNorseFault(
-        enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
-        enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixIn,
+    enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
+    enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixIn,
 ):
     def __init__(
-            self,
-            fault_location: enpheeph.utils.data_classes.FaultLocation,
-            low_level_torch_plugin: (
-                    enpheeph.injections.plugins.
-                    lowleveltorchmaskpluginabc.LowLevelTorchMaskPluginABC
-            ),
+        self,
+        fault_location: enpheeph.utils.data_classes.FaultLocation,
+        low_level_torch_plugin: (
+            enpheeph.injections.plugins.lowleveltorchmaskpluginabc.
+            LowLevelTorchMaskPluginABC
+        ),
     ):
         super().__init__()
 
         if fault_location.time_index is None:
-            raise ValueError(
-                    "time_index must be passed in the injection for SNNs"
-            )
+            raise ValueError("time_index must be passed in the injection for SNNs")
 
         self.fault_location = fault_location
         self.low_level_plugin = low_level_torch_plugin
@@ -34,7 +34,7 @@ class SNNOutputNorseFault(
         self.timestep_counter = None
 
     @property
-    def module_name(self):
+    def module_name(self) -> str:
         return self.fault_location.module_name
 
     # this hook assumes that for each forward call, the initial state at the
@@ -43,7 +43,12 @@ class SNNOutputNorseFault(
     # the forward hook and without modifying the norse code
     # NOTE: it would not work if the initial state used as input is different
     # from None, so be careful
-    def snn_output_fault_hook(self, module, input, output):
+    def snn_output_fault_hook(
+        self,
+        module: "torch.nn.Module",
+        input: typing.Union[typing.Tuple["torch.Tensor"], "torch.Tensor"],
+        output: "torch.Tensor",
+    ) -> "torch.Tensor":
         if input[1] is None:
             self.timestep_counter = 0
         elif isinstance(input[1], tuple):
@@ -61,7 +66,7 @@ class SNNOutputNorseFault(
         elif isinstance(time_index, type(Ellipsis)):
             index = range(self.timestep_counter + 1)
         elif isinstance(time_index, int):
-            index = (time_index, )
+            index = (time_index,)
         else:
             raise IndexError("Unsupported time_index for SNN fault injection")
 
@@ -75,16 +80,16 @@ class SNNOutputNorseFault(
         else:
             return output
 
-    def setup(self, module):
+    def setup(self, module: "torch.nn.Module",) -> "torch.nn.Module":
         if not isinstance(module, norse.torch.module.snn.SNNCell):
             raise RuntimeError(
-                    "Currently SNN injection supports only SNNCell from norse"
+                "Currently SNN injection supports only SNNCell from norse"
             )
         self.handle = module.register_forward_hook(self.output_fault_hook)
 
         return module
 
-    def teardown(self, module):
+    def teardown(self, module: "torch.nn.Module",) -> "torch.nn.Module":
         self.handle.remove()
 
         self.handle = None

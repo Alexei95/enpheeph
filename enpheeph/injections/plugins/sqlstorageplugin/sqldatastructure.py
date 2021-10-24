@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+import typing
+
 import sqlalchemy
 import sqlalchemy.dialects.postgresql
 import sqlalchemy.ext.compiler
@@ -11,9 +14,7 @@ import enpheeph.utils.enums
 
 # we define the metadata with the registry and the base class to identify
 # rows in tables
-Base: sqlalchemy.orm.decl_api.DeclarativeMeta = (
-    sqlalchemy.orm.declarative_base()
-)
+Base: sqlalchemy.orm.decl_api.DeclarativeMeta = sqlalchemy.orm.declarative_base()
 
 
 # we define all the classes, each one represents a row entry
@@ -103,9 +104,7 @@ class ExperimentResult(Base):
         "ExperimentRun", back_populates="experiment_result",
     )
     experiment_run_id = sqlalchemy.Column(
-        sqlalchemy.Integer,
-        sqlalchemy.ForeignKey("experiment_run.id"),
-        unique=True,
+        sqlalchemy.Integer, sqlalchemy.ForeignKey("experiment_run.id"), unique=True,
     )
 
     average_test_accuracy = sqlalchemy.Column(sqlalchemy.Float)
@@ -133,19 +132,9 @@ class ExperimentLogging(Base):
 experiment_injection_association_table: sqlalchemy.Table = sqlalchemy.Table(
     "experimentrun_injection_association",
     Base.metadata,
-    sqlalchemy.Column(
-        "experiment_run", sqlalchemy.ForeignKey("experiment_run.id"),
-    ),
+    sqlalchemy.Column("experiment_run", sqlalchemy.ForeignKey("experiment_run.id"),),
     sqlalchemy.Column("injection", sqlalchemy.ForeignKey("injection.id"),),
 )
-
-
-
-
-
-
-
-
 
 
 import dataclasses
@@ -153,7 +142,6 @@ import dataclasses
 import enpheeph.utils.data_classes
 import enpheeph.utils.enums
 import enpheeph.utils.typings
-
 
 
 # redefine the fields using the declarative example

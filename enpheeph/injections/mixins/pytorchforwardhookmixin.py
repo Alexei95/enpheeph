@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import abc
 import sys
 import typing
@@ -14,11 +15,11 @@ import enpheeph.utils.typings
 class PyTorchMaskMixIn(abc.ABC):
     # mask is both set in self and returned
     def register_forward_hook(
-            self,
-            module: torch.nn.Module,
-            fn: typing.Callable[
-                    [torch.nn.Module, torch.Tensor, torch.Tensor],
-                    typing.Optional[torch.Tensor]
-            ],
+        self,
+        module: torch.nn.Module,
+        fn: typing.Callable[
+            [torch.nn.Module, torch.Tensor, torch.Tensor],
+            typing.Optional[torch.Tensor],
+        ],
     ) -> torch.utils.hooks.RemovableHandle:
         return module.register

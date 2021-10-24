@@ -9,6 +9,9 @@ __pycache__
 .coverage
 # pytest cache
 .pytest_cache/
+# to remove the built distribution/editable install
+*.egg-info
+dist/
 ####
 
 #### PROJECT SETTINGS

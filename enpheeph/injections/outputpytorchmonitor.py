@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import enpheeph.injections.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmonitorpostprocessormixin
 import enpheeph.injections.plugins.storagepluginabc
@@ -6,18 +7,17 @@ import enpheeph.utils.enums
 
 
 class OutputPyTorchMonitor(
-        enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
-        (
-                enpheeph.injections.mixins.pytorchmonitorpostprocessormixin.
-                PyTorchMonitorPostProcessorMixIn
-        ),
+    enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
+    (
+        enpheeph.injections.mixins.pytorchmonitorpostprocessormixin.PyTorchMonitorPostProcessorMixIn
+    ),
 ):
     def __init__(
-            self,
-            monitor_location: enpheeph.utils.data_classes.InjectionLocation,
-            enabled_metrics: enpheeph.utils.enums.MonitorMetric,
-            storage_plugin: enpheeph.injections.plugins.storagepluginabc.StoragePluginABC,
-            move_to_first: bool = True,
+        self,
+        monitor_location: enpheeph.utils.data_classes.InjectionLocation,
+        enabled_metrics: enpheeph.utils.enums.MonitorMetric,
+        storage_plugin: enpheeph.injections.plugins.storagepluginabc.StoragePluginABC,
+        move_to_first: bool = True,
     ):
         super().__init__()
 
@@ -34,9 +34,7 @@ class OutputPyTorchMonitor(
 
     def output_monitor_hook(self, module, input, output):
         # NOTE: no support for bit_index yet
-        postprocess = self.postprocess(
-                output[self.monitor_location.tensor_index]
-        )
+        postprocess = self.postprocess(output[self.monitor_location.tensor_index])
         self.storage_plugin.add_dict(postprocess)
         self.storage_plugin.submit_eol()
 
@@ -51,8 +49,7 @@ class OutputPyTorchMonitor(
             # we use move_to_end with last=False to move it to the beginning
             # of the OrderedDict
             self.handle.hooks_dict_ref().move_to_end(
-                    self.handle.id,
-                    last=False,
+                self.handle.id, last=False,
             )
 
         return module

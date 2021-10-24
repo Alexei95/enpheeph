@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
 import ast
 import typing
 
 InstanceGeneratorBaseClass = typing.TypeVar(
-        "InstanceGeneratorBaseClass",
-        bound="InstanceGeneratorMixin"
+    "InstanceGeneratorBaseClass", bound="InstanceGeneratorMixin"
 )
 
 
@@ -11,8 +11,7 @@ class InstanceGeneratorMixin(object):
     # this method does not work with enums or with nested function calls
     @classmethod
     def from_safe_repr(
-            cls: typing.Type[InstanceGeneratorBaseClass],
-            representation: str
+        cls: typing.Type[InstanceGeneratorBaseClass], representation: str
     ) -> InstanceGeneratorBaseClass:
         # we assume only one call
         call_element = ast.parse(representation).body[0].value
@@ -24,6 +23,4 @@ class InstanceGeneratorMixin(object):
             args.append(ast.literal_eval(arg))
         kwargs = {}
         for keyword_element in call_element.keywords:
-            kwargs[keyword_element.arg] = ast.literal_eval(
-                    keyword_element.value,
-            )
+            kwargs[keyword_element.arg] = ast.literal_eval(keyword_element.value,)

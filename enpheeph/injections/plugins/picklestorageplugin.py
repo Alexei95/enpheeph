@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import copy
 import pathlib
 import pickle
@@ -7,14 +8,13 @@ import enpheeph.injections.plugins.storagepluginabc
 import enpheeph.utils.typings
 
 
-# we use pickle as short-term temporary storage, not meant for a full 
+# we use pickle as short-term temporary storage, not meant for a full
 # experiment
 class PickleStoragePlugin(
-        enpheeph.injections.plugins.storagepluginabc.StoragePluginABC,
+    enpheeph.injections.plugins.storagepluginabc.StoragePluginABC,
 ):
     def __init__(
-            self,
-            path: enpheeph.utils.typings.PathType,
+        self, path: enpheeph.utils.typings.PathType,
     ):
         self.path = pathlib.Path(path)
 
@@ -26,10 +26,7 @@ class PickleStoragePlugin(
 
     def add_dict(self, dict_: typing.Dict[str, typing.Any]) -> None:
         self.current_dict.update(
-                {
-                        key: copy.deepcopy(value)
-                        for key, value in dict_.items()
-                }
+            {key: copy.deepcopy(value) for key, value in dict_.items()}
         )
 
     def submit_eol(self) -> None:
@@ -42,5 +39,5 @@ class PickleStoragePlugin(
         if not any(self.list_of_dicts):
             return
 
-        with self.path.open('wb') as file:
+        with self.path.open("wb") as file:
             pickle.dump(self.list_of_dicts, file)
