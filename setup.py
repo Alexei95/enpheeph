@@ -18,10 +18,9 @@ if __name__ == "__main__":
         #     "Changelog": "https://github.com/psf/black/blob/main/CHANGES.md",
         # },
         # license="MIT",
-        # packages=setuptools.find_packages(where="src"),
-        packages=["enpheeph"],
+        packages=setuptools.find_packages(where="src"),
         # if packages are inside src recursively
-        # package_dir={"": "src"},
+        package_dir={"": "src"},
         # for py.typed and PEP-517 compatibility
         # package_data={
         #     "blib2to3": ["*.txt"],
