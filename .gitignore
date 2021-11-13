@@ -63,3 +63,6 @@ model_training*/
 /models
 /trained_models
 ####
+
+### CI/CD Actions Temporary Files ###
+mkinit-*.log
