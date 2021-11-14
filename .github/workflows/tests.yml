@@ -1,11 +1,16 @@
 # we test the repository every time there is a new push on main
-name: CI - main branch tests on push
+name: tests
 
 # events that trigger the workflow
 on:
   # we select push for the selected branches
   push:
-    branches: [main]
+    branches:
+      - main
+  # as well as when there are any pull requests
+  pull_request:
+    branches:
+      - main
 
 jobs:
   # name of the job
@@ -17,10 +22,12 @@ jobs:
       fail-fast: false
       matrix:
         # for now a small grid is more than enough
-        os: [ubuntu-18.04]
-        python-version: [3.9]
-        # os: [ubuntu-18.04, ubuntu-20.04, windows-2019, windows-2020, macOS-10.15]
-        # python-version: [3.7, 3.8, 3.9]
+        os:
+          - ubuntu-18.04
+          - ubuntu-20.04
+        python-version:
+          - 3.8
+          - 3.9
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 40
