@@ -1,41 +1,124 @@
 # setuptools configuration
 # this is the default for setuptools and wheel
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+    requires = ["setuptools", "wheel"]
+    build-backend = "setuptools.build_meta"
+
+[project]
+    name = "enpheeph"
+    description = "Neural Fault Injection Framework"
+    readme = "README.md"
+    # classifiers = [
+    #     "Development Status :: 2 - Pre-Alpha",
+    #     "Environment :: Web Environment",
+    #     "Framework :: Django",
+    #     "Intended Audience :: Developers",
+    #     "License :: OSI Approved :: BSD License",
+    #     "Operating System :: OS Independent",
+    #     "Programming Language :: Python",
+    #     "Programming Language :: Python :: 3",
+    #     "Programming Language :: Python :: 3 :: Only",
+    #     "Programming Language :: Python :: 3.8",
+    #     "Programming Language :: Python :: 3.9",
+    #     "Topic :: Internet :: WWW/HTTP",
+    #     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    #     "Topic :: Internet :: WWW/HTTP :: WSGI",
+    #     "Topic :: Software Development :: Libraries :: Application Frameworks",
+    #     "Topic :: Software Development :: Libraries :: Python Modules",
+    # ]
+    # dynamic = ["version"]
+    requires-python = ">=3.8"
+    dependencies = [
+        # for pkg_resources, to parse version info from optional requirements
+        "setuptools >= 58.0",
+    ]
+
+    [[project.author]]
+        name = "Alessio Colucci"
+        email = "alessio.colucci@pm.me"
+
+
+[project.license]
+    text = "AGPLv3"
+
+
+# [project.urls]
+# Homepage = "https://www.djangoproject.com/"
+# Documentation = "https://docs.djangoproject.com/"
+# "Release notes" = "https://docs.djangoproject.com/en/stable/releases/"
+# Funding = "https://www.djangoproject.com/fundraising/"
+# Source = "https://github.com/django/django"
+# Tracker = "https://code.djangoproject.com/"
+
+
+[project.optional-dependencies]
+    # one can use self-dependency to include other optional-dependencies
+    # supported by pip>=21.2
+    cupy = [
+        "cupy >= 9.0.0",
+    ]
+    numpy = [
+        "numpy >= 1.19",
+    ]
+    sqlalchemy = [
+        "",
+    ]
+    torch = [
+        "torch >= 1.8",
+    ]
+
+    torch-cpu = [
+        "enpheeph[numpy]",
+        "enpheeph[torch]",
+    ]
+    torch-gpu = [
+        "enpheeph[cupy]",
+        "enpheeph[torch]",
+    ]
+
+
+# [project.scripts]
+# django-admin = "django.core.management:execute_from_command_line"
+
 
 # black configuration
 [tool.black]
-# we use 88 as line-break, which is the default
-line-length = 88
-# we target also older python versions
-target-version = [
-    # 'py37',
-    'py38',
-    'py39',
-    # Python 3.9/3.10 is not yet supported
-    # 'py310'
-]
-# the include is the standard one for all the files ending in .py
-include = '\.pyi?$'
-# the directories and flies to exclude extra to the defaults
-extend-exclude = '''
-/(
-    # the version control directories
-    \.git
-  | \.github
-  | \.hg
-  # mypy cache
-  | \.mypy_cache
-  # vscode directory
-  | \.vscode
-  | docs
-  | requirements
-)/
-'''
+    # we use 88 as line-break, which is the default
+    line-length = 88
+    # we target also older python versions
+    target-version = [
+        # 'py37',
+        'py38',
+        'py39',
+        # Python 3.9/3.10 is not yet supported
+        # 'py310'
+    ]
+    # the include is the standard one for all the files ending in .py
+    include = '\.pyi?$'
+    # the directories and flies to exclude extra to the defaults
+    extend-exclude = '''
+    /(
+        # the version control directories
+        \.git
+    | \.github
+    | \.hg
+    # mypy cache
+    | \.mypy_cache
+    # vscode directory
+    | \.vscode
+    | docs
+    | requirements
+    )/
+    '''
+
 
 # section for coverage.py config
 # [tool.coverage]
+
+
+# [tool.distutils.bdist_rpm]
+# doc-files = "docs extras AUTHORS INSTALL LICENSE README.rst"
+# install-script = "scripts/rpm-install.sh"
 
 
 # flake8 is not really ready for pyproject.toml, unless one uses pyproject-flake8
@@ -56,32 +139,32 @@ extend-exclude = '''
 # this config is a copy from .flake8, so that it can be used both with
 # flake8 and pflake8
 [tool.flake8]
-max-line-length = 88
-extend-ignore = "E203, "
-max-complexity = 10
+    max-line-length = 88
+    extend-ignore = "E203, "
+    max-complexity = 10
 
 
 [tool.mypy]
-# Typing tests is low priority, but enabling type checking on the
-# untyped test functions (using `--check-untyped-defs`) is still
-# high-value because it helps test the typing.
-# taken from https://github.com/PyTorchLightning/pytorch-lightning/blob/1c8ad3a94bce2d0b5e62b5e5a4395bb6fb25642d/setup.cfg#L95
-check_untyped_defs = true
-disallow_any_generics = true
-disallow_untyped_defs = true
-ignore_missing_imports = true
-no_implicit_optional = true
-no_implicit_reexport = true
-# plugin to support sqlalchemy
-plugins = "sqlalchemy.ext.mypy.plugin"
-python_version = "3.9"
-show_error_codes = true
-strict_equality = true
-warn_redundant_casts = true
-warn_return_any = true
-warn_unreachable = true
-warn_unused_configs = true
-warn_unused_ignores = true
+    # Typing tests is low priority, but enabling type checking on the
+    # untyped test functions (using `--check-untyped-defs`) is still
+    # high-value because it helps test the typing.
+    # taken from https://github.com/PyTorchLightning/pytorch-lightning/blob/1c8ad3a94bce2d0b5e62b5e5a4395bb6fb25642d/setup.cfg#L95
+    check_untyped_defs = true
+    disallow_any_generics = true
+    disallow_untyped_defs = true
+    ignore_missing_imports = true
+    no_implicit_optional = true
+    no_implicit_reexport = true
+    # plugin to support sqlalchemy
+    plugins = "sqlalchemy.ext.mypy.plugin"
+    python_version = "3.9"
+    show_error_codes = true
+    strict_equality = true
+    warn_redundant_casts = true
+    warn_return_any = true
+    warn_unreachable = true
+    warn_unused_configs = true
+    warn_unused_ignores = true
 
 # we skip the errors because of the import problems
 # however this needs to be added only for the pre-commit hook
@@ -101,73 +184,11 @@ warn_unused_ignores = true
 # ]
 
 
-
-## EXAMPLES OF PEP-621-compliant pyproject.toml
-# [project]
-# name = "Django"
-# description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
-# readme = "README.rst"
-# classifiers = [
-#     "Development Status :: 2 - Pre-Alpha",
-#     "Environment :: Web Environment",
-#     "Framework :: Django",
-#     "Intended Audience :: Developers",
-#     "License :: OSI Approved :: BSD License",
-#     "Operating System :: OS Independent",
-#     "Programming Language :: Python",
-#     "Programming Language :: Python :: 3",
-#     "Programming Language :: Python :: 3 :: Only",
-#     "Programming Language :: Python :: 3.8",
-#     "Programming Language :: Python :: 3.9",
-#     "Topic :: Internet :: WWW/HTTP",
-#     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
-#     "Topic :: Internet :: WWW/HTTP :: WSGI",
-#     "Topic :: Software Development :: Libraries :: Application Frameworks",
-#     "Topic :: Software Development :: Libraries :: Python Modules",
-# ]
-# dynamic = ["version"]
-# requires-python = ">=3.8"
-# dependencies = [
-#     "asgiref >= 3.3.2",
-#     "backports.zoneinfo; python_version<\"3.9\"",
-#     "sqlparse >= 0.2.2",
-#     "tzdata; sys_platform == 'win32'",
-# ]
-
-# [[project.author]]
-# name = "Django Software Foundation"
-# email = "foundation@djangoproject.com"
-
-# [project.license]
-# text = "BSD-3-Clause"
-
-# [project.urls]
-# Homepage = "https://www.djangoproject.com/"
-# Documentation = "https://docs.djangoproject.com/"
-# "Release notes" = "https://docs.djangoproject.com/en/stable/releases/"
-# Funding = "https://www.djangoproject.com/fundraising/"
-# Source = "https://github.com/django/django"
-# Tracker = "https://code.djangoproject.com/"
-
-# [project.optional-dependencies]
-# argon2 = ["argon2-cffi >= 19.1.0"]
-# bcrypt = ["bcrypt"]
-
-# [project.scripts]
-# django-admin = "django.core.management:execute_from_command_line"
-
-# [build-system]
-# requires = ["setuptools", "wheel"]
-# build-backend = "setuptools.build_meta"
-
 # [tool.setuptools]
 # packages = {find = {}}
 # include-package-data = true
 # zip-safe = false
 
+
 # [tool.setuptools.dynamic]
 # version = {attr = "django.__version__"}
-
-# [tool.distutils.bdist_rpm]
-# doc-files = "docs extras AUTHORS INSTALL LICENSE README.rst"
-# install-script = "scripts/rpm-install.sh"
