@@ -1,22 +1,30 @@
 # -*- coding: utf-8 -*-
 import typing
 
-import torch
-
-import enpheeph.injections.plugins.lowleveltorchmaskpluginabc
+import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
 import enpheeph.utils.functions
+import enpheeph.utils.imports
 
-numpy = enpheeph.utils.functions.safe_import("numpy")
+if typing.TYPE_CHECKING:
+    import numpy
+    import torch
+elif enpheeph.utils.imports.IS_NUMPY_AVAILABLE:
+    import numpy
 
 
-@enpheeph.utils.functions.test_library_access_wrapper(numpy, "numpy")
 class NumPyPyTorchMaskPlugin(
-    (enpheeph.injections.plugins.lowleveltorchmaskpluginabc.LowLevelTorchMaskPluginABC),
+    # we disable black to avoid too long line issue in flake8
+    # fmt: off
+    (
+        enpheeph.injections.plugins.mask.
+        lowleveltorchmaskpluginabc.LowLevelTorchMaskPluginABC
+    ),
+    # fmt: on
 ):
-    def to_torch(self, array: "numpy.ndarray") -> torch.Tensor:
+    def to_torch(self, array: "numpy.ndarray") -> "torch.Tensor":
         return torch.from_numpy(array)
 
-    def from_torch(self, tensor: torch.Tensor) -> "numpy.ndarray":
+    def from_torch(self, tensor: "torch.Tensor") -> "numpy.ndarray":
         return tensor.numpy()
 
     def to_bitwise_type(self, array: "numpy.ndarray") -> "numpy.ndarray":
@@ -30,17 +38,18 @@ class NumPyPyTorchMaskPlugin(
     def make_mask_array(
         self,
         int_mask: int,
-        mask_index: enpheeph.utils.typings.IndexType,
+        mask_index: enpheeph.utils.typings.IndexMultiDType,
         int_fill_value: int,
         shape: typing.Sequence[int],
-        torch_placeholder: torch.Tensor,
+        torch_placeholder: "torch.Tensor",
     ) -> "numpy.ndarray":
         # we convert the placeholder
         placeholder = self.from_torch(torch_placeholder)
         # we convert the integer value representing the fill value into
         # an element with unsigned type and correct size
         fill_value = numpy.array(
-            int_fill_value, dtype=numpy.dtype(f"u{str(placeholder.dtype.itemsize)}"),
+            int_fill_value,
+            dtype=numpy.dtype(f"u{str(placeholder.dtype.itemsize)}"),
         )
         # we broadcast it onto the correct shape
         # NOTE: broadcast_to creates a view, so the view is not writeable

@@ -1,24 +1,32 @@
 # -*- coding: utf-8 -*-
-import functools
 import typing
 
-import torch
-import torch.utils.dlpack
-
-import enpheeph.injections.plugins.lowleveltorchmaskpluginabc
+import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
 import enpheeph.utils.functions
+import enpheeph.utils.imports
 
-cupy = enpheeph.utils.functions.safe_import("cupy")
-
-
-@enpheeph.utils.functions.test_library_access_wrapper(cupy, "cupy")
-class CuPyPyTorchMaskPlugin(
-    (enpheeph.injections.plugins.lowleveltorchmaskpluginabc.LowLevelTorchMaskPluginABC),
+if typing.TYPE_CHECKING or (
+    enpheeph.utils.imports.IS_CUPY_AVAILABLE
+    and enpheeph.utils.imports.IS_TORCH_AVAILABLE
 ):
-    def to_torch(self, array: "cupy.ndarray") -> torch.Tensor:
+    import cupy
+    import torch
+    import torch.utils.dlpack
+
+
+class CuPyPyTorchMaskPlugin(
+    # we disable black to avoid too long line issue in flake8
+    # fmt: off
+    (
+        enpheeph.injections.plugins.mask.
+        lowleveltorchmaskpluginabc.LowLevelTorchMaskPluginABC
+    ),
+    # fmt: on
+):
+    def to_torch(self, array: "cupy.ndarray") -> "torch.Tensor":
         return torch.utils.dlpack.from_dlpack(array.toDlpack())
 
-    def from_torch(self, tensor: torch.Tensor) -> "cupy.ndarray":
+    def from_torch(self, tensor: "torch.Tensor") -> "cupy.ndarray":
         return cupy.fromDlpack(torch.utils.dlpack.to_dlpack(tensor))
 
     def to_bitwise_type(self, array: "cupy.ndarray") -> "cupy.ndarray":
@@ -32,10 +40,10 @@ class CuPyPyTorchMaskPlugin(
     def make_mask_array(
         self,
         int_mask: int,
-        mask_index: enpheeph.utils.typings.IndexType,
+        mask_index: enpheeph.utils.typings.IndexMultiDType,
         int_fill_value: int,
         shape: typing.Sequence[int],
-        torch_placeholder: torch.Tensor,
+        torch_placeholder: "torch.Tensor",
     ) -> "cupy.ndarray":
         # we convert the placeholder
         placeholder = self.from_torch(torch_placeholder)
@@ -44,7 +52,8 @@ class CuPyPyTorchMaskPlugin(
         # device for cupy
         with placeholder.device:
             fill_value = cupy.array(
-                int_fill_value, dtype=cupy.dtype(f"u{str(placeholder.dtype.itemsize)}"),
+                int_fill_value,
+                dtype=cupy.dtype(f"u{str(placeholder.dtype.itemsize)}"),
             )
         # we broadcast it onto the correct shape
         mask = cupy.broadcast_to(fill_value, shape)
