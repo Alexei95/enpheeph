@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import abc
 import dataclasses
 import typing
 
@@ -6,11 +7,13 @@ import enpheeph.utils.classes
 import enpheeph.utils.enums
 import enpheeph.utils.typings
 
+# all the following dataclasses are frozen as their arguments should not change
+# this also simplifies the handling of PickleType for the SQL storage plugin
 
 # here are all the info required for injecting faults in a bit
 # we need a dataclass so that we can convert the BitFaultValue type into
 # a mask with fill values
-@dataclasses.dataclass
+@dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
 class BitFaultMaskInfo(object):
     # to convert bit faults into arguments for the fault mask
     BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS = {
@@ -37,17 +40,20 @@ class BitFaultMaskInfo(object):
 
     @classmethod
     def from_bit_fault_value(
-        cls, bit_fault_value: enpheeph.utils.enums.BitFaultValue,
+        cls,
+        bit_fault_value: enpheeph.utils.enums.BitFaultValue,
     ) -> "BitFaultMaskInfo":
-        dict_: typing.Dict[str, typing.Any] = cls.BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS[bit_fault_value]
+        dict_: typing.Dict[
+            str, typing.Any
+        ] = cls.BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS[bit_fault_value]
         return cls(**dict_)
 
 
 # we can safely assume that the dimension will be 1 only, as this is supposed
 # to be used internally from a linear array of bits
-@dataclasses.dataclass
+@dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
 class BitIndexInfo(object):
-    bit_index: enpheeph.utils.typings.BitIndexType
+    bit_index: enpheeph.utils.typings.Index1DType
     # we can use an enum if only a set of bitwidths is allowed
     # bitwidth: enpheeph.utils.enums.BitWidth
     bitwidth: int
@@ -60,21 +66,21 @@ class BitIndexInfo(object):
     )
 
 
-@dataclasses.dataclass
-class InjectionLocationNoTimeMixIn(object):
+@dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
+class LocationNoTimeMixin(object):
     # name of the module to be targeted
     module_name: str
     # type of parameter, activation or weight
     parameter_type: enpheeph.utils.enums.ParameterType
     # tensor index which can be represented using a numpy/pytorch indexing
     # array
-    tensor_index: enpheeph.utils.typings.IndexType
+    tensor_index: enpheeph.utils.typings.IndexMultiDType
     # same for the bit injection info
-    bit_index: enpheeph.utils.typings.BitIndexType
+    bit_index: enpheeph.utils.typings.Index1DType
 
 
-@dataclasses.dataclass
-class InjectionLocationTimeMixIn(object):
+@dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
+class LocationTimeMixin(object):
     # index used for time, optional as it is required only for SNNs
     # NOTE: this solution limits the expressivity of InjectionLocation, as we
     # cannot have different injections at different time-steps
@@ -84,27 +90,47 @@ class InjectionLocationTimeMixIn(object):
     # the only overhead is the different hooks as well as the multiple Python
     # objects
     time_index: (
-        typing.Optional[enpheeph.utils.typings.TimeIndexType]
+        typing.Optional[enpheeph.utils.typings.IndexTimeType]
     ) = dataclasses.field(default=None)
 
 
-@dataclasses.dataclass
-class FaultLocationMixIn(object):
+@dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
+class FaultLocationMixin(object):
     # value of fault to be injected
     bit_fault_value: enpheeph.utils.enums.BitFaultValue
 
 
 # the order of the parameters is from last to first
 # so the ones with defaults should be at the beginning
-@dataclasses.dataclass
-class InjectionLocation(InjectionLocationTimeMixIn, InjectionLocationNoTimeMixIn):
+# NOTE: we define post-init to generate the id for each class
+# if overriding post-init in the subclasses, call it with super() for id generation
+@dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
+class InjectionLocationABC(
+    enpheeph.utils.classes.IDGenerator, abc.ABC, object, shared_root_flag=True
+):
     pass
 
 
 # the order of the parameters is from last to first
 # so the ones with defaults should be at the beginning
-@dataclasses.dataclass
+@dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
+class MonitorLocation(
+    LocationTimeMixin,
+    LocationNoTimeMixin,
+    InjectionLocationABC,
+    use_shared=True,
+):
+    pass
+
+
+# the order of the parameters is from last to first
+# so the ones with defaults should be at the beginning
+@dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
 class FaultLocation(
-    InjectionLocationTimeMixIn, InjectionLocationNoTimeMixIn, FaultLocationMixIn,
+    LocationTimeMixin,
+    FaultLocationMixin,
+    LocationNoTimeMixin,
+    InjectionLocationABC,
+    use_shared=True,
 ):
     pass
