@@ -16,16 +16,14 @@ Index1DType = typing.Union[
     # NOTE: in Python 3.10 there is types.EllipsisType
     # if we skip the following type mypy goes crazy
     # type(Ellipsis),  # type: ignore
-    typing.Sequence[
-        int,
-    ],
+    typing.Tuple[int, ...],
 ]
 IndexMultiDType = typing.Union[
     int,
     slice,
     # if we skip the following type mypy goes crazy
     # type(Ellipsis),  # type: ignore
-    typing.Sequence[Index1DType],
+    typing.Tuple[Index1DType, ...],
 ]
 IndexTimeType = Index1DType
 
