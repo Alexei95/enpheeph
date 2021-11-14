@@ -1,32 +1,13 @@
 # -*- coding: utf-8 -*-
-import functools
-import importlib
-import types
-import typing
+import re
 
 
-def safe_import(
-    library_name: str, package: str = None
-) -> typing.Optional[types.ModuleType]:
-    try:
-        mod = importlib.import_module(library_name, package=package)
-    except ModuleNotFoundError:
-        return None
-    else:
-        return mod
+CAMEL_TO_SNAKE_REGEX: re.Pattern[str] = re.compile(
+    "((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))"
+)
 
 
-def test_library_access_wrapper(library: types.ModuleType, library_name: str):
-    def decorator(fn: typing.Callable):
-        @functools.wraps(fn)
-        def wrapper(*args, **kwargs):
-            if library is None:
-                raise RuntimeError(
-                    f"{library_name} cannot be imported, "
-                    "please check the installation to use this plugin"
-                )
-            return fn(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
+# this function is required to convert CamelCase to snake_case
+def camel_to_snake(camel: str) -> str:
+    # from https://stackoverflow.com/a/12867228
+    return CAMEL_TO_SNAKE_REGEX.sub(r"_\1", camel).lower()
