@@ -68,13 +68,14 @@ repos:
   - id: mypy
     # the additional dependencies are installed if required in the
     # execution
-    # additional_dependencies: [
+    additional_dependencies: [
     #     cupy>=9.4.0,
     #     numpy,
     #     pytorch-lightning>=1.4.5,
     #     sqlalchemy>=1.4.22,
     #     torch>=1.9,
-    # ]
+      types-setuptools==57.4.2,
+    ]
     args: [
       # mypy is used from a venv, so it will not have all the
       # dependencies available
