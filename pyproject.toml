@@ -158,7 +158,7 @@
     # plugin to support sqlalchemy
     # this must be disabled when usin pre-commit mypy
     # as it does not have any extra dependencies installed
-    # plugins = "sqlalchemy.ext.mypy.plugin"
+    plugins = "sqlalchemy.ext.mypy.plugin"
     python_version = "3.9"
     show_error_codes = true
     strict_equality = true

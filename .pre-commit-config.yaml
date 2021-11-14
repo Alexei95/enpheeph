@@ -74,7 +74,8 @@ repos:
     #     pytorch-lightning>=1.4.5,
     #     sqlalchemy>=1.4.22,
     #     torch>=1.9,
-      types-setuptools==57.4.2,
+      "sqlalchemy[mypy]==1.4.22",
+      "types-setuptools==57.4.2",
     ]
     args: [
       # mypy is used from a venv, so it will not have all the

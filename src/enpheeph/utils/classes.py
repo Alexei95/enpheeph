@@ -26,6 +26,9 @@ class IDGenerator(object):
     # if none of them have it, we resort to the base class, IDGenerator
     _SHARED_ROOT_FLAG: bool = False
 
+    # we define the typing for each class instance, to avoid mypy errors
+    _id: int
+
     # we override init_subclass, to get the arguments from the class definition
     # we can set the reset value for the counter (starting value)
     # we can also set on a per-class basis whether the class is to be considered a
