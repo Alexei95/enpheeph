@@ -64,7 +64,7 @@ jobs:
       # write is to write the changes
       # verbose 2 is the DEBUG level for the Python logging
       run: |
-        mkinit --recursive --black --lazy -write --verbose 2 src/enpheeph > mkinit-${{ steps.datetime.outputs.datetime }}.log
+        mkinit --recursive --black --lazy --write --verbose 2 src/enpheeph > mkinit-${{ steps.datetime.outputs.datetime }}.log
 
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
