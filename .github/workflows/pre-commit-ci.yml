@@ -6,14 +6,30 @@ on:
 
 jobs:
   pre-commit:
-    runs-on: ubuntu-latest
+    # the system to run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        python-version:
+          - 3.9
+
     steps:
-    - uses: actions/checkout@v2
+    - name: Repository check-out
+      uses: actions/checkout@v2
       with:
         # to have unlimited depth for pushing
         fetch-depth: 0
-    - uses: actions/setup-python@v2
-    - uses: pre-commit/action@v2.0.3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: pre-commit Action
+      uses: pre-commit/action@v2.0.3
       # to allow pushing
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
