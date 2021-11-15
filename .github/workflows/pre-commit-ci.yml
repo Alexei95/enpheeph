@@ -1,0 +1,19 @@
+name: pre-commit-ci
+
+# we run pre-commit only on push
+on:
+  - push
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # to have unlimited depth for pushing
+        fetch-depth: 0
+    - uses: actions/setup-python@v2
+    - uses: pre-commit/action@v2.0.3
+      # to allow pushing
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
