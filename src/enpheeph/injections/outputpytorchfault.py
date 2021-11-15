@@ -3,24 +3,42 @@ import typing
 
 import enpheeph.injections.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmaskmixin
-import enpheeph.injections.plugins.lowleveltorchmaskpluginabc
+import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
 import enpheeph.utils.data_classes
+
+# we move this import down
+if typing.TYPE_CHECKING:
+    import torch
 
 
 class OutputPyTorchFault(
     enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
-    enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixIn,
+    enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixin,
 ):
+    location: enpheeph.utils.data_classes.FaultLocation
+    low_level_plugin: (
+        # black has issues with long names
+        # fmt: off
+        enpheeph.injections.plugins.mask.
+        lowleveltorchmaskpluginabc.LowLevelTorchMaskPluginABC
+        # fmt: on
+    )
+    mask: typing.Optional["torch.Tensor"]
+
     def __init__(
         self,
-        fault_location: enpheeph.utils.data_classes.FaultLocation,
+        location: enpheeph.utils.data_classes.FaultLocation,
         low_level_torch_plugin: (
-            enpheeph.injections.plugins.lowleveltorchmaskpluginabc.LowLevelTorchMaskPluginABC
+            # black has issues with long names
+            # fmt: off
+            enpheeph.injections.plugins.mask.
+            lowleveltorchmaskpluginabc.LowLevelTorchMaskPluginABC
+            # fmt: on
         ),
-    ):
+    ) -> None:
         super().__init__()
 
-        self.fault_location = fault_location
+        self.location = location
         self.low_level_plugin = low_level_torch_plugin
 
         self.handle = None
@@ -28,7 +46,7 @@ class OutputPyTorchFault(
 
     @property
     def module_name(self) -> str:
-        return self.fault_location.module_name
+        return self.location.module_name
 
     def output_fault_hook(
         self,
@@ -42,15 +60,10 @@ class OutputPyTorchFault(
 
         return masked_output
 
-    def setup(self, module: "torch.nn.Module",) -> "torch.nn.Module":
+    def setup(
+        self,
+        module: "torch.nn.Module",
+    ) -> "torch.nn.Module":
         self.handle = module.register_forward_hook(self.output_fault_hook)
-
-        return module
-
-    def teardown(self, module: "torch.nn.Module",) -> "torch.nn.Module":
-        self.handle.remove()
-
-        self.handle = None
-        self.mask = None
 
         return module

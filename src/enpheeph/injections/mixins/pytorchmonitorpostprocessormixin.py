@@ -2,21 +2,26 @@
 import abc
 import typing
 
-import torch
-
 import enpheeph.utils.data_classes
 import enpheeph.utils.enums
+import enpheeph.utils.functions
+import enpheeph.utils.imports
+
+if typing.TYPE_CHECKING or enpheeph.utils.imports.IS_TORCH_AVAILABLE:
+    import torch
 
 
-def torch_geometric_mean(tensor: torch.Tensor) -> torch.Tensor:
-    a
+def torch_geometric_mean(tensor: "torch.Tensor", dim: int = -1) -> "torch.Tensor":
+    log_x: "torch.Tensor" = torch.log(tensor)
+    result: "torch.Tensor" = torch.exp(torch.mean(log_x, dim=dim))
+    return result
 
 
-class PyTorchMonitorPostProcessorMixIn(abc.ABC):
+class PyTorchMonitorPostProcessorMixin(abc.ABC):
     enabled_metrics: enpheeph.utils.enums.MonitorMetric
-    monitor_location: enpheeph.utils.data_classes.InjectionLocation
+    monitor_location: enpheeph.utils.data_classes.MonitorLocation
 
-    def postprocess(self, tensor: torch.Tensor) -> typing.Dict[str, typing.Any]:
+    def postprocess(self, tensor: "torch.Tensor") -> typing.Dict[str, typing.Any]:
         dict_ = {}
 
         metric_class = self.enabled_metrics.__class__
@@ -31,6 +36,6 @@ class PyTorchMonitorPostProcessorMixIn(abc.ABC):
         if metric_class.ArithmeticMean in self.enabled_metrics:
             dict_[metric_class.ArithmeticMean.name] = torch.mean(tensor).item()
         if metric_class.GeometricMean in self.enabled_metrics:
-            pass
+            dict_[metric_class.GeometricMean.name] = torch_geometric_mean(tensor).item()
 
         return dict_

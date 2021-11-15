@@ -1,24 +1,30 @@
 # -*- coding: utf-8 -*-
+# type: ignore
+# flake8: noqa
+# we ignore mypy/flake8 errors here as this injection needs to be refactored
 import typing
 
 import norse
 
 import enpheeph.injections.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmaskmixin
-import enpheeph.injections.plugins.lowleveltorchmaskpluginabc
+import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
 import enpheeph.utils.data_classes
 
 
 class SNNOutputNorseFault(
     enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
-    enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixIn,
+    enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixin,
 ):
     def __init__(
         self,
         fault_location: enpheeph.utils.data_classes.FaultLocation,
         low_level_torch_plugin: (
-            enpheeph.injections.plugins.lowleveltorchmaskpluginabc.
-            LowLevelTorchMaskPluginABC
+            # black has issues with very long names
+            # fmt: off
+            enpheeph.injections.plugins.mask.
+            lowleveltorchmaskpluginabc.LowLevelTorchMaskPluginABC
+            # fmt: on
         ),
     ):
         super().__init__()
@@ -80,7 +86,10 @@ class SNNOutputNorseFault(
         else:
             return output
 
-    def setup(self, module: "torch.nn.Module",) -> "torch.nn.Module":
+    def setup(
+        self,
+        module: "torch.nn.Module",
+    ) -> "torch.nn.Module":
         if not isinstance(module, norse.torch.module.snn.SNNCell):
             raise RuntimeError(
                 "Currently SNN injection supports only SNNCell from norse"
@@ -89,7 +98,10 @@ class SNNOutputNorseFault(
 
         return module
 
-    def teardown(self, module: "torch.nn.Module",) -> "torch.nn.Module":
+    def teardown(
+        self,
+        module: "torch.nn.Module",
+    ) -> "torch.nn.Module":
         self.handle.remove()
 
         self.handle = None
