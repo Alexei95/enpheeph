@@ -44,7 +44,7 @@ class StoragePluginABC(abc.ABC):
     @abc.abstractmethod
     def complete_experiment(
         self,
-        start_time: typing.Optional[datetime.datetime],
+        start_time: typing.Optional[datetime.datetime] = None,
         total_duration: typing.Optional[float] = None,
     ) -> None:
         pass

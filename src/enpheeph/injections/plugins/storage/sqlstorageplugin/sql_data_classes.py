@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+# there is a bug in mypy with sqlalchemy
+# when using __mapper_args__ in declared_attr
+# https://github.com/sqlalchemy/sqlalchemy/issues/7321
+# a possible solution is to use @classmethod before to avoid crashing
+# the other is to skip the file, creating errors in the dependencies
+# the solution might be skipping the whole folder
+# it will be enabled again once fixed
 import dataclasses
 import datetime
 import typing

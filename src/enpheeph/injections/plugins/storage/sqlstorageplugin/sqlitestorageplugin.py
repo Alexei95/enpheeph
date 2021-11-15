@@ -58,9 +58,9 @@ class SQLiteStoragePlugin(
 
         # we implement the fix if we are using pysqlite
         # to check, we get the dialect class from the url
-        dialect: sqlalchemy.engine.Dialect = sqlalchemy.engine.url.make_url(
-            db_url
-        ).get_dialect()
+        dialect: typing.Type[
+            sqlalchemy.engine.Dialect
+        ] = sqlalchemy.engine.url.make_url(db_url).get_dialect()
         # if pysqlite is in the dialect class name, we fix the engine for pysqlite
         if "pysqlite" in dialect.__qualname__:
             sql_data_classes.fix_pysqlite(engine)

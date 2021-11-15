@@ -152,6 +152,7 @@
     check_untyped_defs = true
     disallow_any_generics = true
     disallow_untyped_defs = true
+    exclude = "sqlstorageplugin"
     ignore_missing_imports = true
     no_implicit_optional = true
     no_implicit_reexport = true
@@ -173,7 +174,6 @@
 # [[tool.mypy.overrides]]
 # module = "enpheeph.*"
 # ignore_errors = true
-
 
 # pytest config
 # check if required

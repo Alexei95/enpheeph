@@ -2,6 +2,7 @@
     "recommendations": [
         "ms-python.python",
         "eamodio.gitlens",
-        "ms-toolsai.jupyter"
+        "ms-toolsai.jupyter",
+        "bungcip.better-toml"
     ]
 }

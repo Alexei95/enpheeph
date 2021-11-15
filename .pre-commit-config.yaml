@@ -1,10 +1,19 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+
+
 default_language_version:
   python: python3.9
+
+
 default_stages: [commit]
+
+
 minimum_pre_commit_version: 2.15.0
+
+
 repos:
+
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.0.1
   hooks:
@@ -38,6 +47,7 @@ repos:
   # to sort entries in requirements.txt
   - id: requirements-txt-fixer
   - id: trailing-whitespace
+
 - repo: https://github.com/psf/black
   # with stable it always uses the latest version
   # otherwise use a specific tag
@@ -50,6 +60,7 @@ repos:
         "--line-length=88",
         "--target-version=py38",
     ]
+
 - repo: https://gitlab.com/pycqa/flake8
   rev: 3.7.9
   hooks:
@@ -59,6 +70,7 @@ repos:
         "--extend-ignore=E203",
         "--max-complexity=10",
     ]
+
 # mypy and pre-commit hooks are not nice together if the project
 # has dependencies which are difficult to install
 # for now we simply run it locally and later also in a CI

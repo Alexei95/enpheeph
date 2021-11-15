@@ -10,6 +10,17 @@ import enpheeph.injections.plugins.storage.storagepluginabc
 
 
 class InjectionCallback(pytorch_lightning.callbacks.Callback):
+    first_golden_run: typing.Union[bool, int]
+    injection_handler: enpheeph.handlers.injectionhandler.InjectionHandler
+    metrics: typing.DefaultDict[
+        int, typing.DefaultDict[int, typing.DefaultDict[typing.Any, typing.Any]]
+    ]
+    metrics_save_frequency: typing.Optional[int]
+    storage_plugin: typing.Optional[
+        (enpheeph.injections.plugins.storage.storagepluginabc.StoragePluginABC)
+    ]
+    test_epoch: int
+
     def __init__(
         self,
         injection_handler: (enpheeph.handlers.injectionhandler.InjectionHandler),
@@ -36,8 +47,11 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         # when we save this metric in the storage, it becomes a normal dict with
         # default_factory being reset to None
         self.metrics: typing.DefaultDict[
-            int, typing.DefaultDict[int, typing.DefaultDict[str, typing.Any]]
-        ] = collections.defaultdict(lambda: collections.defaultdict(dict))
+            int, typing.DefaultDict[int, typing.DefaultDict[typing.Any, typing.Any]]
+        ] = collections.defaultdict(
+            # mypy has issues with nested defaultdict
+            lambda: collections.defaultdict(dict)  # type: ignore
+        )
 
     def on_test_start(
         self,
@@ -45,7 +59,10 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         pl_module: pytorch_lightning.LightningModule,
     ) -> None:
         self.test_epoch = 0
-        self.metrics = collections.defaultdict(lambda: collections.defaultdict(dict))
+        self.metrics = collections.defaultdict(
+            # mypy has issues with nested defaultdict
+            lambda: collections.defaultdict(dict)  # type: ignore
+        )
 
         self.injection_handler.setup(pl_module)
 
@@ -104,7 +121,8 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         dataloader_idx: int,
     ) -> None:
         self.metrics[self.test_epoch][batch_idx] = copy.deepcopy(
-            trainer.callback_metrics
+            # mypy has issues with nested defaultdict
+            trainer.callback_metrics  # type: ignore
         )
 
         if (

@@ -46,21 +46,24 @@ class InjectionHandler(object):
         return model
 
     def check_running_status(self) -> bool:
-        return self.status == self.status.Running
+        # mypy has errors with enums, might be fixed using py.typed
+        return self.status == self.status.Running  # type: ignore
 
     def lock_running_status(self) -> bool:
         if self.check_running_status():
             raise RuntimeError(
                 "This function shouldn't have been called " "with a running execution"
             )
-        self.status = self.status.Running
+        # mypy has errors with enums, might be fixed using py.typed
+        self.status = self.status.Running  # type: ignore
         # we return True if the operation is successful
         return True
 
     def unlock_running_status(self) -> bool:
         if not self.check_running_status():
             raise RuntimeError("Handler should have been running")
-        self.status = self.status.Idle
+        # mypy has errors with enums, might be fixed using py.typed
+        self.status = self.status.Idle  # type: ignore
         # we return True if the operation is successful
         return True
 

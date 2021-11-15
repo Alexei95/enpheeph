@@ -19,9 +19,9 @@ class PyTorchHandlerPlugin(
         active_injections: typing.List[enpheeph.injections.injectionabc.InjectionABC],
     ) -> enpheeph.utils.typings.ModelType:
         for inj in active_injections:
-            module = self.get_module(model, inj.module_name)
+            module = self.get_module(model, inj.location.module_name)
             new_module = inj.setup(module)
-            self.set_module(model, inj.module_name, new_module)
+            self.set_module(model, inj.location.module_name, new_module)
         return model
 
     def library_teardown(

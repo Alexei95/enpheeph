@@ -152,7 +152,7 @@ class SQLStoragePluginABC(
 
     def complete_experiment(
         self,
-        start_time: typing.Optional[datetime.datetime],
+        start_time: typing.Optional[datetime.datetime] = None,
         total_duration: typing.Optional[float] = None,
     ) -> None:
         if self.experiment_id is None:
