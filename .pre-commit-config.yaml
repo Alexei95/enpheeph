@@ -92,7 +92,8 @@ repos:
     args: [
       # mypy is used from a venv, so it will not have all the
       # dependencies available
-      --ignore-missing-imports
+      # it uses the pyproject.toml config
+      --ignore-missing-imports,
     ]
 
 
