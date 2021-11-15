@@ -32,4 +32,5 @@ jobs:
       uses: pre-commit/action@v2.0.3
       # to allow pushing
       with:
+        extra_args: --hook-stage manual
         token: ${{ secrets.GITHUB_TOKEN }}

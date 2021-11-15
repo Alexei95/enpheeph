@@ -6,7 +6,7 @@ default_language_version:
   python: python3.9
 
 
-default_stages: [commit]
+default_stages: [commit, merge-commit, manual]
 
 
 minimum_pre_commit_version: 2.15.0
@@ -95,6 +95,10 @@ repos:
       # it uses the pyproject.toml config
       --ignore-missing-imports,
     ]
+    # we remove the manual stage for mypy, as there are problems in the CI
+    # with sqlalchemy
+    # they have been fixed but it has not been released yet
+    stages: [commit, merge-commit]
 
 
 # continuous integration configuration for pre-commit.ci
@@ -106,5 +110,5 @@ ci:
   autofix_prs: true
   autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
   autoupdate_schedule: weekly
-  skip: []
+  skip: [mypy]
   submodules: false
