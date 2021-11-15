@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # taken as example from PyTorch Lightning
 
 import time

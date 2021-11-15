@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import typing
 
-import torch
-
 import enpheeph.handlers.plugins.libraryhandlerpluginabc
 import enpheeph.injections.injectionabc
 import enpheeph.utils.typings
+
+# we plac it after so flake8 does not complain about not-at-the-top imports
+if typing.TYPE_CHECKING:
+    import torch
 
 
 class PyTorchHandlerPlugin(
@@ -28,20 +30,25 @@ class PyTorchHandlerPlugin(
         active_injections: typing.List[enpheeph.injections.injectionabc.InjectionABC],
     ) -> enpheeph.utils.typings.ModelType:
         for inj in active_injections:
-            module = self.get_module(model, inj.module_name)
+            module = self.get_module(model, inj.location.module_name)
             new_module = inj.teardown(module)
-            self.set_module(model, inj.module_name, new_module)
+            self.set_module(model, inj.location.module_name, new_module)
         return model
 
-    def get_module(self, model: torch.nn.Module, full_module_name: str):
+    def get_module(
+        self, model: "torch.nn.Module", full_module_name: str
+    ) -> "torch.nn.Module":
         dest_module = model
         for submodule in full_module_name.split("."):
             dest_module = getattr(dest_module, submodule)
         return dest_module
 
     def set_module(
-        self, model: torch.nn.Module, full_module_name: str, module: torch.nn.Module,
-    ):
+        self,
+        model: "torch.nn.Module",
+        full_module_name: str,
+        module: "torch.nn.Module",
+    ) -> None:
         dest_module = model
         module_names_split = full_module_name.split(".")
         module_names = module_names_split[:-1]

@@ -67,9 +67,13 @@ class BitIndexInfo(object):
 
 
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
-class LocationNoTimeMixin(object):
+class LocationModuleNameMixin(object):
     # name of the module to be targeted
     module_name: str
+
+
+@dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
+class LocationNoTimeMixin(object):
     # type of parameter, activation or weight
     parameter_type: enpheeph.utils.enums.ParameterType
     # tensor index which can be represented using a numpy/pytorch indexing
@@ -106,7 +110,11 @@ class FaultLocationMixin(object):
 # if overriding post-init in the subclasses, call it with super() for id generation
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
 class InjectionLocationABC(
-    enpheeph.utils.classes.IDGenerator, abc.ABC, object, shared_root_flag=True
+    LocationModuleNameMixin,
+    enpheeph.utils.classes.IDGenerator,
+    abc.ABC,
+    object,
+    shared_root_flag=True,
 ):
     pass
 

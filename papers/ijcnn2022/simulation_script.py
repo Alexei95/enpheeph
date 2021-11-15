@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# type: ignore
+# flake: noqa
+# we skip flake and mypy as
 import pathlib
 
 # import sys
