@@ -1,16 +1,10 @@
 # -*- coding: utf-8 -*-
-import abc
-import enum
 import typing
 
 import enpheeph.handlers.plugins.libraryhandlerpluginabc
 import enpheeph.injections.injectionabc
+import enpheeph.utils.enums
 import enpheeph.utils.typings
-
-
-class HandlerStatus(enum.Enum):
-    Running = enum.auto()
-    Idle = enum.auto()
 
 
 class InjectionHandler(object):
@@ -19,7 +13,7 @@ class InjectionHandler(object):
     library_handler_plugin: (
         enpheeph.handlers.plugins.libraryhandlerpluginabc.LibraryHandlerPluginABC
     )
-    status: HandlerStatus
+    status: enpheeph.utils.enums.HandlerStatus
 
     def __init__(
         self,
@@ -33,7 +27,7 @@ class InjectionHandler(object):
 
         self.active_injections = []
 
-        self.status = HandlerStatus.Idle
+        self.status = enpheeph.utils.enums.HandlerStatus.Idle
 
     def setup(
         self, model: enpheeph.utils.typings.ModelType
@@ -51,47 +45,55 @@ class InjectionHandler(object):
         self.unlock_running_status()
         return model
 
-    def check_running_status(self):
+    def check_running_status(self) -> bool:
         return self.status == self.status.Running
 
-    def lock_running_status(self):
+    def lock_running_status(self) -> bool:
         if self.check_running_status():
             raise RuntimeError(
                 "This function shouldn't have been called " "with a running execution"
             )
         self.status = self.status.Running
+        # we return True if the operation is successful
+        return True
 
-    def unlock_running_status(self):
+    def unlock_running_status(self) -> bool:
         if not self.check_running_status():
             raise RuntimeError("Handler should have been running")
         self.status = self.status.Idle
+        # we return True if the operation is successful
+        return True
 
     # if None for the arguments, we will activate all the faults
+    # it returns the active injections
     def activate(
         self,
         injections: typing.Optional[
             typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]
         ] = None,
-    ):
+    ) -> typing.List[enpheeph.injections.injectionabc.InjectionABC]:
         if self.check_running_status():
             print("Cannot do anything while running, try after the execution")
-            return
+            return self.active_injections
 
         if injections is None:
             injections = self.injections
 
         self.active_injections = [inj for inj in injections if inj in self.injections]
 
+        return self.active_injections
+
     # if None we will deactivate everything
+    # it returns the active injections
     def deactivate(
         self,
         injections: typing.Optional[
             typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]
         ] = None,
-    ):
+    ) -> typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]:
         if self.check_running_status():
             print("Cannot do anything while running, try after the execution")
-            return
+            return self.active_injections
 
         if injections is None:
             injections = self.injections
@@ -101,3 +103,5 @@ class InjectionHandler(object):
             for inj in self.active_injections
             if inj not in injections and inj in self.injections
         ]
+
+        return self.active_injections

@@ -37,7 +37,7 @@ class StoragePluginABC(abc.ABC):
         golden_run_flag: bool = False,
         # the id for the golden run
         # if None we skip this part
-        golden_run_id: typing.Optional[bool] = None,
+        golden_run_id: typing.Optional[int] = None,
     ) -> int:
         pass
 
@@ -50,7 +50,9 @@ class StoragePluginABC(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def add_experiment_metrics(self, metrics: typing.Dict[str, typing.Any]) -> None:
+    def add_experiment_metrics(
+        self, metrics: typing.Dict[typing.Any, typing.Any]
+    ) -> None:
         pass
 
     @abc.abstractmethod
@@ -61,6 +63,6 @@ class StoragePluginABC(abc.ABC):
     def add_payload(
         self,
         location: enpheeph.utils.data_classes.InjectionLocationABC,
-        payload: typing.Dict[str, typing.Any],
+        payload: typing.Dict[typing.Any, typing.Any],
     ) -> None:
         pass

@@ -120,7 +120,7 @@ class ExperimentRunBaseMixin(object):
     @sqlalchemy.orm.declared_attr.cascading
     def metrics(
         self,
-    ) -> sqlalchemy.orm.Mapped[typing.Optional[typing.Dict[str, typing.Any]]]:
+    ) -> sqlalchemy.orm.Mapped[typing.Optional[typing.Dict[typing.Any, typing.Any]]]:
         return sqlalchemy.Column(
             sqlalchemy.ext.mutable.MutableDict.as_mutable(sqlalchemy.PickleType)
         )
@@ -256,7 +256,7 @@ class MonitorBaseMixin(object):
     @sqlalchemy.orm.declared_attr
     def payload(
         self,
-    ) -> sqlalchemy.orm.Mapped[typing.Optional[typing.Dict[str, typing.Any]]]:
+    ) -> sqlalchemy.orm.Mapped[typing.Optional[typing.Dict[typing.Any, typing.Any]]]:
         return sqlalchemy.Column(
             sqlalchemy.ext.mutable.MutableDict.as_mutable(sqlalchemy.PickleType)
         )

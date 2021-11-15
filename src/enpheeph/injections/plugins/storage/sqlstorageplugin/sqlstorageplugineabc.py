@@ -107,7 +107,7 @@ class SQLStoragePluginABC(
         golden_run_flag: bool = False,
         # the id for the golden run
         # if None we skip this part
-        golden_run_id: typing.Optional[bool] = None,
+        golden_run_id: typing.Optional[int] = None,
     ) -> int:
         # check to avoid creating an experiment on top of the existing one
         if self.experiment_id is not None:
@@ -182,7 +182,9 @@ class SQLStoragePluginABC(
 
         self.experiment_id = None
 
-    def add_experiment_metrics(self, metrics: typing.Dict[str, typing.Any]) -> None:
+    def add_experiment_metrics(
+        self, metrics: typing.Dict[typing.Any, typing.Any]
+    ) -> None:
         if self.experiment_id is None:
             raise ValueError("There is no experiment to be closed")
 
@@ -204,7 +206,7 @@ class SQLStoragePluginABC(
 
             session.commit()
 
-    def add_experiment_golden_run(self, golden_run_id: int):
+    def add_experiment_golden_run(self, golden_run_id: int) -> None:
         if self.experiment_id is None:
             raise ValueError("There is no experiment to work on")
 
@@ -240,7 +242,7 @@ class SQLStoragePluginABC(
     def add_payload(
         self,
         location: enpheeph.utils.data_classes.InjectionLocationABC,
-        payload: typing.Dict[str, typing.Any],
+        payload: typing.Dict[typing.Any, typing.Any],
     ) -> None:
         # we create a new session on the engine
         with sqlalchemy.orm.Session(self.engine) as session:

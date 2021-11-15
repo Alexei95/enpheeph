@@ -51,6 +51,11 @@ class FaultMaskValue(enum.IntEnum):
     Zero = 0
 
 
+class HandlerStatus(enum.Enum):
+    Running = enum.auto()
+    Idle = enum.auto()
+
+
 # we use flag so that different metrics can be composed together
 class MonitorMetric(enum.Flag):
     StandardDeviation = enum.auto()
