@@ -28,30 +28,20 @@ if __name__ == "__main__":
         #     "black": ["py.typed"],
         #     "black_primer": ["primer.json"],
         # },
-        python_requires=">=3.9",
+        python_requires=">=3.8",
         zip_safe=False,
         # dependencies
-        # install_requires=[
-        #     "click>=7.1.2",
-        #     "platformdirs>=2",
-        #     "tomli>=0.2.6,<2.0.0",
-        #     "typed-ast>=1.4.2; python_version < '3.8'",
-        #     "regex>=2020.1.8",
-        #     "pathspec>=0.9.0, <1",
-        #     "dataclasses>=0.6; python_version < '3.7'",
-        #     "typing_extensions>=3.10.0.0",
-        #     # 3.10.0.1 is broken on at least Python 3.10,
-        #     # https://github.com/python/typing/issues/865
-        #     "typing_extensions!=3.10.0.1; python_version >= '3.10'",
-        #     "mypy_extensions>=0.4.3",
-        # ],
-        # extras_require={
-        #     "d": ["aiohttp>=3.7.4"],
-        #     "colorama": ["colorama>=0.4.3"],
-        #     "python2": ["typed-ast>=1.4.3"],
-        #     "uvloop": ["uvloop>=0.15.2"],
-        #     "jupyter": ["ipython>=7.8.0", "tokenize-rt>=3.2.0"],
-        # },
+        install_requires=[
+            "setuptools >= 58.0",
+        ],
+        extras_require={
+            "full": [
+                "cupy >= 9.0.0",
+                "numpy >= 1.19",
+                "sqlalchemy >= 1.4.20",
+                "torch >= 1.8",
+            ],
+        },
         # test_suite="tests.test_black",
         # classifiers=[
         #     "Development Status :: 4 - Beta",
