@@ -2,10 +2,11 @@
 
 1. {#1} Add typing.Protocol implementation for ExperimentRun and Injection, so that they can be used as return type in StoragePluginABC
 2. #2 Implement tests for all of the plugins and interfaces
-3. #3 Fix all the CI/CD settings
-    1. #3-1 Improve pre-commit and tool configurations
-        1. #3-1-1 Use pytorch_lightning as example
-    2. #3-2 Setup pygrep-hooks to fix flake/mypy/black ignores in ```__init__.py``` mostly
+3. {#3} Fix all the CI/CD settings
+    1. {#3-1} Improve pre-commit and tool configurations
+        1. {#3-1-1} Use pytorch_lightning as example
+    2. {#3-2} Setup pygrep-hooks to fix flake/mypy/black ignores in ```__init__.py``` mostly
+    3. #3-3 Add markdown linter and other optional linters for Python (pydocstyle, ...) to pre-commit as well as GitHub Actions
 4. #4 Update all the code to follow black and flake8
 5. #5 Add documentation/examples on how to use the different injections
     1. #5-1 Add docstrings and more comments inside the code
@@ -44,3 +45,4 @@
 2. {#8}, {#8-1}, {#8-1-1}, {#8-2} Set up ```mkinit``` in GitHub Actions
 3. {#14} Removed unnecessary files
 4. {#12}, {#12-1}, {#12-1-1} Fix imports with requirement comparisons and flags. mypy imports are done with typing.TYPE_CHECKING
+5. {#3}, {#3-1}, {#3-1-1}, {#3-2} CI/CD has been improved, many more checks are now run both in pre-commit and in CI. There are still some possible improvements to be made, mentioned in #3-3
