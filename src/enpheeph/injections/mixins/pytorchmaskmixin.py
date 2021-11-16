@@ -98,7 +98,10 @@ class PyTorchMaskMixin(abc.ABC):
         # mypy generates an error since self.mask can be None
         # however we call self.generate_mask that will set the mask or raise errors
         # stopping the execution
-        low_level_mask = self.low_level_plugin.from_torch(self.mask)  # type: ignore
+        low_level_mask = self.low_level_plugin.from_torch(
+            # sometimes the following line fails, use type: ignore[arg-type]
+            self.mask
+        )
 
         bitwise_tensor = self.low_level_plugin.to_bitwise_type(low_level_tensor)
         bitwise_mask = self.low_level_plugin.to_bitwise_type(low_level_mask)

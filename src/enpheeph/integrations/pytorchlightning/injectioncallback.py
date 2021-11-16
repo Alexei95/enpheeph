@@ -50,7 +50,7 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
             int, typing.DefaultDict[int, typing.DefaultDict[typing.Any, typing.Any]]
         ] = collections.defaultdict(
             # mypy has issues with nested defaultdict
-            lambda: collections.defaultdict(dict)  # type: ignore
+            lambda: collections.defaultdict(dict)  # type: ignore[arg-type]
         )
 
     def on_test_start(
@@ -61,7 +61,7 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         self.test_epoch = 0
         self.metrics = collections.defaultdict(
             # mypy has issues with nested defaultdict
-            lambda: collections.defaultdict(dict)  # type: ignore
+            lambda: collections.defaultdict(dict)  # type: ignore[arg-type]
         )
 
         self.injection_handler.setup(pl_module)
@@ -122,7 +122,7 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
     ) -> None:
         self.metrics[self.test_epoch][batch_idx] = copy.deepcopy(
             # mypy has issues with nested defaultdict
-            trainer.callback_metrics  # type: ignore
+            trainer.callback_metrics
         )
 
         if (

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-# type: ignore
-# flake: noqa
-# we skip flake and mypy as
+# mypy is the only one complaining, flake8 is fine
+# type: ignore[attr-defined]
 import pathlib
 
 # import sys

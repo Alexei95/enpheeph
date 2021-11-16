@@ -14,91 +14,132 @@ minimum_pre_commit_version: 2.15.0
 
 repos:
 
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
-  hooks:
-  - id: check-added-large-files
-    args: [
-        '--maxkb=350',
-        '--enforce-all',
-    ]
-    # exclude: |
-    #     (?x)^(
-    #         docs/source/_static/images/general/fast_2.gif|
-    #         docs/source/_static/images/mnist_imgs/pt_to_pl.jpg|
-    #         docs/source/_static/images/lightning_module/pt_to_pl.png|
-    #         docs/source/_static/images/general/pl_quick_start_full_compressed.gif|
-    #         docs/source/_static/images/general/pl_overview_flat.jpg|
-    #         docs/source/_static/images/general/pl_overview.gif
-    #     )$
-  - id: check-ast
-  - id: check-case-conflict
-  - id: check-docstring-first
-  - id: check-executables-have-shebangs
-  - id: check-toml
-  - id: check-yaml
-  - id: detect-private-key
-  - id: end-of-file-fixer
-  # to add -*- coding: utf-8 -*- to the top of python files
-  - id: fix-encoding-pragma
-  - id: mixed-line-ending
-  # not needed, it is only for the ending, not for the start
-  # - id: name-tests-test
-  # to sort entries in requirements.txt
-  - id: requirements-txt-fixer
-  - id: trailing-whitespace
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+    - id: check-added-large-files
+      args: [
+          '--maxkb=350',
+          '--enforce-all',
+      ]
+      # exclude: |
+      #     (?x)^(
+      #         docs/source/_static/images/general/fast_2.gif|
+      #         docs/source/_static/images/mnist_imgs/pt_to_pl.jpg|
+      #         docs/source/_static/images/lightning_module/pt_to_pl.png|
+      #         docs/source/_static/images/general/pl_quick_start_full_compressed.gif|
+      #         docs/source/_static/images/general/pl_overview_flat.jpg|
+      #         docs/source/_static/images/general/pl_overview.gif
+      #     )$
+    - id: check-ast
+    - id: check-builtin-literals
+    - id: check-byte-order-marker
+    - id: check-case-conflict
+    - id: check-docstring-first
+    - id: check-executables-have-shebangs
+    - id: check-merge-conflict
+    - id: check-symlinks
+    - id: check-json
+    - id: check-toml
+    - id: check-vcs-permalinks
+    - id: check-yaml
+    - id: check-xml
+    - id: debug-statements
+    - id: destroyed-symlinks
+    - id: detect-private-key
+    - id: end-of-file-fixer
+    - id: fix-byte-order-marker
+    # to add -*- coding: utf-8 -*- to the top of python files
+    - id: fix-encoding-pragma
+    - id: mixed-line-ending
+    - id: pretty-format-json
+      args: [
+        "--autofix",
+        "--indent",
+        "4",
+      ]
+    - id: name-tests-test
+      args: ['--django']  # we match for test*.py
+    # to sort entries in requirements.txt
+    - id: requirements-txt-fixer
+    - id: sort-simple-yaml
+    - id: trailing-whitespace
 
-- repo: https://github.com/psf/black
-  # with stable it always uses the latest version
-  # otherwise use a specific tag
-  # pre-commit gives warnings for mutable references, as they are not updated
-  # unless you uses pre-commit autoupdate
-  rev: 21.9b0
-  hooks:
-  - id: black
-    args: [
-        "--line-length=88",
-        "--target-version=py38",
-    ]
+  - repo: https://github.com/psf/black
+    # with stable it always uses the latest version
+    # otherwise use a specific tag
+    # pre-commit gives warnings for mutable references, as they are not updated
+    # unless you uses pre-commit autoupdate
+    rev: 21.9b0
+    hooks:
+    - id: black
+      args: [
+          "--line-length=88",
+          "--target-version=py38",
+      ]
 
-- repo: https://gitlab.com/pycqa/flake8
-  rev: 3.7.9
-  hooks:
-  - id: flake8
-    args: [
-        "--max-line-length=88",
-        "--extend-ignore=E203",
-        "--max-complexity=10",
-    ]
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 4.0.1
+    hooks:
+    - id: flake8
+      args: [
+          "--max-line-length=88",
+          "--extend-ignore=E203",
+          "--max-complexity=10",
+      ]
 
-# mypy and pre-commit hooks are not nice together if the project
-# has dependencies which are difficult to install
-# for now we simply run it locally and later also in a CI
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v0.910-1  # Use the sha / tag you want to point at
-  hooks:
-  - id: mypy
-    # the additional dependencies are installed if required in the
-    # execution
-    additional_dependencies: [
-    #     cupy>=9.4.0,
-    #     numpy,
-    #     pytorch-lightning>=1.4.5,
-    #     sqlalchemy>=1.4.22,
-    #     torch>=1.9,
-      "sqlalchemy[mypy]==1.4.22",
-      "types-setuptools==57.4.2",
-    ]
-    args: [
-      # mypy is used from a venv, so it will not have all the
-      # dependencies available
-      # it uses the pyproject.toml config
-      --ignore-missing-imports,
-    ]
-    # we remove the manual stage for mypy, as there are problems in the CI
-    # with sqlalchemy
-    # they have been fixed but it has not been released yet
-    stages: [commit, merge-commit]
+  # mypy and pre-commit hooks are not nice together if the project
+  # has dependencies which are difficult to install
+  # for now we simply run it locally and later also in a CI
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.910-1  # Use the sha / tag you want to point at
+    hooks:
+    - id: mypy
+      # the additional dependencies are installed if required in the
+      # execution
+      additional_dependencies: [
+      #     cupy>=9.4.0,
+      #     numpy,
+      #     pytorch-lightning>=1.4.5,
+      #     sqlalchemy>=1.4.22,
+      #     torch>=1.9,
+        "sqlalchemy[mypy]==1.4.22",
+        "types-setuptools==57.4.2",
+      ]
+      args: [
+        # mypy is used from a venv, so it will not have all the
+        # dependencies available
+        # it uses the pyproject.toml config
+        --ignore-missing-imports,
+      ]
+      # we remove the manual stage for mypy, as there are problems in the CI
+      # with sqlalchemy
+      # they have been fixed but it has not been released yet
+      stages: [commit, merge-commit]
+
+  # for running linters on jupyter notebooks
+  # - repo: https://github.com/nbQA-dev/nbQA
+  # rev: 1.1.1
+  # hooks:
+  #   - id: nbqa-black
+  #   - id: nbqa-pyupgrade
+  #     args: [--py36-plus]
+  #   - id: nbqa-isort
+
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.9.0
+    hooks:
+    - id: python-check-blanket-noqa
+    - id: python-check-blanket-type-ignore
+    - id: python-check-mock-methods
+    - id: python-no-eval
+    - id: python-no-log-warn
+    # not needed as we use Python 3.8+
+    # - id: python-use-type-annotations
+    - id: rst-backticks
+    - id: rst-directive-colons
+    - id: rst-inline-touching-normal
+    - id: text-unicode-replacement-char
 
 
 # continuous integration configuration for pre-commit.ci

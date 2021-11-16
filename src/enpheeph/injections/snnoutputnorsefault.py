@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# type: ignore
+# type: ignore[misc,assignment,name-defined,unreachable,union-attr,attr-defined,operator]
 # flake8: noqa
 # we ignore mypy/flake8 errors here as this injection needs to be refactored
 import typing

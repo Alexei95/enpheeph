@@ -73,8 +73,10 @@ class OutputPyTorchMonitor(
             # we use move_to_end with last=False to move it to the beginning
             # of the OrderedDict
             # mypy has issues with Optional being set before, as it does not check them
-            self.handle.hooks_dict_ref().move_to_end(  # type: ignore
-                self.handle.id,  # type: ignore
+            # sometimes the following 2 lines fail, use type: ignore[union-attr]
+            # for both
+            self.handle.hooks_dict_ref().move_to_end(
+                self.handle.id,
                 last=False,
             )
 

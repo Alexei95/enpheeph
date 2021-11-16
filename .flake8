@@ -6,4 +6,6 @@ exclude =
     .git,
     # There's no value in checking cache directories
     __pycache__,
+    # we exclude all __init__.py as they are auto-generated
+    **/__init__.py,
 max-complexity = 10
