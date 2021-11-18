@@ -31,6 +31,8 @@
 16. #16 Move all info in setup.py and load them in ```__about__``` using ```importlib.metadata```
 17. #17 Wait for pyproject.toml support in setuptools before moving everything from setup.py to pyproject.toml
 18. #18 Implement logging throughout the code.
+    1. #18-1 Just write some ```logger = logging.getLogger(__name__)``` and ```logger.debug(...)``` throughout the code
+19. #19 Implement early stopping callback inheriting from PyTorch Lightning but checking at each batch
 
 ## |Duplicates|
 
