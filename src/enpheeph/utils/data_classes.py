@@ -7,9 +7,10 @@ import enpheeph.utils.classes
 import enpheeph.utils.enums
 import enpheeph.utils.typings
 
+
 # all the following dataclasses are frozen as their arguments should not change
 # this also simplifies the handling of PickleType for the SQL storage plugin
-
+#
 # here are all the info required for injecting faults in a bit
 # we need a dataclass so that we can convert the BitFaultValue type into
 # a mask with fill values

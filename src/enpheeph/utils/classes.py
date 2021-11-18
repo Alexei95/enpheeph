@@ -54,7 +54,7 @@ class IDGenerator(object):
         # we ignore the problem with object.__init_subclass__
         # this class is supposed to be sub-classed, so it will handle general kwargs
         # for other parent classes
-        super().__init_subclass__(**kwargs)  # type: ignore
+        super().__init_subclass__(**kwargs)  # type: ignore[call-arg]
 
     # we have to use the shared flag if the flag is set
     # we go through the mros (which are from lowest to object) to reach a class which
@@ -94,7 +94,7 @@ class IDGenerator(object):
         cls_ = cls._get_root_with_id()
         cls_._setup_id_counter(reset=False)
         # we ignore this type error as we setup the id counter in the previous line
-        cls_._ID_COUNTER += 1  # type: ignore
+        cls_._ID_COUNTER += 1  # type: ignore[operator]
 
     # to return the id counter
     @classmethod

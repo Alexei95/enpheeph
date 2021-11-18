@@ -6,7 +6,7 @@ import pkg_resources
 
 
 VersionComparatorType = typing.Callable[
-    [pkg_resources.packaging.version.Version],  # type: ignore
+    [pkg_resources.packaging.version.Version],  # type: ignore[name-defined]
     bool,
 ]
 
@@ -34,7 +34,7 @@ def compare_version(
 CUPY_MIN_VERSION: str = "9.0.0"
 _cupy_version_comparator: (
     VersionComparatorType
-) = lambda x: x >= pkg_resources.parse_version(  # type: ignore
+) = lambda x: x >= pkg_resources.parse_version(  # type: ignore[no-any-return]
     CUPY_MIN_VERSION
 )
 IS_CUPY_AVAILABLE: bool = compare_version("cupy", _cupy_version_comparator)
@@ -42,7 +42,7 @@ IS_CUPY_AVAILABLE: bool = compare_version("cupy", _cupy_version_comparator)
 NUMPY_MIN_VERSION: str = "1.19"
 _numpy_version_comparator: (
     VersionComparatorType
-) = lambda x: x >= pkg_resources.parse_version(  # type: ignore
+) = lambda x: x >= pkg_resources.parse_version(  # type: ignore[no-any-return]
     NUMPY_MIN_VERSION
 )
 IS_NUMPY_AVAILABLE: bool = compare_version("numpy", _numpy_version_comparator)
@@ -50,7 +50,7 @@ IS_NUMPY_AVAILABLE: bool = compare_version("numpy", _numpy_version_comparator)
 TORCH_MIN_VERSION: str = "1.8"
 _torch_version_comparator: (
     VersionComparatorType
-) = lambda x: x >= pkg_resources.parse_version(  # type: ignore
+) = lambda x: x >= pkg_resources.parse_version(  # type: ignore[no-any-return]
     TORCH_MIN_VERSION
 )
 IS_TORCH_AVAILABLE: bool = compare_version("torch", _torch_version_comparator)

@@ -30,6 +30,7 @@
 15. #15 Use towncrier for changelogs and updates
 16. #16 Move all info in setup.py and load them in ```__about__``` using ```importlib.metadata```
 17. #17 Wait for pyproject.toml support in setuptools before moving everything from setup.py to pyproject.toml
+18. #18 Implement logging throughout the code.
 
 ## |Duplicates|
 
