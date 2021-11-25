@@ -3,6 +3,7 @@
         "ms-python.python",
         "eamodio.gitlens",
         "ms-toolsai.jupyter",
-        "bungcip.better-toml"
+        "bungcip.better-toml",
+        "sebbia.jsonnetng"
     ]
 }
