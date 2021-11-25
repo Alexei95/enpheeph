@@ -1,0 +1,23 @@
+# this should be run from the main enpheeph project directory, so that -e . installs
+# the enpheeph package, e.g. pip install -r papers/ijcnn2022/requirements.txt
+# tested with Python 3.9.7
+# it is suggested to use conda and install the following dependencies from conda-forge
+# the main problem is with the cudatoolkit as well as cupy, which is difficult
+# to build properly using pip
+# cudatoolkit=10.1
+# cudatoolkit-dev=10.1
+# cupy=9.6.0
+# gcc_linux-64
+# gxx_linux-64
+# openblas-devel
+# NOTE: cudatoolkit-dev=10.2 DOES NOT EXIST
+
+-e .[full]
+
+icedata==0.5.1
+icevision==0.8.1
+lightning-flash[all]==0.5.2
+pytorch-lightning[cli]==1.5.2
+torch==1.8.1
+torchaudio
+torchvision
