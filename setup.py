@@ -38,6 +38,7 @@ if __name__ == "__main__":
             "full": [
                 "cupy >= 9.0.0",
                 "numpy >= 1.19",
+                "pytorch-lightning >= 1.5",
                 "sqlalchemy >= 1.4.20",
                 "torch >= 1.8",
             ],
