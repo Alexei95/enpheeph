@@ -70,6 +70,18 @@
         "enpheeph[torch]",
     ]
 
+    integrations-pytorch-lightning = [
+        "enpheeph[torch]",
+        "pytorch-lightning >= 1.5",
+    ]
+
+    full = [
+        "enpheeph[integrations-pytorch-lightning]",
+        "enpheeph[sqlalchemy]",
+        "enpheeph[torch-cpu]",
+        "enpheeph[torch-gpu]",
+    ]
+
 
 # [project.scripts]
 # django-admin = "django.core.management:execute_from_command_line"
