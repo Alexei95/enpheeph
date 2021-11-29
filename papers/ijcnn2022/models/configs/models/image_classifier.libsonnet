@@ -2,6 +2,9 @@ function(
     backbone,
     num_classes,
 ){
+    # this metric is required for the trainer callbacks
+    monitor_metric:: "val_cross_entropy",
+
     # The ``ImageClassifier`` is a :class:`~flash.Task`
     # for classifying images. For more details, see
     "model": {
@@ -61,7 +64,8 @@ function(
         # or a mapping consisting of such
         # to use when serializing prediction outputs.
         # (type: Union[Serializer, Mapping[str, Serializer], null], default: null)
-        "serializer": null,
+        # **IMPORTANT**: it does not work in Flash 0.5.2
+        # "serializer": null,
 
         # string indicating the training strategy.
         # Adjust if you want to use `learn2learn`

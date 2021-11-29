@@ -1,21 +1,18 @@
+local utils = import "../utils.libsonnet";
+
 # we define the config as a function,
 # so that we require the arguments to be passed to work properly
 function(
+    monitor_metric,
     name,
     root_dir,
-    seed_everything,
 )
 {
     # we save hidden fields to be used by child config
+    monitor_metric:: monitor_metric,
     name:: name,
     root_dir:: root_dir,
-    complete_dir:: $['root_dir'] + '/' + $['name'],
-
-    ## this is the normal configuration
-    # to set the seed for Python's random, numpy.random and torch.random
-    # Set to an int to run seed_everything with this value before classes instantiation
-    # (type: Optional[int], default: null)
-    "seed_everything": seed_everything,
+    complete_dir:: $['root_dir'] + "/" + $['name'],
 
     ## NOTE: this is the custom configuration for the Trainer class
     # it is defined here so that it can be used in common across all the models
@@ -41,7 +38,7 @@ function(
         # and will be removed in v1.7.0.
         # Please use the ``strategy`` argument instead.
         # (type: Union[str, Accelerator, null], default: null)
-        ##### "accelerator": null,
+        "accelerator": null,
 
         # number of batches to accumulate before propagating the gradients
         # in this way we multiply the effective batch size by this number
@@ -74,7 +71,8 @@ function(
         # By default it will be set to "O2"
         # if ``amp_backend`` is set to "apex".
         # (type: Optional[str], default: null)
-        "amp_level": "O0",
+        # must be null if we use native
+        "amp_level": null,
 
         # to find the optimal learning rate, if True it is saved in
         # hparams.learning_rate, otherwise it is saved in hparams.<string> if it is
@@ -128,6 +126,12 @@ function(
         # Add a callback or list of callbacks.
         # (type: Union[List[Callback], Callback, null], default: null)
         "callbacks": [
+            # supersedes GPUStatsMonitor
+            {
+                "class_path": "pytorch_lightning.callbacks.DeviceStatsMonitor",
+                "init_args": {},
+            },
+
             # this callback implements early stopping, that is stopping the training
             # once a monitored validation metric has not improved for a certain number
             # of epochs
@@ -156,7 +160,7 @@ function(
                     "mode": "min",
                     # string of monitored metric
                     # default is early_stop_on
-                    "monitor": "val_loss_epoch",
+                    "monitor": $["monitor_metric"],
                     # number of epochs to continue running without improvements before
                     # stopping
                     # default is 3
@@ -176,19 +180,19 @@ function(
             # this callback logs the stats of the GPU, it must be disabled if running
             # without one, otherwise it will block the execution
             # NOTE: it may slow down execution as it uses nvidia-smi output
-            {
-                "class_path": "pytorch_lightning.callbacks.GPUStatsMonitor",
-                "init_args": {
-                    # each of the following flags enable
-                    # the corresponding resource logging
-                    "fan_speed": true,
-                    "gpu_utilization": true,
-                    "intra_step_time": true,
-                    "inter_step_time": true,
-                    "memory_utilization": true,
-                    "temperature": true,
-                },
-            },
+            # {
+            #     "class_path": "pytorch_lightning.callbacks.GPUStatsMonitor",
+            #     "init_args": {
+            #         # each of the following flags enable
+            #         # the corresponding resource logging
+            #         "fan_speed": true,
+            #         "gpu_utilization": true,
+            #         "intra_step_time": true,
+            #         "inter_step_time": true,
+            #         "memory_utilization": true,
+            #         "temperature": true,
+            #     },
+            # },
 
             # this callback monitors the learning rate of the model
             # it is useful for dynamic learning rates, a bit useless if the learning
@@ -212,7 +216,7 @@ function(
                     # the Trainer default_root_dir
                     # when it is None it will use the logger directory (if there is only
                     # one) as saving path, creating a sub-directory checkpoints
-                    "dirpath": null,
+                    "dirpath": $['complete_dir'],
                     # saves a checkpoint every n validation epochs
                     "every_n_epochs": 1,
                     # number of training steps between checkpoints
@@ -225,7 +229,7 @@ function(
                     "mode": "min",
                     # this indicates the quantity to monitor
                     # if None it saves only the last model
-                    "monitor": "val_loss_epoch",
+                    "monitor": $["monitor_metric"],
                     # to always save the last model
                     "save_last": true,
                     # to keep the top-k models depending on the monitored quantity
@@ -258,7 +262,7 @@ function(
         # it must be True if we use checkpointing
         # NOTE: it is unsupported since PyTorch Lightning v1.3
         # deprecated, see "enable_checkpointing"
-        ##### "checkpoint_callback": true,
+        # "checkpoint_callback": true,
 
         # how many training epochs pass in-between runs of validation
         # default is 1
@@ -276,7 +280,7 @@ function(
         "default_root_dir": $['complete_dir'],
 
         # Enable anomaly detection for the autograd engine. (type: bool, default: False)
-        # **IMPORTANT**: enable only for debuggin as it enables extra tests and
+        # **IMPORTANT**: enable only for debugging as it enables extra tests and
         # tracebacks
         # https://pytorch.org/docs/stable/autograd.html#anomaly-detection
         "detect_anomaly": false,
@@ -296,13 +300,11 @@ function(
         # (type: Union[int, str, List[int], null], default: null)
         # we use 2 to run on gpu2, the third GPU
         # if null it will choose automatically
-        "devices": [
-            2,
-        ],
+        "devices": null,
 
         # set the distributed backed
         # NOTE: it has been superseded by accelerator
-        "distributed_backend": null,
+        # "distributed_backend": null,
 
         # If ``True``, enable checkpointing.
         # It will configure a default ModelCheckpoint callback
@@ -334,7 +336,7 @@ function(
         # and will be removed in v1.7.
         # Please configure flushing directly in the logger instead.
         # (type: Optional[int], default: null)
-        ##### "flush_logs_every_n_steps": null,
+        # "flush_logs_every_n_steps": null,
 
         # GPUs to be used
         # either int as number, list for selection, -1 to select all the available
@@ -344,7 +346,7 @@ function(
         # (list or str) applied per node
         # (type: Union[int, str, List[int], null], default: null)
         # it is now being deprecated for "devices"
-        ##### "gpus": null,
+        # "gpus": null,
 
         # value to be used to clip gradients
         # if 0.0, the default, they are not clipped
@@ -377,26 +379,34 @@ function(
         # How much of prediction dataset to check
         # (float = fraction, int = num_batches).
         # (type: Union[int, float], default: 1.0)
-        "limit_predict_batches": 1.0,
+        # **IMPORTANT**: disabled since we do not need,
+        # otherwise it is converted to integer and creates issues
+        # "limit_predict_batches": 1.0,
 
         # to use only a percentage of the training set, useful for debugging the
         # training loop, if int is the number of batches, if float is the ratio
         # default is 1.0
         # How much of training dataset to check (float = fraction, int = num_batches).
         # (type: Union[int, float], default: 1.0)
-        "limit_train_batches": 1.0,
+        # **IMPORTANT**: disabled since we do not need,
+        # otherwise it is converted to integer and creates issues
+        # "limit_train_batches": 1.0,
 
         # limit test and validation datasets, the same as for training batches
         # if multiple dataloaders are used, the limit is intended for each one of
         # them separately
         # How much of test dataset to check (float = fraction, int = num_batches).
         # (type: Union[int, float], default: 1.0)
-        "limit_test_batches": 1.0,
+        # **IMPORTANT**: disabled since we do not need,
+        # otherwise it is converted to integer and creates issues
+        # "limit_test_batches": 1.0,
 
         # How much of validation dataset to check
         # (float = fraction, int = num_batches).
         #(type: Union[int, float], default: 1.0)
-        "limit_val_batches": 1.0,
+        # **IMPORTANT**: disabled since we do not need,
+        # otherwise it is converted to integer and creates issues
+        # "limit_val_batches": 1.0,
 
         # a true flag enables the default TensorboardLogger,
         # for logging results
@@ -460,7 +470,7 @@ function(
         #     Deprecated in v1.5.0 and will be removed in v1.7.0
         #     Please use the ``DeviceStatsMonitor`` callback directly instead.
         # (type: Optional[str], default: null)
-        ##### "log_gpu_memory": null,
+        # "log_gpu_memory": null,
 
         # number of epochs to run, default is 1000, we use 100 here
         # Stop training once this number of epochs is reached.
@@ -568,9 +578,10 @@ function(
         # we use 0.0 as we don't need to test overfitting
         # **IMPORTANT**: disabled since we do not need,
         # otherwise it is converted to integer and creates issues
-        # Overfit a fraction of training data (float) or a set number of batches (int).
+        # Overfit a fraction of training data (float) or
+        # a set number of batches (int).
         # (type: Union[int, float], default: 0.0)
-        "overfit_batches": 0.0,
+        # "overfit_batches": 0.0,
 
         # Plugins allow modification of core behavior like ddp and amp,
         # and enable custom lightning plugins.
@@ -590,7 +601,7 @@ function(
         # Please set ``prepare_data_per_node`` in LightningDataModule or
         # LightningModule directly instead.
         # (type: Optional[bool], default: null)
-        ##### "prepare_data_per_node": null,
+        # "prepare_data_per_node": null,
 
         # precision to use for training, 64/32 for CPU/GPU/TPU, also 16 on GPU/TPU
         # 16 on TPU uses torch.bfloat16, but it shows torch.float32
@@ -614,7 +625,7 @@ function(
         # ``process_position``
         # directly to the Trainer's ``callbacks`` argument instead.
         # (type: int, default: 0)
-        ##### "process_position": 0,
+        # "process_position": 0,
 
         # profiling to use, it prints the training profiling
         # at the end of a fit()
@@ -648,7 +659,7 @@ function(
         # To disable the progress bar,
         # pass ``enable_progress_bar = False`` to the Trainer.
         # (type: Optional[int], default: null)
-        ##### "progress_bar_refresh_rate": 0,
+        # "progress_bar_refresh_rate": 0,
 
         # Set to a non-negative integer to reload dataloaders every n epochs.
         # (type: int, default: 0)
@@ -660,7 +671,7 @@ function(
         # and will be removed in v1.6.
         # Please use ``reload_dataloaders_every_n_epochs``.
         # (type: bool, default: False)
-        ##### "reload_dataloaders_every_epoch": false,
+        # "reload_dataloaders_every_epoch": false,
 
         # add a custom distributed sampler from
         # torch.utils.data.distributed.DistributedSampler for the dataloaders
@@ -689,7 +700,7 @@ function(
         # ``resume_from_checkpoint`` is deprecated in v1.5 and will be removed in v1.7.
         # Please pass the path to ``Trainer.fit(..., ckpt_path=...)`` instead.
         # (type: Union[str, Path, null], default: null)
-        ##### "resume_from_checkpoint": null,
+        # "resume_from_checkpoint": null,
 
         # to enable automatic stochastic weight averaging,
         # to improve performance
@@ -708,13 +719,23 @@ function(
         # StochasticWeightAveraging`
         # directly to the Trainer's ``callbacks`` argument instead.
         # (type: bool, default: False)
-        ##### "stochastic_weight_avg": false,
+        # "stochastic_weight_avg": false,
 
         # Supports different training strategies with aliases
         # as well custom training type plugins.
         # (type: Union[str, TrainingTypePlugin, null], default: null)
-        # here we use gpu
-        "strategy": "gpu",
+        # ddp is the standard
+        # it conflicts with DDPPlugin for removing the search of unused parameters
+        # from 1.5 it is deprecated to use DDPPlugin in plugins,
+        # but it should be in strategy
+        # issues with ddp
+        # "strategy": {
+        #     "class_path": "pytorch_lightning.plugins.DDPPlugin",
+        #     "init_args": {
+        #         "find_unused_parameters": false,
+        #     },
+        # },
+        "strategy": null,
 
         # to synchronize batch normalization across GPUs
         # Synchronize batch norm layers between process groups/whole world.
@@ -734,7 +755,7 @@ function(
         # and will be removed in 1.7.
         # Please use ``detect_anomaly`` instead.
         # (type: Optional[bool], default: null)
-        ##### "terminate_on_nan": true,
+        # "terminate_on_nan": true,
 
         # tracks the norm of the gradients, -1 for no tracking,
         # int for the order
@@ -763,7 +784,8 @@ function(
         # default is None, for disabling it
         # NOTE: for more info refer to the official docs and
         # the supporting paper
-        "truncated_bptt_steps": null,
+        # not supported in PyTorch Lightning 1.5.2, check official docs
+        # "truncated_bptt_steps": null,
 
         # how often to check the validation dataset
         # if float is a percentage of the training epoch steps,
@@ -776,7 +798,9 @@ function(
         # Use float to check within a training epoch,
         # use int to check every n steps (batches).
         # (type: Union[int, float], default: 1.0)
-        "val_check_interval": 1.0,
+        # **IMPORTANT**: disabled since we do not need,
+        # otherwise it is converted to integer and creates issues
+        # "val_check_interval": 1.0,
 
         # the path where to save the weights,
         # overriddenby a checkpoint callback
@@ -804,7 +828,7 @@ function(
         # :class:`~pytorch_lightning.callbacks.model_summary.ModelSummary`
         #     directly to the Trainer's ``callbacks`` argument.
         # (type: Optional[str], default: top)
-        ##### "weights_summary": null,
+        # "weights_summary": null,
 
     },
 }
