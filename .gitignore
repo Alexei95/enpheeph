@@ -60,6 +60,8 @@ dist/
 # DSE results
 /*.csv
 /results
+# Test Models
+**/model_drafts
 # Trained Models
 /models
 /trained_models
