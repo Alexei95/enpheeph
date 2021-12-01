@@ -76,6 +76,7 @@ __getattr__ = lazy_import(
             'InjectionLocationABC',
             'LocationModuleNameMixin',
             'LocationNoTimeMixin',
+            'LocationNoTimeOptionalArgsMixin',
             'LocationTimeMixin',
             'MonitorLocation',
         ],
@@ -118,9 +119,10 @@ __all__ = ['BitFaultMaskInfo', 'BitFaultValue', 'BitIndexInfo', 'BitWidth',
            'HandlerStatus', 'IDGenerator', 'IDGeneratorSubclass',
            'Index1DType', 'IndexMultiDType', 'IndexTimeType',
            'InjectionLocationABC', 'LocationModuleNameMixin',
-           'LocationNoTimeMixin', 'LocationTimeMixin', 'LowLevelMaskArrayType',
-           'ModelType', 'MonitorLocation', 'MonitorMetric', 'ParameterType',
-           'PathType', 'Positive', 'VersionComparatorType', 'camel_to_snake',
-           'classes', 'compare_version', 'data_classes', 'enums', 'functions',
-           'imports', 'is_module_available', 'typings']
+           'LocationNoTimeMixin', 'LocationNoTimeOptionalArgsMixin',
+           'LocationTimeMixin', 'LowLevelMaskArrayType', 'ModelType',
+           'MonitorLocation', 'MonitorMetric', 'ParameterType', 'PathType',
+           'Positive', 'VersionComparatorType', 'camel_to_snake', 'classes',
+           'compare_version', 'data_classes', 'enums', 'functions', 'imports',
+           'is_module_available', 'typings']
 # </AUTOGEN_INIT>

@@ -61,6 +61,7 @@ __getattr__ = lazy_import(
         'plugins',
         'pytorchinjectionabc',
         'snnoutputnorsefault',
+        'weightpytorchfault',
     },
     submod_attrs={
         'injectionabc': [
@@ -123,6 +124,9 @@ __getattr__ = lazy_import(
         'snnoutputnorsefault': [
             'SNNOutputNorseFault',
         ],
+        'weightpytorchfault': [
+            'WeightPyTorchFault',
+        ],
     },
 )
 
@@ -139,14 +143,15 @@ __all__ = ['CuPyPyTorchMaskPlugin', 'CustomBase', 'CustomBaseClass',
            'OutputPyTorchMonitor', 'PolymorphicMixin', 'PyTorchInjectionABC',
            'PyTorchMaskMixin', 'PyTorchMonitorPostProcessorMixin',
            'SNNOutputNorseFault', 'SQLStoragePluginABC', 'SQLiteStoragePlugin',
-           'StoragePluginABC', 'cupypytorchmaskplugin', 'fix_pysqlite',
-           'injectionabc', 'lowleveltorchmaskpluginabc', 'mask', 'mixins',
-           'numpypytorchmaskplugin', 'outputpytorchfault',
+           'StoragePluginABC', 'WeightPyTorchFault', 'cupypytorchmaskplugin',
+           'fix_pysqlite', 'injectionabc', 'lowleveltorchmaskpluginabc',
+           'mask', 'mixins', 'numpypytorchmaskplugin', 'outputpytorchfault',
            'outputpytorchmonitor', 'plugins',
            'pysqlite_begin_emission_fix_on_connect', 'pytorchinjectionabc',
            'pytorchmaskmixin', 'pytorchmonitorpostprocessormixin',
            'set_sqlite_pragma', 'snnoutputnorsefault', 'sql_data_classes',
            'sqlalchemy_begin_emission_pysqlite', 'sqlitestorageplugin',
            'sqlstorageplugin', 'sqlstorageplugineabc', 'sqlutils', 'storage',
-           'storage_typings', 'storagepluginabc', 'torch_geometric_mean']
+           'storage_typings', 'storagepluginabc', 'torch_geometric_mean',
+           'weightpytorchfault']
 # </AUTOGEN_INIT>
