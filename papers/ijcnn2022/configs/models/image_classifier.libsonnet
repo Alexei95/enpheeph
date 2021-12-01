@@ -1,9 +1,13 @@
-function(
-    backbone,
-    num_classes,
-){
+local base_model = import "./base_model.libsonnet";
+
+
+base_model + {
+    local config = self,
+    model_base_name:: "image_classifier",
+    model_learning_rate:: 0.001,
     # this metric is required for the trainer callbacks
-    monitor_metric:: "val_cross_entropy",
+    model_monitor_metric:: "val_cross_entropy",
+    model_task:: "image_classification",
 
     # The ``ImageClassifier`` is a :class:`~flash.Task`
     # for classifying images. For more details, see
@@ -11,22 +15,22 @@ function(
         # A string or (model, num_features) tuple to use to compute image features,
         # defaults to ``"resnet18"``.
         # (type: Union[str, Tuple[Module, int]], default: resnet18)
-        "backbone": backbone,
+        "backbone": config.model_backbone,
 
         #   (type: Optional[Dict], default: null)
-        "backbone_kwargs": null,
+        "backbone_kwargs"+: config.model_backbone_kwargs,
 
         #   (type: Union[function, Module, null], default: null)
-        "head": null,
+        "head": config.model_head,
 
         # Learning rate to use for training, defaults to ``1e-3``.
         # (type: float, default: 0.001)
-        "learning_rate": 0.001,
+        "learning_rate": config.model_learning_rate,
 
         # Loss function for training, defaults to
         # :func:`torch.nn.functional.cross_entropy`.
         # (type: Union[Callable, Mapping, Sequence, null], default: null)
-        "loss_fn": null,
+        "loss_fn"+: config.model_loss_fn,
 
         # The LR scheduler to use during training.
         # (type: Union[str, Callable, Tuple[str, Dict[str, Any]],
@@ -42,17 +46,26 @@ function(
         # `metric(preds,target)` and return a single scalar tensor.
         # Defaults to :class:`torchmetrics.Accuracy`.
         # (type: Union[Metric, Mapping, Sequence, null], default: null)
-        "metrics": null,
+        "metrics":
+            if std.length(config.model_metrics) > 0 then
+                std.objectValues(config.model_metrics),
 
         # Whether the targets are multi-label or not. (type: bool, default: False)
-        "multi_label": false,
+        "multi_label": config.model_multi_label,
 
         # Number of classes to classify. (type: Optional[int], default: null)
-        "num_classes": num_classes,
+        "num_classes":
+            if !(config.model_num_classes == null) then
+                config.model_num_classes
+            else if std.objectHasAll(config, "dataset_num_classes") then
+                # HasAll covers also hidden fields
+                config.dataset_num_classes
+            else
+                config.model_num_classes,
 
         # Optimizer to use for training.
         # (type: Union[str, Callable, Tuple[str, Dict[str, Any]]], default: Adam)
-        "optimizer": "Adam",
+        "optimizer"+: config.model_optimizer,
 
         # A bool or string to specify the pretrained weights of the backbone,
         # defaults to ``True``
@@ -70,10 +83,10 @@ function(
         # string indicating the training strategy.
         # Adjust if you want to use `learn2learn`
         # for doing meta-learning research (type: Optional[str], default: default)
-        "training_strategy": "default",
+        "training_strategy": config.model_training_strategy,
 
         # Additional kwargs for setting the training strategy
         # (type: Optional[Dict[str, Any]], default: null)
-        "training_strategy_kwargs": null,
+        "training_strategy_kwargs"+: config.model_training_strategy_kwargs,
     },
 }

@@ -1,22 +1,202 @@
+local defaults = import "../defaults.libsonnet";
 local utils = import "../utils.libsonnet";
 
-# we define the config as a function,
-# so that we require the arguments to be passed to work properly
-function(
-    monitor_metric,
-    name,
-    root_dir,
-)
+
 {
+    local config = self,
+
+    trainer_deterministic:: true,
+
     # we save hidden fields to be used by child config
-    monitor_metric:: monitor_metric,
-    name:: name,
-    root_dir:: root_dir,
-    complete_dir:: $['root_dir'] + "/" + $['name'],
+    trainer_monitor_metric:: defaults.trainer_monitor_metric,
+
+    trainer_name:: std.join(
+        "_",
+        [
+            utils.safeGet(self, "model_name", default="", include_hidden=true),
+            utils.safeGet(self, "dataset_name", default="", include_hidden=true,),
+            std.toString(
+                utils.safeGet(
+                    self,
+                    "pruning_enabled",
+                    default="false",
+                    include_hidden=true,
+                ),
+            ),
+            std.toString(
+                    utils.safeGet(
+                    self,
+                    "quantization_at_enabled",
+                    default="false",
+                    include_hidden=true,
+                ),
+            ),
+        ],
+    ),
+    trainer_root_dir:: defaults.trainer_root_dir,
+    trainer_complete_dir:: utils.joinPath(self.trainer_root_dir, self.trainer_name),
+
+    trainer_callbacks+:: {
+        # supersedes GPUStatsMonitor
+        "device_monitor"+: {
+            "class_path": "pytorch_lightning.callbacks.DeviceStatsMonitor",
+            "init_args"+: {},
+        },
+
+        # this callback implements early stopping, that is stopping the training
+        # once a monitored validation metric has not improved for a certain number
+        # of epochs
+        "early_stopping"+: {
+            "class_path": "pytorch_lightning.callbacks.EarlyStopping",
+            "init_args"+: {
+                # if True it checks the monitored metric to be finite, stopping when
+                # it becomes NaN or infinite
+                # default is True
+                "check_finite": true,
+                # if True the monitored metric is compared at the end
+                # of the training epoch,
+                # if False it is checked after the validation phase
+                # default is False, to check after validation
+                "check_on_train_epoch_end": false,
+                # if the monitored metric becomes worse than this threshold the
+                # training is stopped
+                # default is None to disable it
+                "divergence_threshold": null,
+                # minimum difference to consider as improvement, an absolute change
+                # smaller than delta will not be considered as an improvement
+                # default is 0.0, all improvements are considered
+                "min_delta": 0.001,
+                # min minimizes the target, max maximizes it
+                # default is min, since we are usign a loss we want to minimize it
+                "mode": "min",
+                # string of monitored metric
+                # default is early_stop_on
+                "monitor": utils.safeGet(
+                    config,
+                    "model_monitor_metric",
+                    default=config.trainer_monitor_metric,
+                    include_hidden=true,
+                ),
+                # number of epochs to continue running without improvements before
+                # stopping
+                # default is 3
+                "patience": 5,
+                # if the monitored metric reaches this threshold, training is stopped
+                # default is None to disable it
+                "stopping_threshold": null,
+                # if True it crashes if the monitored metric is not found
+                # default is True
+                "strict": true,
+                # if True we print more info about it
+                # default is False
+                "verbose": true,
+            },
+        },
+
+        # this callback monitors the learning rate of the model
+        # it is useful for dynamic learning rates, a bit useless if the learning
+        # rate is constant
+        "lr_monitor"+: {
+            "class_path": "pytorch_lightning.callbacks.LearningRateMonitor",
+            "init_args"+: {
+                # whether to log also the momentum of the learning rate
+                "log_momentum": true,
+                # whether to log the learning rate every epoch or every step
+                "logging_interval": "epoch",
+            },
+        },
+
+        # this callback can be customized to checkpoint the trained model
+        # depending on different parameters
+        "model_checkpoint"+: {
+            "class_path": "pytorch_lightning.callbacks.ModelCheckpoint",
+            "init_args"+: {
+                # where the models will be saved, by default if None it relates to
+                # the Trainer default_root_dir
+                # when it is None it will use the logger directory (if there is only
+                # one) as saving path, creating a sub-directory checkpoints
+                # we remove dirpath so that the checkpointing happens in the
+                # same folder as the logging
+                # "dirpath": config.trainer_complete_dir,
+                "dirpath": null,
+                # saves a checkpoint every n validation epochs
+                "every_n_epochs": 1,
+                # number of training steps between checkpoints
+                # if 0 or None it is skipped
+                "every_n_train_steps": null,
+                # the filename to use for saving the checkpoints
+                # it can use variable expansion
+                "filename": null,
+                # whether to min(imize) or max(imize) the monitoreq quantity
+                "mode": "min",
+                # this indicates the quantity to monitor
+                # if None it saves only the last model
+                "monitor": utils.safeGet(
+                    config,
+                    "model_monitor_metric",
+                    default=config.trainer_monitor_metric,
+                    include_hidden=true,
+                ),
+                # to always save the last model
+                "save_last": true,
+                # to keep the top-k models depending on the monitored quantity
+                # if 0 none is saved, if -1 all of them, if multiple savings per epoch
+                # each call will have a v1, v2, ... appended
+                "save_top_k": 3,
+                # whether to save only the weights
+                "save_weights_only": false,
+                # to toggle verbosity mode
+                "verbose": true,
+            },
+        },
+
+        # this callback prints the results of the training on the stdout,
+        # using tqdm
+        "tqdm_progress_bar"+: {
+            "class_path": "pytorch_lightning.callbacks.TQDMProgressBar",
+            "init_args"+: {
+                # number of lines to displace the counter, so that other counters
+                # can be shown
+                "process_position": 0,
+                # number of batches between updates
+                "refresh_rate": 1,
+            },
+        },
+    },
+
+    trainer_loggers+:: {
+        "tensorboard_logger": {
+            # this is the default logger included in pytorch-lightning,
+            # check the docs
+            # for different loggers
+            "class_path": "pytorch_lightning.loggers.TensorBoardLogger",
+            "init_args"+: {
+                # the main directory for loggers
+                "save_dir": config.trainer_complete_dir,
+                # experiment name, in this custom configuration it is default
+                "name": "default",
+                # version of the experiment, if not assigned it is increasing
+                # automatically based on the logging directory
+                # if a string it is used, otherwise 'version_{$version}'
+                # is used
+                "version": null,
+                # this enables the saving of the computational graph
+                # it requires example_input_array in the model
+                "log_graph": true,
+                # enables a placeholder for log_hyperparams metrics,
+                # if none is provided
+                "default_hp_metric": true,
+                # prefix for the metrics
+                "prefix": "",
+            },
+        },
+    },
+
+    trainer_plugins+:: {},
 
     ## NOTE: this is the custom configuration for the Trainer class
     # it is defined here so that it can be used in common across all the models
-    "trainer": {
+    "trainer"+: {
 
         # to select a distributed backend accelerator
         # since we train on a single system with multiple GPU, we can use dp
@@ -125,144 +305,14 @@ function(
         # not needing the direct support anymore
         # Add a callback or list of callbacks.
         # (type: Union[List[Callback], Callback, null], default: null)
-        "callbacks": [
-            # supersedes GPUStatsMonitor
-            {
-                "class_path": "pytorch_lightning.callbacks.DeviceStatsMonitor",
-                "init_args": {},
-            },
-
-            # this callback implements early stopping, that is stopping the training
-            # once a monitored validation metric has not improved for a certain number
-            # of epochs
-            {
-                "class_path": "pytorch_lightning.callbacks.EarlyStopping",
-                "init_args": {
-                    # if True it checks the monitored metric to be finite, stopping when
-                    # it becomes NaN or infinite
-                    # default is True
-                    "check_finite": true,
-                    # if True the monitored metric is compared at the end
-                    # of the training epoch,
-                    # if False it is checked after the validation phase
-                    # default is False, to check after validation
-                    "check_on_train_epoch_end": false,
-                    # if the monitored metric becomes worse than this threshold the
-                    # training is stopped
-                    # default is None to disable it
-                    "divergence_threshold": null,
-                    # minimum difference to consider as improvement, an absolute change
-                    # smaller than delta will not be considered as an improvement
-                    # default is 0.0, all improvements are considered
-                    "min_delta": 0.001,
-                    # min minimizes the target, max maximizes it
-                    # default is min, since we are usign a loss we want to minimize it
-                    "mode": "min",
-                    # string of monitored metric
-                    # default is early_stop_on
-                    "monitor": $["monitor_metric"],
-                    # number of epochs to continue running without improvements before
-                    # stopping
-                    # default is 3
-                    "patience": 5,
-                    # if the monitored metric reaches this threshold, training is stopped
-                    # default is None to disable it
-                    "stopping_threshold": null,
-                    # if True it crashes if the monitored metric is not found
-                    # default is True
-                    "strict": true,
-                    # if True we print more info about it
-                    # default is False
-                    "verbose": true,
-                },
-            },
-
-            # this callback logs the stats of the GPU, it must be disabled if running
-            # without one, otherwise it will block the execution
-            # NOTE: it may slow down execution as it uses nvidia-smi output
-            # {
-            #     "class_path": "pytorch_lightning.callbacks.GPUStatsMonitor",
-            #     "init_args": {
-            #         # each of the following flags enable
-            #         # the corresponding resource logging
-            #         "fan_speed": true,
-            #         "gpu_utilization": true,
-            #         "intra_step_time": true,
-            #         "inter_step_time": true,
-            #         "memory_utilization": true,
-            #         "temperature": true,
-            #     },
-            # },
-
-            # this callback monitors the learning rate of the model
-            # it is useful for dynamic learning rates, a bit useless if the learning
-            # rate is constant
-            {
-                "class_path": "pytorch_lightning.callbacks.LearningRateMonitor",
-                "init_args": {
-                    # whether to log also the momentum of the learning rate
-                    "log_momentum": true,
-                    # whether to log the learning rate every epoch or every step
-                    "logging_interval": "epoch",
-                },
-            },
-
-            # this callback can be customized to checkpoint the trained model
-            # depending on different parameters
-            {
-                "class_path": "pytorch_lightning.callbacks.ModelCheckpoint",
-                "init_args": {
-                    # where the models will be saved, by default if None it relates to
-                    # the Trainer default_root_dir
-                    # when it is None it will use the logger directory (if there is only
-                    # one) as saving path, creating a sub-directory checkpoints
-                    "dirpath": $['complete_dir'],
-                    # saves a checkpoint every n validation epochs
-                    "every_n_epochs": 1,
-                    # number of training steps between checkpoints
-                    # if 0 or None it is skipped
-                    "every_n_train_steps": null,
-                    # the filename to use for saving the checkpoints
-                    # it can use variable expansion
-                    "filename": null,
-                    # whether to min(imize) or max(imize) the monitoreq quantity
-                    "mode": "min",
-                    # this indicates the quantity to monitor
-                    # if None it saves only the last model
-                    "monitor": $["monitor_metric"],
-                    # to always save the last model
-                    "save_last": true,
-                    # to keep the top-k models depending on the monitored quantity
-                    # if 0 none is saved, if -1 all of them, if multiple savings per epoch
-                    # each call will have a v1, v2, ... appended
-                    "save_top_k": 3,
-                    # whether to save only the weights
-                    "save_weights_only": false,
-                    # to toggle verbosity mode
-                    "verbose": true,
-                },
-            },
-
-            # this callback prints the results of the training on the stdout,
-            # using tqdm
-            {
-                "class_path": "pytorch_lightning.callbacks.TQDMProgressBar",
-                "init_args": {
-                    # number of lines to displace the counter, so that other counters
-                    # can be shown
-                    "process_position": 0,
-                    # number of batches between updates
-                    "refresh_rate": 1,
-                },
-            },
-        ],
+        "callbacks"+: std.objectValues(config.trainer_callbacks),
 
         # this is the default checkpointing callback, which is enabled if no custom
         # checkpointing is used
         # it must be True if we use checkpointing
         # NOTE: it is unsupported since PyTorch Lightning v1.3
         # deprecated, see "enable_checkpointing"
-        # "checkpoint_callback": true,
+        # "checkpoint_callback"+: true,
 
         # how many training epochs pass in-between runs of validation
         # default is 1
@@ -277,7 +327,7 @@ function(
         # Default: ``os.getcwd()``.
         # Can be remote file paths such as `s3://mybucket/path` or 'hdfs://path/'
         # (type: Optional[str], default: null)
-        "default_root_dir": $['complete_dir'],
+        "default_root_dir": config.trainer_complete_dir,
 
         # Enable anomaly detection for the autograd engine. (type: bool, default: False)
         # **IMPORTANT**: enable only for debugging as it enables extra tests and
@@ -293,7 +343,7 @@ function(
         # must use deterministic algorithms.
         # Default: ``False``.
         # (type: bool, default: False)
-        "deterministic": true,
+        "deterministic": config.trainer_deterministic,
 
         # Will be mapped to either `gpus`, `tpu_cores`, `num_processes` or `ipus`,
         # based on the accelerator type.
@@ -304,7 +354,7 @@ function(
 
         # set the distributed backed
         # NOTE: it has been superseded by accelerator
-        # "distributed_backend": null,
+        # "distributed_backend"+: null,
 
         # If ``True``, enable checkpointing.
         # It will configure a default ModelCheckpoint callback
@@ -336,7 +386,7 @@ function(
         # and will be removed in v1.7.
         # Please configure flushing directly in the logger instead.
         # (type: Optional[int], default: null)
-        # "flush_logs_every_n_steps": null,
+        # "flush_logs_every_n_steps"+: null,
 
         # GPUs to be used
         # either int as number, list for selection, -1 to select all the available
@@ -346,7 +396,7 @@ function(
         # (list or str) applied per node
         # (type: Union[int, str, List[int], null], default: null)
         # it is now being deprecated for "devices"
-        # "gpus": null,
+        # "gpus"+: null,
 
         # value to be used to clip gradients
         # if 0.0, the default, they are not clipped
@@ -426,31 +476,7 @@ function(
         # of the individual loggers.
         # (type: Union[LightningLoggerBase, Iterable[LightningLoggerBase], bool],
         # default: True)
-        "logger": {
-            # this is the default logger included in pytorch-lightning,
-            # check the docs
-            # for different loggers
-            "class_path": "pytorch_lightning.loggers.TensorBoardLogger",
-            "init_args": {
-                # the main directory for loggers
-                "save_dir": $['complete_dir'],
-                # experiment name, in this custom configuration it is default
-                "name": "default",
-                # version of the experiment, if not assigned it is increasing
-                # automatically based on the logging directory
-                # if a string it is used, otherwise 'version_{$version}'
-                # is used
-                "version": null,
-                # this enables the saving of the computational graph
-                # it requires example_input_array in the model
-                "log_graph": true,
-                # enables a placeholder for log_hyperparams metrics,
-                # if none is provided
-                "default_hp_metric": true,
-                # prefix for the metrics
-                "prefix": "",
-            }
-        },
+        "logger"+: std.objectValues(config.trainer_loggers),
 
         # how often a new logging row should be added, without writing to disk
         # directly
@@ -461,7 +487,8 @@ function(
 
         # to log the memory usage on GPU
         # None to disable, min_max to get the limit or all to monitor it
-        # its usage is limited on the master node only, and it uses nvidia-smi, so it
+        # its usage is limited on the master node only,
+        # and it uses nvidia-smi, so it
         # may slow performance
         # default is None
         # we disable it as we are using the custom callback
@@ -470,7 +497,7 @@ function(
         #     Deprecated in v1.5.0 and will be removed in v1.7.0
         #     Please use the ``DeviceStatsMonitor`` callback directly instead.
         # (type: Optional[str], default: null)
-        # "log_gpu_memory": null,
+        # "log_gpu_memory"+: null,
 
         # number of epochs to run, default is 1000, we use 100 here
         # Stop training once this number of epochs is reached.
@@ -494,7 +521,7 @@ function(
 
         # maximum number of time to run, stopping mid-epoch
         # it takes precedence over max steps/epochs, and it can be written as dict,
-        # i.e. {"days": 1, "hours": 5} or "01:05:00:00"
+        # i.e. {"days"+: 1, "hours"+: 5} or "01:05:00:00"
         # default is None to disable it, and the minimum requirements always take
         # precedence
         # Stop training after this amount of time has passed.
@@ -588,7 +615,7 @@ function(
         # (type: Union[TrainingTypePlugin, PrecisionPlugin, ClusterEnvironment,
         # CheckpointIO, str, List[Union[TrainingTypePlugin, PrecisionPlugin,
         # ClusterEnvironment, CheckpointIO, str]], null], default: null)
-        "plugins": null,
+        "plugins"+: std.objectValues(config.trainer_plugins),
 
         # if set to True it calls prepare_data on the first CPU process/GPU/TPU
         # of each node, set with LOCAL_RANK=0, if False it runs only once on the
@@ -601,7 +628,7 @@ function(
         # Please set ``prepare_data_per_node`` in LightningDataModule or
         # LightningModule directly instead.
         # (type: Optional[bool], default: null)
-        # "prepare_data_per_node": null,
+        # "prepare_data_per_node"+: null,
 
         # precision to use for training, 64/32 for CPU/GPU/TPU, also 16 on GPU/TPU
         # 16 on TPU uses torch.bfloat16, but it shows torch.float32
@@ -625,7 +652,7 @@ function(
         # ``process_position``
         # directly to the Trainer's ``callbacks`` argument instead.
         # (type: int, default: 0)
-        # "process_position": 0,
+        # "process_position"+: 0,
 
         # profiling to use, it prints the training profiling
         # at the end of a fit()
@@ -659,7 +686,7 @@ function(
         # To disable the progress bar,
         # pass ``enable_progress_bar = False`` to the Trainer.
         # (type: Optional[int], default: null)
-        # "progress_bar_refresh_rate": 0,
+        # "progress_bar_refresh_rate"+: 0,
 
         # Set to a non-negative integer to reload dataloaders every n epochs.
         # (type: int, default: 0)
@@ -671,7 +698,7 @@ function(
         # and will be removed in v1.6.
         # Please use ``reload_dataloaders_every_n_epochs``.
         # (type: bool, default: False)
-        # "reload_dataloaders_every_epoch": false,
+        # "reload_dataloaders_every_epoch"+: false,
 
         # add a custom distributed sampler from
         # torch.utils.data.distributed.DistributedSampler for the dataloaders
@@ -700,7 +727,7 @@ function(
         # ``resume_from_checkpoint`` is deprecated in v1.5 and will be removed in v1.7.
         # Please pass the path to ``Trainer.fit(..., ckpt_path=...)`` instead.
         # (type: Union[str, Path, null], default: null)
-        # "resume_from_checkpoint": null,
+        # "resume_from_checkpoint"+: null,
 
         # to enable automatic stochastic weight averaging,
         # to improve performance
@@ -719,7 +746,7 @@ function(
         # StochasticWeightAveraging`
         # directly to the Trainer's ``callbacks`` argument instead.
         # (type: bool, default: False)
-        # "stochastic_weight_avg": false,
+        # "stochastic_weight_avg"+: false,
 
         # Supports different training strategies with aliases
         # as well custom training type plugins.
@@ -729,10 +756,10 @@ function(
         # from 1.5 it is deprecated to use DDPPlugin in plugins,
         # but it should be in strategy
         # issues with ddp
-        # "strategy": {
-        #     "class_path": "pytorch_lightning.plugins.DDPPlugin",
-        #     "init_args": {
-        #         "find_unused_parameters": false,
+        # "strategy"+: {
+        #     "class_path"+: "pytorch_lightning.plugins.DDPPlugin",
+        #     "init_args"+: {
+        #         "find_unused_parameters"+: false,
         #     },
         # },
         "strategy": null,
@@ -755,7 +782,7 @@ function(
         # and will be removed in 1.7.
         # Please use ``detect_anomaly`` instead.
         # (type: Optional[bool], default: null)
-        # "terminate_on_nan": true,
+        # "terminate_on_nan"+: true,
 
         # tracks the norm of the gradients, -1 for no tracking,
         # int for the order
@@ -785,7 +812,7 @@ function(
         # NOTE: for more info refer to the official docs and
         # the supporting paper
         # not supported in PyTorch Lightning 1.5.2, check official docs
-        # "truncated_bptt_steps": null,
+        # "truncated_bptt_steps"+: null,
 
         # how often to check the validation dataset
         # if float is a percentage of the training epoch steps,
@@ -800,7 +827,7 @@ function(
         # (type: Union[int, float], default: 1.0)
         # **IMPORTANT**: disabled since we do not need,
         # otherwise it is converted to integer and creates issues
-        # "val_check_interval": 1.0,
+        # "val_check_interval"+: 1.0,
 
         # the path where to save the weights,
         # overriddenby a checkpoint callback
@@ -828,7 +855,7 @@ function(
         # :class:`~pytorch_lightning.callbacks.model_summary.ModelSummary`
         #     directly to the Trainer's ``callbacks`` argument.
         # (type: Optional[str], default: top)
-        # "weights_summary": null,
+        # "weights_summary"+: null,
 
     },
 }
