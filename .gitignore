@@ -52,10 +52,11 @@ dist/
 /datasets
 # data for testing
 **/data
+**/checkpoints
 # PyTorch Lightning logs
-/lightning_logs
+**/lightning_logs
 # custom model training
-model_training*/
+**/model_training*/
 # DSE results
 /*.csv
 /results
