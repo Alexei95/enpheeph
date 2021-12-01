@@ -44,6 +44,11 @@ dist/
 .spyproject
 ####
 
+#### JSONNET
+# we don't want to save .json files
+**/configs/**/*.json
+####
+
 
 #### TEMPORARY LOCAL TEST DATA
 # Datasets
