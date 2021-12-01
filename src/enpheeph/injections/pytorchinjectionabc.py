@@ -27,10 +27,10 @@ class PyTorchInjectionABC(enpheeph.injections.injectionabc.InjectionABC):
         self,
         module: "torch.nn.Module",
     ) -> "torch.nn.Module":
-        if self.handle is not None:
-            self.handle.remove()
-
-        self.handle = None
+        # safe get the handle attribute if not defined
+        if getattr(self, "handle", None) is not None:
+            self.handle.remove()  # type: ignore[union-attr]
+            self.handle = None
 
         return module
 

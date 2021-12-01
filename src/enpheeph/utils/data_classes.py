@@ -85,6 +85,27 @@ class LocationNoTimeMixin(object):
 
 
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
+class LocationNoTimeOptionalArgsMixin(object):
+    # name of parameter to be used, must be provided if not activation
+    parameter_name: typing.Optional[str] = dataclasses.field(default=None)
+
+    def __post_init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+        # not needed, it should be done in sub-classes
+        # super().__post_init__(*args, **kwargs)
+
+        activation_type = (
+            self.parameter_type  # type: ignore[attr-defined]
+            != self.parameter_type.Activation  # type: ignore[attr-defined]
+        )
+
+        if activation_type and self.parameter_name is None:
+            raise ValueError(
+                "'parameter_name' must be provided "
+                "if the type of parameter is not an activation"
+            )
+
+
+@dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
 class LocationTimeMixin(object):
     # index used for time, optional as it is required only for SNNs
     # NOTE: this solution limits the expressivity of InjectionLocation, as we
@@ -125,6 +146,7 @@ class InjectionLocationABC(
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
 class MonitorLocation(
     LocationTimeMixin,
+    LocationNoTimeOptionalArgsMixin,
     LocationNoTimeMixin,
     InjectionLocationABC,
     use_shared=True,
@@ -137,6 +159,7 @@ class MonitorLocation(
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
 class FaultLocation(
     LocationTimeMixin,
+    LocationNoTimeOptionalArgsMixin,
     FaultLocationMixin,
     LocationNoTimeMixin,
     InjectionLocationABC,

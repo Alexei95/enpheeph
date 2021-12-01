@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import copy
 import typing
 
 import enpheeph.injections.pytorchinjectionabc
@@ -10,10 +11,8 @@ import enpheeph.utils.data_classes
 if typing.TYPE_CHECKING:
     import torch
 
-# WARNING: WORK IN PROGRESS, NOT WORKING YET
 
-
-class WeightHooksPyTorchFault(
+class WeightPyTorchFault(
     enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
     enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixin,
 ):
@@ -43,30 +42,69 @@ class WeightHooksPyTorchFault(
         self.location = location
         self.low_level_plugin = low_level_torch_plugin
 
-        self.handle = None
+        self.backup = None
         self.mask = None
 
     @property
     def module_name(self) -> str:
         return self.location.module_name
 
-    def weight_fault_pre_hook(
+    def inject_weight(
         self,
         module: "torch.nn.Module",
-        input: typing.Union[typing.Tuple["torch.Tensor"], "torch.Tensor"],
-        output: "torch.Tensor",
-    ) -> "torch.Tensor":
-        self.generate_mask(output)
+    ) -> "torch.nn.Module":
+        if self.backup is not None:
+            raise ValueError(
+                "This method must be called only when setting up the injection"
+            )
 
-        masked_output = self.inject_mask(output)
+        weight = getattr(
+            module,
+            self.location.parameter_name,  # type: ignore[arg-type]
+        )
+        self.backup = copy.deepcopy(weight)
+        self.generate_mask(weight)
+        masked_weight = self.inject_mask(weight)
 
-        return masked_output
+        setattr(
+            module,
+            self.location.parameter_name,  # type: ignore[arg-type]
+            masked_weight,
+        )
+        return module
+
+    def restore_weight(
+        self,
+        module: "torch.nn.Module",
+    ) -> "torch.nn.Module":
+        if self.backup is None:
+            raise ValueError(
+                "This method must be called only when tearing down the injection"
+            )
+
+        setattr(  # type: ignore[unreachable]
+            module,
+            self.location.parameter_name,
+            copy.deepcopy(self.backup),
+        )
+        self.backup = None
+
+        return module
 
     def setup(
         self,
         module: "torch.nn.Module",
     ) -> "torch.nn.Module":
-        self.pre_handle = module.register_forward_pre_hook(self.weight_fault_pre_hook)
-        self.after_handle = module.register_forward_
+        module = self.inject_weight(module)
+
+        return module
+
+    # we need to override the teardown as it is not common to the normal hook
+    # teardowns
+    def teardown(
+        self,
+        module: "torch.nn.Module",
+    ) -> "torch.nn.Module":
+        module = self.restore_weight(module)
 
         return module
