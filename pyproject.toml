@@ -51,6 +51,9 @@
     cupy = [
         "cupy >= 9.0.0",
     ]
+    norse = [
+        "norse >= 0.0.7",
+    ]
     numpy = [
         "numpy >= 1.19",
     ]
@@ -58,7 +61,16 @@
         "sqlalchemy >= 1.4.20",
     ]
     torch = [
-        "torch >= 1.8",
+        "torch >= 1.8, < 1.10.0",
+    ]
+
+    norse-cpu = [
+        "enpheeph[torch-cpu]",
+        "enpheeph[norse]",
+    ]
+    norse-gpu = [
+        "enpheeph[torch-gpu]",
+        "enpheeph[norse]",
     ]
 
     torch-cpu = [
@@ -73,6 +85,14 @@
     integrations-pytorch-lightning = [
         "enpheeph[torch]",
         "pytorch-lightning >= 1.5",
+    ]
+
+    dev = [
+        "black",
+        "flake8",
+        "mypy",
+        "pre-commit",
+        "pytest",
     ]
 
     full = [
