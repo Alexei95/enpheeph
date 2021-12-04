@@ -78,6 +78,12 @@ repos:
           "--target-version=py38",
       ]
 
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v1.17.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
   - repo: https://gitlab.com/pycqa/flake8
     rev: 4.0.1
     hooks:
