@@ -12,12 +12,17 @@
 # openblas-devel
 # NOTE: cudatoolkit-dev=10.2 DOES NOT EXIST
 
--e .[full]
 
-icedata==0.5.1
-icevision==0.8.1
+-e .[full]
+# to upgrade packages only if needed to match the dependencies
+# must be used as command-line options
+# --upgrade --upgrade-strategy only-if-needed
+
+# for PyTorch 1.8.2
+-f https://download.pytorch.org/whl/torch/
+
 lightning-flash[all]==0.5.2
-pytorch-lightning[cli]==1.5.2
-torch==1.8.1
-torchaudio
-torchvision
+pytorch-lightning[extra]==1.5.2
+torch==1.9.1+cu102
+torchaudio==0.9.1
+torchvision==0.10.1
