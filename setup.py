@@ -37,10 +37,11 @@ if __name__ == "__main__":
         extras_require={
             "full": [
                 "cupy >= 9.0.0",
+                "norse >= 0.0.7",
                 "numpy >= 1.19",
                 "pytorch-lightning >= 1.5",
                 "sqlalchemy >= 1.4.20",
-                "torch >= 1.8",
+                "torch >= 1.8, < 1.10",
             ],
         },
         # test_suite="tests.test_black",
