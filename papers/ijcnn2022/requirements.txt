@@ -4,12 +4,12 @@
 # it is suggested to use conda and install the following dependencies from conda-forge
 # the main problem is with the cudatoolkit as well as cupy, which is difficult
 # to build properly using pip
-# cudatoolkit=10.1
-# cudatoolkit-dev=10.1
+# use cuda 10.1 if cuda-dev is required later on, as the cuda10.2 are included in
+# pytorch
+# cudatoolkit=10.2
 # cupy=9.6.0
 # gcc_linux-64
 # gxx_linux-64
-# openblas-devel
 # NOTE: cudatoolkit-dev=10.2 DOES NOT EXIST
 
 
