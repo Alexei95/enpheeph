@@ -8,6 +8,7 @@
 # pytorch
 # cudatoolkit=10.2
 # cupy=9.6.0
+# the compilers might not be needed, it depends on which packages need to be built
 # gcc_linux-64
 # gxx_linux-64
 # NOTE: cudatoolkit-dev=10.2 DOES NOT EXIST
