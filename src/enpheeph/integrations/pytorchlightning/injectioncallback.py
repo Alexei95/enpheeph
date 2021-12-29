@@ -2,11 +2,15 @@
 import collections
 import copy
 import typing
+import warnings
 
 import pytorch_lightning
 
 import enpheeph.handlers.injectionhandler
 import enpheeph.injections.plugins.storage.storagepluginabc
+
+# to suppress all warnings
+warnings.filterwarnings("ignore")
 
 
 class InjectionCallback(pytorch_lightning.callbacks.Callback):
@@ -75,11 +79,22 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
                     inj.location for inj in self.injection_handler.active_injections
                 ],
                 running=True,
+                # we enable the golden run for the first execution only if the flag is
+                # True
                 golden_run_flag=self.first_golden_run is True,
+                # we pass the id if the first_golden_run is an integer for the
+                # experiment id
+                # otherwise None to disable it
                 golden_run_id=self.first_golden_run
                 if isinstance(self.first_golden_run, int)
                 else None,
             )
+
+            # it will be True at most at the first iteration as we change it into int
+            if self.first_golden_run is True:
+                # we set the first_golden_run to the golden run id if the first test is
+                # a golden run
+                self.first_golden_run = self.storage_plugin.experiment_id
 
     def on_test_end(
         self,
