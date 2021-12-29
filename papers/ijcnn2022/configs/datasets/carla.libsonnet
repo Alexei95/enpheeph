@@ -78,7 +78,7 @@ base_dataset + {
         # :class:`~flash.core.data.data_module.DataModule`.
         # If ``None``, ``cls.input_transform_cls``
         # will be constructed and used. (type: Optional[InputTransform], default: null)
-        "input_transform": null,
+        # "input_transform": null,
 
         # Mapping between a class_id and its corresponding color.
         # (type: Optional[Dict[int, Tuple[int, int, int]]], default: null)

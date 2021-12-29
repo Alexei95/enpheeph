@@ -75,12 +75,12 @@ base_model + {
         # The :class:`~flash.core.data.io.output.Output`
         # to use when formatting prediction outputs.
         # (type: Optional[Output], default: null)
-        "output": null,
+        # "output": null,
 
         # :class:`~flash.core.data.io.output_transform.OutputTransform`
         # use for post processing samples.
         # (type: Optional[OutputTransform], default: null)
-        "output_transform": null,
+        # "output_transform": null,
 
         # A bool or string to specify the pretrained weights of the backbone,
         # defaults to ``True``
