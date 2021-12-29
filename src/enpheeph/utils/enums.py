@@ -27,6 +27,13 @@ class BitWidth(enum.IntEnum):
     Int64 = EightBytes
 
 
+class DimensionType(enum.Enum):
+    BitLevel = enum.auto()
+    Batch = enum.auto()
+    Tensor = enum.auto()
+    Time = enum.auto()
+
+
 # this endianness does not represent the actual endianness of the machine,
 # only the endianness seen in the Python objects when accessing them
 class Endianness(enum.Enum):
