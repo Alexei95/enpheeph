@@ -82,7 +82,14 @@ class InjectionHandler(object):
         if injections is None:
             injections = self.injections
 
-        self.active_injections = [inj for inj in injections if inj in self.injections]
+        # by summing active_injections we remember the already-active
+        # injections from previous activate calls
+        self.active_injections = [
+            # we need to convert injections to a list to sum it with active_injections
+            inj
+            for inj in list(injections) + self.active_injections
+            if inj in self.injections
+        ]
 
         return self.active_injections
 
@@ -90,6 +97,7 @@ class InjectionHandler(object):
     # it returns the active injections
     def deactivate(
         self,
+        # here Sequence is fine as we are simply iterating over/checking presence
         injections: typing.Optional[
             typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]
         ] = None,
