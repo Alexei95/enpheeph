@@ -6,8 +6,8 @@ import enpheeph.utils.functions
 import enpheeph.utils.imports
 
 if typing.TYPE_CHECKING or (
-    enpheeph.utils.imports.IS_CUPY_AVAILABLE
-    and enpheeph.utils.imports.IS_TORCH_AVAILABLE
+    enpheeph.utils.imports.MODULE_AVAILABILITY[enpheeph.utils.imports.CUPT_NAME]
+    and enpheeph.utils.imports.MODULE_AVAILABILITY[enpheeph.utils.imports.TORCH_NAME]
 ):
     import cupy
     import torch

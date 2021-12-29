@@ -7,7 +7,10 @@ import enpheeph.utils.enums
 import enpheeph.utils.functions
 import enpheeph.utils.imports
 
-if typing.TYPE_CHECKING or enpheeph.utils.imports.IS_TORCH_AVAILABLE:
+if (
+    typing.TYPE_CHECKING
+    or enpheeph.utils.imports.MODULE_AVAILABILITY[enpheeph.utils.imports.TORCH_NAME]
+):
     import torch
 
 

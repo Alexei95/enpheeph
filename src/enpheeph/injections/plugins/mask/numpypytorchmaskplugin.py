@@ -5,11 +5,12 @@ import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
 import enpheeph.utils.functions
 import enpheeph.utils.imports
 
-if typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING or (
+    enpheeph.utils.imports.MODULE_AVAILABILITY[enpheeph.utils.imports.NUMPY_NAME]
+    and enpheeph.utils.imports.MODULE_AVAILABILITY[enpheeph.utils.imports.TORCH_NAME]
+):
     import numpy
     import torch
-elif enpheeph.utils.imports.IS_NUMPY_AVAILABLE:
-    import numpy
 
 
 class NumPyPyTorchMaskPlugin(
