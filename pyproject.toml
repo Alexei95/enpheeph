@@ -25,11 +25,12 @@
     dependencies = [
         # for pkg_resources, to parse version info from optional requirements
         "setuptools >= 58.0",
+        "packaging >= 20.0",
     ]
 
     [[project.author]]
         name = "Alessio Colucci"
-        email = "alessio.colucci@pm.me"
+        email = "pm@alexei95.aleeas.com"
 
 
 [project.license]

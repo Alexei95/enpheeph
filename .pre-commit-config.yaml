@@ -109,6 +109,7 @@ repos:
       #     pytorch-lightning>=1.4.5,
       #     sqlalchemy>=1.4.22,
       #     torch>=1.9,
+        "packaging==21.0",
         "sqlalchemy[mypy]==1.4.22",
         "types-setuptools==57.4.2",
         "types-pkg-resources==0.1.3",

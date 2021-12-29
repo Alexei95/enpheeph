@@ -33,6 +33,7 @@ if __name__ == "__main__":
         # dependencies
         install_requires=[
             "setuptools >= 58.0",
+            "packaging >= 20.0",
         ],
         extras_require={
             "full": [
