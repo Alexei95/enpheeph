@@ -8,6 +8,9 @@ import enpheeph.utils.data_classes
 
 
 class StoragePluginABC(abc.ABC):
+    # the id of the current experiment
+    experiment_id: typing.Optional[int]
+
     @abc.abstractmethod
     def get_experiments(
         self,

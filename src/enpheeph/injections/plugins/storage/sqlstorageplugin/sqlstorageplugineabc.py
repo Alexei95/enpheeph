@@ -222,18 +222,10 @@ class SQLStoragePluginABC(
                 .one()
             )  # we use .one() as there will be only one match
 
-            # we get the golden_run from the session
-            golden_run = (
-                session.execute(
-                    sqlalchemy.select(sql_data_classes.ExperimentRun).where(
-                        sql_data_classes.ExperimentRun.id_ == golden_run_id
-                    )
-                )
-                .scalars()
-                .one()
-            )  # we use .one() as there will be only one match
-
-            experiment.golden_run = golden_run
+            # we cannot get the golden run directly as that would be a circular
+            # dependency
+            # so we simply update the ID
+            experiment.golden_run_id = golden_run_id
 
             session.add(experiment)
 
