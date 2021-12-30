@@ -55,10 +55,14 @@ class IndexingPlugin(
             [x for x in self.dimension_dict.values() if x != Ellipsis],
         )
         longest_positive_range: int = max(
-            x for x in no_ellipsis_dimension_dict_values if x >= 0
+            (x for x in no_ellipsis_dimension_dict_values if x >= 0),
+            # we use -1 default so that range(-1 + 1) = []
+            default=-1,
         )
         longest_negative_range: int = min(
-            x for x in no_ellipsis_dimension_dict_values if x < 0
+            (x for x in no_ellipsis_dimension_dict_values if x < 0),
+            # we use the number right outside the range to get an empty list
+            default=0,
         )
         # this list contains all the possible indices including Ellipsis
         total_indices: typing.List[enpheeph.utils.typings.DimensionIndexType] = list(
