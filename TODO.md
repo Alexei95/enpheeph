@@ -18,7 +18,7 @@
     1. {#8-1} ```mkinit``` does that, run ```mkinit --recursive --black --lazy src/enpheeph -w```
         1. {#8-1-1} It can be used as CI/CD action in GitHub whenver something is pushed
     2. {#8-2} ```mkinit``` is not the best, as it fills up the main namespace, but still it might be useful as all the classes are available without the submodules
-9. #9 Fix requirements.txt and dependencies in setup.py
+9. {#9} Fix requirements.txt and dependencies in setup.py
 10. #10 Check for project metadata to be saved in pyproject.toml
     1. #10-1 Reformat requirements.txt to use '.' and install all the required dependencies
 11. #11 Use bumpversion or any alternative to automatically bump the version of the repository and create a tag
@@ -33,6 +33,22 @@
 18. #18 Implement logging throughout the code.
     1. #18-1 Just write some ```logger = logging.getLogger(__name__)``` and ```logger.debug(...)``` throughout the code
 19. #19 Implement early stopping callback inheriting from PyTorch Lightning but checking at each batch
+20. #20 Add jax support for CPU/GPU/TPU operations, as it supports dlpack
+    1. #20-1 Add support for automatic switching of the mask support across NumPy/CuPy/JAX for CPU/GPU/TPU support
+21. #21 Add support for bit_index in MonitorLocation, so that we can save only some bits
+22. #22 Add support for a registry mapping each set of parameter type / injection to a possible class
+    1. #22-1 Follow the registry used in PyTorch Lightning Flash
+23. {#23} Bug with mask dimension error for activations, as the mask also covers the batch size, so it should be enough to remove it from the mask dimensions
+    1. {#23-1} This can be further improved using an indexing system to select the correct indices by means of a dict instead of tensor_index, batch_index, time_index and so on. In this way the different injections can select the indices that they need at each specific time, by only knowing how to reach the generic batch/tensor/time positioning via enums. Even bit_index might be added later on, but since it is generic enough to cover all the implementations it might not be necessary.
+24. #24 Use tox for tests automation.
+25. #25 Add caching so that we can skip recomputing the layers up until the fault if the checksum of the input is the same
+    1. #25-1 Look at InjectTF2 for solutions on how to do it
+26. #26 Fix timestamps/runtime for injections
+27. #27 Fix golden run id referring to the first one if the database is being reused
+28. #28 Improve docs in indexing plugin
+29. #29 Find better solution for warning suppression in InjectionCallback
+30. #30 Make SQLStoragePluginABC into a real ABC and move all the implementations in SQLStoragePluginMixin
+31. #31 Fix spiking injection
 
 ## |Duplicates|
 
@@ -49,3 +65,5 @@
 3. {#14} Removed unnecessary files
 4. {#12}, {#12-1}, {#12-1-1} Fix imports with requirement comparisons and flags. mypy imports are done with typing.TYPE_CHECKING
 5. {#3}, {#3-1}, {#3-1-1}, {#3-2} CI/CD has been improved, many more checks are now run both in pre-commit and in CI. There are still some possible improvements to be made, mentioned in #3-3
+6. {#9} Dependencies are now better managed
+7. {#23}, {#23-1} Now we can select also batches depending on the corresponding index and the flag, and also the mask is saved accordingly. The corresponding indexing plugin has been implemented and integrated with the common faults, some tests will have to be written to guarantee proper operation.
