@@ -16,7 +16,7 @@ import enpheeph.injections.plugins.indexing.indexingplugin
 
 CURRENT_DIR = pathlib.Path(__file__).absolute().parent
 RESULTS_DIRECTORY = CURRENT_DIR / "results" / "alexnet-cifar10"
-WEIGHTS_FILE = RESULTS_DIRECTORY / "weights/alexnet-cifar10.pth"
+WEIGHTS_FILE = RESULTS_DIRECTORY / "weights/alexnet-cifar10.pt"
 LOG_DIRECTORY = RESULTS_DIRECTORY / "injection_results"
 LOG_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
