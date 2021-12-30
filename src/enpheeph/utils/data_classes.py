@@ -126,13 +126,23 @@ class InjectionLocationABC(
     pass
 
 
+# here we define a common base injection location, to use the basic parameters
+# which are in common to Monitor and Fault
+@dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
+class BaseInjectionLocation(
+    LocationMixin,
+    InjectionLocationABC,
+    use_shared=True,
+):
+    pass
+
+
 # the order of the parameters is from last to first
 # so the ones with defaults should be at the beginning
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
 class MonitorLocation(
     LocationOptionalMixin,
-    LocationMixin,
-    InjectionLocationABC,
+    BaseInjectionLocation,
     use_shared=True,
 ):
     pass
@@ -144,8 +154,7 @@ class MonitorLocation(
 class FaultLocation(
     LocationOptionalMixin,
     FaultLocationMixin,
-    LocationMixin,
-    InjectionLocationABC,
+    BaseInjectionLocation,
     use_shared=True,
 ):
     pass

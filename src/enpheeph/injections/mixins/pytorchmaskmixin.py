@@ -62,7 +62,7 @@ class PyTorchMaskMixin(abc.ABC):
         # if True we use set_tensor_only_indexing, if False we use
         # set_batch_tensor_indexing
         # if explicitly non-boolean, we skip it, to allow for custom configurations
-        tensor_only: bool = True,
+        tensor_only: typing.Optional[bool] = True,
     ) -> "torch.Tensor":
         if self.mask is None or force_recompute:
             # NOTE: the following process is used to process the index,
@@ -143,7 +143,7 @@ class PyTorchMaskMixin(abc.ABC):
         # if True we use set_tensor_only_indexing, if False we use
         # set_batch_tensor_indexing
         # if explicitly non-boolean, we skip it, to allow for custom configurations
-        tensor_only: bool = True,
+        tensor_only: typing.Optional[bool] = True,
     ) -> "torch.Tensor":
         if self.mask is None:
             raise RuntimeError("Please call generate_mask before injection")
