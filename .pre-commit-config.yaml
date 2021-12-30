@@ -22,6 +22,14 @@ repos:
           '--maxkb=350',
           '--enforce-all',
       ]
+      exclude: |
+          (?x)^(
+              papers/ijcnn2022/comparisons/tensorfi2/results/alexnet-cifar10/weights/alexnet-cifar10.pt|
+              papers/ijcnn2022/experiments/image_classifier_resnet18_null_cifar10_false_false.pt|
+              papers/ijcnn2022/experiments/image_classifier_resnet18_null_cifar10_true_false__non_deterministic.pt|
+              papers/ijcnn2022/experiments/semantic_segmenter_mobilenetv3_large_100_fpn_carla_false_false.pt|
+              papers/ijcnn2022/experiments/semantic_segmenter_mobilenetv3_large_100_fpn_carla_true_false.pt
+          )$
       # exclude: |
       #     (?x)^(
       #         docs/source/_static/images/general/fast_2.gif|
