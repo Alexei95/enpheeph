@@ -54,10 +54,17 @@ def lazy_import(module_name, submodules, submod_attrs):
 __getattr__ = lazy_import(
     __name__,
     submodules={
+        'indexing',
         'mask',
         'storage',
     },
     submod_attrs={
+        'indexing': [
+            'IndexingPlugin',
+            'IndexingPluginABC',
+            'indexingplugin',
+            'indexingpluginabc',
+        ],
         'mask': [
             'CuPyPyTorchMaskPlugin',
             'LowLevelTorchMaskPluginABC',
@@ -105,12 +112,14 @@ def __dir__():
 
 __all__ = ['CuPyPyTorchMaskPlugin', 'CustomBase', 'CustomBaseClass',
            'ExperimentRun', 'ExperimentRunBaseMixin', 'ExperimentRunProtocol',
-           'Fault', 'FaultBaseMixin', 'FaultProtocol', 'Injection',
-           'InjectionProtocol', 'LowLevelTorchMaskPluginABC', 'Monitor',
-           'MonitorBaseMixin', 'MonitorProtocol', 'NumPyPyTorchMaskPlugin',
-           'PolymorphicMixin', 'SQLStoragePluginABC', 'SQLiteStoragePlugin',
-           'StoragePluginABC', 'cupypytorchmaskplugin', 'fix_pysqlite',
-           'lowleveltorchmaskpluginabc', 'mask', 'numpypytorchmaskplugin',
+           'Fault', 'FaultBaseMixin', 'FaultProtocol', 'IndexingPlugin',
+           'IndexingPluginABC', 'Injection', 'InjectionProtocol',
+           'LowLevelTorchMaskPluginABC', 'Monitor', 'MonitorBaseMixin',
+           'MonitorProtocol', 'NumPyPyTorchMaskPlugin', 'PolymorphicMixin',
+           'SQLStoragePluginABC', 'SQLiteStoragePlugin', 'StoragePluginABC',
+           'cupypytorchmaskplugin', 'fix_pysqlite', 'indexing',
+           'indexingplugin', 'indexingpluginabc', 'lowleveltorchmaskpluginabc',
+           'mask', 'numpypytorchmaskplugin',
            'pysqlite_begin_emission_fix_on_connect', 'set_sqlite_pragma',
            'sql_data_classes', 'sqlalchemy_begin_emission_pysqlite',
            'sqlitestorageplugin', 'sqlstorageplugin', 'sqlstorageplugineabc',
