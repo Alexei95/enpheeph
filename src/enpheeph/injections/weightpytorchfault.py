@@ -60,15 +60,24 @@ class WeightPyTorchFault(
 
         weight = getattr(
             module,
-            self.location.parameter_name,  # type: ignore[arg-type]
+            # sometimes type: ignore[arg-type] might be required for the following line
+            # mypy gives error as parameter_name can be None, but it cannot be since
+            # the dataclass checks for the validity
+            # so we simply cast it here
+            typing.cast(str, self.location.parameter_name),
         )
         self.backup = copy.deepcopy(weight)
-        self.generate_mask(weight)
-        masked_weight = self.inject_mask(weight)
+
+        self.generate_mask(weight, tensor_only=True)
+        masked_weight = self.inject_mask(weight, tensor_only=True)
 
         setattr(
             module,
-            self.location.parameter_name,  # type: ignore[arg-type]
+            # sometimes type: ignore[arg-type] might be required for the following line
+            # mypy gives error as parameter_name can be None, but it cannot be since
+            # the dataclass checks for the validity
+            # so we simply cast it here
+            typing.cast(str, self.location.parameter_name),
             masked_weight,
         )
         return module

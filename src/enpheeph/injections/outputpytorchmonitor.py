@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import typing
 
+import enpheeph.injections.plugins.indexing.indexingpluginabc
 import enpheeph.injections.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmonitorpostprocessormixin
 import enpheeph.injections.plugins.storage.storagepluginabc
@@ -23,6 +24,10 @@ class OutputPyTorchMonitor(
     ),
 ):
     enabled_metrics: enpheeph.utils.enums.MonitorMetric
+    # we need the index plugin to simplify the handling of the indices
+    indexing_plugin: (
+        enpheeph.injections.plugins.indexing.indexingpluginabc.IndexingPluginABC
+    )
     location: enpheeph.utils.data_classes.MonitorLocation
     move_to_first: bool
     storage_plugin: (
@@ -31,6 +36,9 @@ class OutputPyTorchMonitor(
 
     def __init__(
         self,
+        indexing_plugin: (
+            enpheeph.injections.plugins.indexing.indexingpluginabc.IndexingPluginABC
+        ),
         location: enpheeph.utils.data_classes.MonitorLocation,
         enabled_metrics: enpheeph.utils.enums.MonitorMetric,
         storage_plugin: (
@@ -40,6 +48,7 @@ class OutputPyTorchMonitor(
     ):
         super().__init__()
 
+        self.indexing_plugin = indexing_plugin
         self.location = location
         self.enabled_metrics = enabled_metrics
         self.storage_plugin = storage_plugin
@@ -58,8 +67,23 @@ class OutputPyTorchMonitor(
         input: typing.Union[typing.Tuple["torch.Tensor"], "torch.Tensor"],
         output: "torch.Tensor",
     ) -> None:
+        self.indexing_plugin.select_active_dimensions(
+            [
+                enpheeph.utils.enums.DimensionType.Batch,
+                enpheeph.utils.enums.DimensionType.Tensor,
+            ],
+            autoshift_to_boundaries=True,
+            fill_empty_index=True,
+            filler=slice(None, None),
+        )
         # NOTE: no support for bit_index yet
-        postprocess = self.postprocess(output[self.location.tensor_index])
+        postprocess = self.postprocess(
+            output[
+                self.indexing_plugin.join_indices(
+                    dimension_indices=self.location.dimension_index,
+                )
+            ]
+        )
         self.storage_plugin.add_payload(location=self.location, payload=postprocess)
 
     def setup(self, module: "torch.nn.Module") -> "torch.nn.Module":

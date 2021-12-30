@@ -74,50 +74,35 @@ class LocationModuleNameMixin(object):
 
 
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
-class LocationNoTimeMixin(object):
+class LocationMixin(object):
     # type of parameter, activation or weight
     parameter_type: enpheeph.utils.enums.ParameterType
-    # tensor index which can be represented using a numpy/pytorch indexing
-    # array
-    tensor_index: enpheeph.utils.typings.IndexMultiDType
+    # batch/tensor/time indices are now inside the dimension_index
+    dimension_index: enpheeph.utils.typings.DimensionLocationIndexType
     # same for the bit injection info
     bit_index: enpheeph.utils.typings.Index1DType
 
 
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
-class LocationNoTimeOptionalArgsMixin(object):
-    # name of parameter to be used, must be provided if not activation
-    parameter_name: typing.Optional[str] = dataclasses.field(default=None)
+class LocationOptionalMixin(object):
+    # name of parameters to get, default is None as it is required if it is not
+    # an activation injection
+    parameter_name: typing.Optional[str] = None
 
     def __post_init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         # not needed, it should be done in sub-classes
         # super().__post_init__(*args, **kwargs)
 
-        activation_type = (
-            self.parameter_type  # type: ignore[attr-defined]
-            != self.parameter_type.Activation  # type: ignore[attr-defined]
+        not_activation_type = (
+            self.parameter_type.Activation  # type: ignore[attr-defined]
+            not in self.parameter_type  # type: ignore[attr-defined]
         )
 
-        if activation_type and self.parameter_name is None:
+        if not_activation_type and self.parameter_name is None:
             raise ValueError(
                 "'parameter_name' must be provided "
                 "if the type of parameter is not an activation"
             )
-
-
-@dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
-class LocationTimeMixin(object):
-    # index used for time, optional as it is required only for SNNs
-    # NOTE: this solution limits the expressivity of InjectionLocation, as we
-    # cannot have different injections at different time-steps
-    # however, even supporting different masks at different time-steps would
-    # still require the creation of multiple masks, as they are created based
-    # on the output at each time-step, hence nullifying the actual memory gains
-    # the only overhead is the different hooks as well as the multiple Python
-    # objects
-    time_index: (
-        typing.Optional[enpheeph.utils.typings.IndexTimeType]
-    ) = dataclasses.field(default=None)
 
 
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
@@ -145,9 +130,8 @@ class InjectionLocationABC(
 # so the ones with defaults should be at the beginning
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
 class MonitorLocation(
-    LocationTimeMixin,
-    LocationNoTimeOptionalArgsMixin,
-    LocationNoTimeMixin,
+    LocationOptionalMixin,
+    LocationMixin,
     InjectionLocationABC,
     use_shared=True,
 ):
@@ -158,10 +142,9 @@ class MonitorLocation(
 # so the ones with defaults should be at the beginning
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
 class FaultLocation(
-    LocationTimeMixin,
-    LocationNoTimeOptionalArgsMixin,
+    LocationOptionalMixin,
     FaultLocationMixin,
-    LocationNoTimeMixin,
+    LocationMixin,
     InjectionLocationABC,
     use_shared=True,
 ):

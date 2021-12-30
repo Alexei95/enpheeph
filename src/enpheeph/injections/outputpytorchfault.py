@@ -15,6 +15,10 @@ class OutputPyTorchFault(
     enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
     enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixin,
 ):
+    # we need the index plugin to simplify the handling of the indices
+    indexing_plugin: (
+        enpheeph.injections.plugins.indexing.indexingpluginabc.IndexingPluginABC
+    )
     location: enpheeph.utils.data_classes.FaultLocation
     low_level_plugin: (
         # black has issues with long names
@@ -27,6 +31,9 @@ class OutputPyTorchFault(
 
     def __init__(
         self,
+        indexing_plugin: (
+            enpheeph.injections.plugins.indexing.indexingpluginabc.IndexingPluginABC
+        ),
         location: enpheeph.utils.data_classes.FaultLocation,
         low_level_torch_plugin: (
             # black has issues with long names
@@ -38,6 +45,7 @@ class OutputPyTorchFault(
     ) -> None:
         super().__init__()
 
+        self.indexing_plugin = indexing_plugin
         self.location = location
         self.low_level_plugin = low_level_torch_plugin
 
@@ -54,9 +62,9 @@ class OutputPyTorchFault(
         input: typing.Union[typing.Tuple["torch.Tensor"], "torch.Tensor"],
         output: "torch.Tensor",
     ) -> "torch.Tensor":
-        self.generate_mask(output)
+        self.generate_mask(output, tensor_only=True)
 
-        masked_output = self.inject_mask(output)
+        masked_output = self.inject_mask(output, tensor_only=False)
 
         return masked_output
 

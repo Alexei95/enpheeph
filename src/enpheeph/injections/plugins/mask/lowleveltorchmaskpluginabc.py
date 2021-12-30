@@ -42,7 +42,7 @@ class LowLevelTorchMaskPluginABC(abc.ABC):
     def make_mask_array(
         self,
         int_mask: int,
-        mask_index: enpheeph.utils.typings.IndexMultiDType,
+        mask_index: enpheeph.utils.typings.AnyIndexType,
         # this fill value is already final, as is the int mask
         int_fill_value: int,
         shape: typing.Sequence[int],

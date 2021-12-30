@@ -39,7 +39,7 @@ class NumPyPyTorchMaskPlugin(
     def make_mask_array(
         self,
         int_mask: int,
-        mask_index: enpheeph.utils.typings.IndexMultiDType,
+        mask_index: enpheeph.utils.typings.AnyIndexType,
         int_fill_value: int,
         shape: typing.Sequence[int],
         torch_placeholder: "torch.Tensor",
