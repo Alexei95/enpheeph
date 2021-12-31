@@ -37,13 +37,13 @@ class SQLStoragePluginABC(
         running: typing.Optional[bool] = None,
         completed: typing.Optional[bool] = None,
         start_time: typing.Optional[datetime.datetime] = None,
-        total_duration: typing.Optional[float] = None,
+        total_duration: typing.Optional[datetime.timedelta] = None,
         golden_run_flag: typing.Optional[bool] = None,
         injection_locations: typing.Optional[
             typing.Sequence[enpheeph.utils.data_classes.InjectionLocationABC]
         ] = None,
         # in the future we will add also model_info
-    ) -> typing.Sequence[
+    ) -> typing.List[
         enpheeph.injections.plugins.storage.storage_typings.ExperimentRunProtocol,
     ]:
         # first we open the querying session on our engine
@@ -95,7 +95,16 @@ class SQLStoragePluginABC(
                     stmt = stmt.where(inj_al.location == inj)
 
             # we return all the instances of the classes
-            return session.execute(stmt).scalars().all()
+            return typing.cast(
+                typing.List[
+                    # black converts it to very long line, so we disable it
+                    # fmt: off
+                    enpheeph.injections.plugins.storage.
+                    storage_typings.ExperimentRunProtocol,
+                    # fmt: on
+                ],
+                session.execute(stmt).scalars().all(),
+            )
 
     def create_experiment(
         self,
@@ -108,6 +117,7 @@ class SQLStoragePluginABC(
         # the id for the golden run
         # if None we skip this part
         golden_run_id: typing.Optional[int] = None,
+        start_time: typing.Optional[datetime.datetime] = None,
     ) -> int:
         # check to avoid creating an experiment on top of the existing one
         if self.experiment_id is not None:
@@ -119,7 +129,10 @@ class SQLStoragePluginABC(
             # we create a new ExperimentRun
             # running is set by default, but the argument is_running can disable it
             experiment = sql_data_classes.ExperimentRun(
-                running=running, completed=False, golden_run_flag=golden_run_flag
+                running=running,
+                completed=False,
+                golden_run_flag=golden_run_flag,
+                start_time=start_time,
             )
             # we insert all the injection locations
             # depending on the class instance we create different objects
@@ -152,8 +165,7 @@ class SQLStoragePluginABC(
 
     def complete_experiment(
         self,
-        start_time: typing.Optional[datetime.datetime] = None,
-        total_duration: typing.Optional[float] = None,
+        total_duration: typing.Optional[datetime.timedelta] = None,
     ) -> None:
         if self.experiment_id is None:
             raise ValueError("There is no experiment to be closed")
@@ -171,7 +183,6 @@ class SQLStoragePluginABC(
             )  # we use .one() as there will be only one match
 
             experiment.completed = True
-            experiment.start_time = start_time
             experiment.total_duration = total_duration
 
             experiment.running = False

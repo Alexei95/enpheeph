@@ -11,7 +11,7 @@ class ExperimentRunProtocol(typing.Protocol):
     running: bool
     completed: bool
     start_time: typing.Optional[datetime.datetime]
-    total_duration: typing.Optional[datetime.datetime]
+    total_duration: typing.Optional[datetime.timedelta]
     golden_run_flag: bool
     metrics: typing.Optional[typing.Dict[str, typing.Any]]
 

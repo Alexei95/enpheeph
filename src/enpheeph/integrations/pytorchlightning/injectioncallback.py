@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import collections
 import copy
+import datetime
 import typing
 import warnings
 
@@ -14,6 +15,7 @@ warnings.filterwarnings("ignore")
 
 
 class InjectionCallback(pytorch_lightning.callbacks.Callback):
+    experiment_time_start: typing.Optional[datetime.datetime]
     first_golden_run: typing.Union[bool, int]
     injection_handler: enpheeph.handlers.injectionhandler.InjectionHandler
     metrics: typing.DefaultDict[
@@ -38,6 +40,8 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         # otherwise, we expect it to be a valid id for the golden run reference
         first_golden_run: typing.Union[bool, int] = True,
     ):
+        self.experiment_time_start = None
+
         self.injection_handler = injection_handler
         self.storage_plugin = storage_plugin
         # this number is used to indicate how often to save the results
@@ -73,6 +77,7 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         # FIXME: use a MockStorage implementation
         # to allow this without checking for None
         if self.storage_plugin is not None:
+            self.experiment_time_start = datetime.datetime.utcnow()
             self.storage_plugin.create_experiment(
                 # we create an experiment with the active injections
                 injection_locations=[
@@ -88,6 +93,8 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
                 golden_run_id=self.first_golden_run
                 if isinstance(self.first_golden_run, int)
                 else None,
+                # we use UTC for dates as it is generic
+                start_time=self.experiment_time_start,
             )
 
             # it will be True at most at the first iteration as we change it into int
@@ -106,7 +113,15 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         self.test_epoch = 0
 
         if self.storage_plugin is not None:
-            self.storage_plugin.complete_experiment()
+            duration = (
+                datetime.datetime.utcnow() - self.experiment_time_start
+                if self.experiment_time_start is not None
+                else None
+            )
+            self.experiment_time_start = None
+            self.storage_plugin.complete_experiment(
+                total_duration=duration,
+            )
 
         self.injection_handler.teardown(pl_module)
 

@@ -117,8 +117,10 @@ class ExperimentRunBaseMixin(object):
         return sqlalchemy.Column(sqlalchemy.DateTime)
 
     @sqlalchemy.orm.declared_attr.cascading
-    def total_duration(cls) -> sqlalchemy.orm.Mapped[typing.Optional[float]]:
-        return sqlalchemy.Column(sqlalchemy.Float)
+    def total_duration(
+        cls,
+    ) -> sqlalchemy.orm.Mapped[typing.Optional[datetime.timedelta]]:
+        return sqlalchemy.Column(sqlalchemy.Interval)
 
     @sqlalchemy.orm.declared_attr.cascading
     def golden_run_flag(cls) -> sqlalchemy.orm.Mapped[bool]:

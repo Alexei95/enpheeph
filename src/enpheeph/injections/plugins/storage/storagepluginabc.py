@@ -18,13 +18,13 @@ class StoragePluginABC(abc.ABC):
         running: typing.Optional[bool] = None,
         completed: typing.Optional[bool] = None,
         start_time: typing.Optional[datetime.datetime] = None,
-        total_duration: typing.Optional[float] = None,
+        total_duration: typing.Optional[datetime.timedelta] = None,
         golden_run_flag: typing.Optional[bool] = None,
         injection_locations: typing.Optional[
             typing.Sequence[enpheeph.utils.data_classes.InjectionLocationABC]
         ] = None,
         # in the future we will add also model_info
-    ) -> typing.Sequence[
+    ) -> typing.List[
         enpheeph.injections.plugins.storage.storage_typings.ExperimentRunProtocol,
     ]:
         pass
@@ -41,14 +41,14 @@ class StoragePluginABC(abc.ABC):
         # the id for the golden run
         # if None we skip this part
         golden_run_id: typing.Optional[int] = None,
+        start_time: typing.Optional[datetime.datetime] = None,
     ) -> int:
         pass
 
     @abc.abstractmethod
     def complete_experiment(
         self,
-        start_time: typing.Optional[datetime.datetime] = None,
-        total_duration: typing.Optional[float] = None,
+        total_duration: typing.Optional[datetime.timedelta] = None,
     ) -> None:
         pass
 
