@@ -43,12 +43,13 @@
 24. #24 Use tox for tests automation.
 25. #25 Add caching so that we can skip recomputing the layers up until the fault if the checksum of the input is the same
     1. #25-1 Look at InjectTF2 for solutions on how to do it
-26. #26 Fix timestamps/runtime for injections
+26. {#26} Fix timestamps/runtime for injections
 27. #27 Fix golden run id referring to the first one if the database is being reused
 28. #28 Improve docs in indexing plugin
 29. #29 Find better solution for warning suppression in InjectionCallback
 30. #30 Make SQLStoragePluginABC into a real ABC and move all the implementations in SQLStoragePluginMixin
 31. #31 Fix spiking injection
+32. #32 Add memory profiling
 
 ## |Duplicates|
 
@@ -67,3 +68,4 @@
 5. {#3}, {#3-1}, {#3-1-1}, {#3-2} CI/CD has been improved, many more checks are now run both in pre-commit and in CI. There are still some possible improvements to be made, mentioned in #3-3
 6. {#9} Dependencies are now better managed
 7. {#23}, {#23-1} Now we can select also batches depending on the corresponding index and the flag, and also the mask is saved accordingly. The corresponding indexing plugin has been implemented and integrated with the common faults, some tests will have to be written to guarantee proper operation.
+8. {#26} InjectionCallback computes start and stop times and gives them to the storage plugin
