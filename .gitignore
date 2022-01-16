@@ -45,8 +45,9 @@ dist/
 ####
 
 #### JSONNET
-# we don't want to save .json files
-**/configs/**/*.json
+# we don't want to save .json files from the main configs, however we want
+# to save the configs from the experiments
+papers/*/configs/**/*.json
 ####
 
 
