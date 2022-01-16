@@ -1,0 +1,21 @@
+# https://www.conventionalcommits.org/en/v1.0.0/
+# https://news.ycombinator.com/item?id=29912343
+# <type>(optional scope):
+# type: build ci chore docs feat fix perf refactor revert style test
+# up to 50 chars                                #
+
+
+# up to 72 chars                                                      #
+# Problem
+
+
+# up to 72 chars                                                      #
+# Solution
+
+
+# up to 72 chars                                                      #
+# Testing
+
+
+# up to 72 chars                                                      #
+# Issue
