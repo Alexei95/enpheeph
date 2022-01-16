@@ -1,0 +1,164 @@
+{
+    "from_datasets": {
+        "batch_size": "32",
+        "num_workers": 64,
+        "test_dataset": {
+            "class_path": "torchvision.datasets.CIFAR10",
+            "init_args": {
+                "download": true,
+                "root": "/shared/ml/datasets/vision/cifar10",
+                "train": false
+            }
+        },
+        "train_dataset": {
+            "class_path": "torchvision.datasets.CIFAR10",
+            "init_args": {
+                "download": true,
+                "root": "/shared/ml/datasets/vision/cifar10",
+                "train": true
+            }
+        },
+        "val_split": 0.2
+    },
+    "model": {
+        "backbone": "resnet18",
+        "backbone_kwargs": {},
+        "head": null,
+        "learning_rate": 0.001,
+        "loss_fn": null,
+        "lr_scheduler": null,
+        "metrics": null,
+        "multi_label": false,
+        "num_classes": 10,
+        "optimizer": "Adam",
+        "pretrained": true,
+        "training_strategy": "default",
+        "training_strategy_kwargs": {}
+    },
+    "seed_everything": 42,
+    "subcommand": "from_datasets",
+    "trainer": {
+        "accelerator": "gpu",
+        "accumulate_grad_batches": null,
+        "amp_backend": "native",
+        "amp_level": null,
+        "auto_lr_find": false,
+        "auto_scale_batch_size": false,
+        "auto_select_gpus": false,
+        "benchmark": false,
+        "callbacks": [
+            {
+                "class_path": "pytorch_lightning.callbacks.DeviceStatsMonitor",
+                "init_args": {}
+            },
+            {
+                "class_path": "pytorch_lightning.callbacks.EarlyStopping",
+                "init_args": {
+                    "check_finite": true,
+                    "check_on_train_epoch_end": false,
+                    "divergence_threshold": null,
+                    "min_delta": 0.001,
+                    "mode": "min",
+                    "monitor": "val_cross_entropy",
+                    "patience": 5,
+                    "stopping_threshold": null,
+                    "strict": true,
+                    "verbose": true
+                }
+            },
+            {
+                "class_path": "pytorch_lightning.callbacks.LearningRateMonitor",
+                "init_args": {
+                    "log_momentum": true,
+                    "logging_interval": "epoch"
+                }
+            },
+            {
+                "class_path": "pytorch_lightning.callbacks.ModelCheckpoint",
+                "init_args": {
+                    "dirpath": null,
+                    "every_n_epochs": 1,
+                    "every_n_train_steps": null,
+                    "filename": null,
+                    "mode": "min",
+                    "monitor": "val_cross_entropy",
+                    "save_last": true,
+                    "save_top_k": 3,
+                    "save_weights_only": false,
+                    "verbose": true
+                }
+            },
+            {
+                "class_path": "pytorch_lightning.callbacks.ModelPruning",
+                "init_args": {
+                    "make_pruning_permanent": true,
+                    "parameter_names": null,
+                    "parameters_to_prune": [],
+                    "prune_on_train_epoch_end": true,
+                    "pruning_dim": null,
+                    "pruning_fn": "l1_unstructured",
+                    "pruning_norm": null,
+                    "resample_parameters": true,
+                    "use_global_unstructured": true,
+                    "verbose": 2
+                }
+            },
+            {
+                "class_path": "pytorch_lightning.callbacks.TQDMProgressBar",
+                "init_args": {
+                    "process_position": 0,
+                    "refresh_rate": 1
+                }
+            }
+        ],
+        "check_val_every_n_epoch": 1,
+        "default_root_dir": "checkpoints/image_classifier_resnet18_null_cifar10_true_false",
+        "detect_anomaly": false,
+        "deterministic": true,
+        "devices": [
+            2
+        ],
+        "enable_checkpointing": true,
+        "enable_model_summary": true,
+        "enable_progress_bar": true,
+        "fast_dev_run": false,
+        "gradient_clip_algorithm": null,
+        "gradient_clip_val": null,
+        "ipus": null,
+        "log_every_n_steps": 10,
+        "logger": [
+            {
+                "class_path": "pytorch_lightning.loggers.TensorBoardLogger",
+                "init_args": {
+                    "default_hp_metric": true,
+                    "log_graph": true,
+                    "name": "default",
+                    "prefix": "",
+                    "save_dir": "checkpoints/image_classifier_resnet18_null_cifar10_true_false",
+                    "version": null
+                }
+            }
+        ],
+        "max_epochs": -1,
+        "max_steps": -1,
+        "max_time": null,
+        "min_epochs": 1,
+        "min_steps": null,
+        "move_metrics_to_cpu": false,
+        "multiple_trainloader_mode": "min_size",
+        "num_nodes": 1,
+        "num_processes": 1,
+        "num_sanity_val_steps": 2,
+        "plugins": [],
+        "precision": 32,
+        "profiler": null,
+        "reload_dataloaders_every_n_epochs": 0,
+        "replace_sampler_ddp": true,
+        "serve_sanity_check": false,
+        "strategy": null,
+        "sync_batchnorm": false,
+        "tpu_cores": null,
+        "track_grad_norm": -1,
+        "weights_save_path": null
+    }
+}
