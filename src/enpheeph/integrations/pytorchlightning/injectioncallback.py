@@ -99,9 +99,11 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
 
             # it will be True at most at the first iteration as we change it into int
             if self.first_golden_run is True:
+                # casting as experiment_id is set, so it cannot be None
+                experiment_id = typing.cast(int, self.storage_plugin.experiment_id)
                 # we set the first_golden_run to the golden run id if the first test is
                 # a golden run
-                self.first_golden_run = self.storage_plugin.experiment_id
+                self.first_golden_run = experiment_id
 
     def on_test_end(
         self,
@@ -118,10 +120,12 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
                 if self.experiment_time_start is not None
                 else None
             )
-            self.experiment_time_start = None
             self.storage_plugin.complete_experiment(
                 total_duration=duration,
             )
+
+            # we reset the start time
+            self.experiment_time_start = None
 
         self.injection_handler.teardown(pl_module)
 
