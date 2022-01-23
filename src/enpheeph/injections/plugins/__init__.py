@@ -98,7 +98,7 @@ __getattr__ = lazy_import(
             'sqlalchemy_begin_emission_pysqlite',
             'sqlitestorageplugin',
             'sqlstorageplugin',
-            'sqlstorageplugineabc',
+            'sqlstoragepluginabc',
             'sqlutils',
             'storage_typings',
             'storagepluginabc',
@@ -122,6 +122,6 @@ __all__ = ['CuPyPyTorchMaskPlugin', 'CustomBase', 'CustomBaseClass',
            'mask', 'numpypytorchmaskplugin',
            'pysqlite_begin_emission_fix_on_connect', 'set_sqlite_pragma',
            'sql_data_classes', 'sqlalchemy_begin_emission_pysqlite',
-           'sqlitestorageplugin', 'sqlstorageplugin', 'sqlstorageplugineabc',
+           'sqlitestorageplugin', 'sqlstorageplugin', 'sqlstoragepluginabc',
            'sqlutils', 'storage', 'storage_typings', 'storagepluginabc']
 # </AUTOGEN_INIT>

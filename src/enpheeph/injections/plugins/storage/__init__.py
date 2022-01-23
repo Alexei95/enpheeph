@@ -78,7 +78,7 @@ __getattr__ = lazy_import(
             'sql_data_classes',
             'sqlalchemy_begin_emission_pysqlite',
             'sqlitestorageplugin',
-            'sqlstorageplugineabc',
+            'sqlstoragepluginabc',
             'sqlutils',
         ],
         'storage_typings': [
@@ -105,6 +105,6 @@ __all__ = ['CustomBase', 'CustomBaseClass', 'ExperimentRun',
            'StoragePluginABC', 'fix_pysqlite',
            'pysqlite_begin_emission_fix_on_connect', 'set_sqlite_pragma',
            'sql_data_classes', 'sqlalchemy_begin_emission_pysqlite',
-           'sqlitestorageplugin', 'sqlstorageplugin', 'sqlstorageplugineabc',
+           'sqlitestorageplugin', 'sqlstorageplugin', 'sqlstoragepluginabc',
            'sqlutils', 'storage_typings', 'storagepluginabc']
 # </AUTOGEN_INIT>
