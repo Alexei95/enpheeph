@@ -38,13 +38,20 @@ class PyTorchMaskMixin(abc.ABC):
         "torch.Tensor",
     ]
 
-    def set_tensor_only_indexing(self) -> None:
+    def set_tensor_only_indexing(
+        self,
+        # this flag is used to consider batches as an extra dimension
+        # if enabled we fill the emtpy index due to missing batch/other dimensions
+        # otherwise it is not filled, leading to Tensor dimension covering the whole
+        # array
+        batches_exist: bool = True,
+    ) -> None:
         self.indexing_plugin.select_active_dimensions(
             [
                 enpheeph.utils.enums.DimensionType.Tensor,
             ],
             autoshift_to_boundaries=False,
-            fill_empty_index=True,
+            fill_empty_index=batches_exist,
             filler=slice(None, None),
         )
 
@@ -68,6 +75,9 @@ class PyTorchMaskMixin(abc.ABC):
         # set_batch_tensor_indexing
         # if explicitly non-boolean, we skip it, to allow for custom configurations
         tensor_only: typing.Optional[bool] = True,
+        # this flag is used to consider batches as an extra dimension when using
+        # tensor_only, it has no effect if tensor_only is false
+        batches_exist: bool = True,
     ) -> "torch.Tensor":
         if self.mask is None or force_recompute:
             # NOTE: the following process is used to process the index,
@@ -106,7 +116,7 @@ class PyTorchMaskMixin(abc.ABC):
             # we set up the indices depending on the flag
             # if the flag is different, we leave the existing active dimensions
             if tensor_only is True:
-                self.set_tensor_only_indexing()
+                self.set_tensor_only_indexing(batches_exist=batches_exist)
             elif tensor_only is False:
                 self.set_batch_tensor_indexing()
             tensor_shape = self.indexing_plugin.filter_dimensions(
@@ -149,6 +159,9 @@ class PyTorchMaskMixin(abc.ABC):
         # set_batch_tensor_indexing
         # if explicitly non-boolean, we skip it, to allow for custom configurations
         tensor_only: typing.Optional[bool] = True,
+        # this flag is used to consider batches as an extra dimension when using
+        # tensor_only, it has no effect if tensor_only is false
+        batches_exist: bool = True,
     ) -> "torch.Tensor":
         if self.mask is None:
             raise RuntimeError("Please call generate_mask before injection")
@@ -160,7 +173,7 @@ class PyTorchMaskMixin(abc.ABC):
         )
         # we set up the indices depending on the flag
         if tensor_only is True:
-            self.set_tensor_only_indexing()
+            self.set_tensor_only_indexing(batches_exist=batches_exist)
         elif tensor_only is False:
             self.set_batch_tensor_indexing()
 
