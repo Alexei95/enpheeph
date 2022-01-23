@@ -1,7 +1,7 @@
 # setuptools configuration
 # this is the default for setuptools and wheel
 [build-system]
-    requires = ["setuptools", "wheel"]
+    requires = ["setuptools >= 58.0", "wheel"]
     build-backend = "setuptools.build_meta"
 
 # this is still not supported by setuptools
@@ -49,6 +49,8 @@
 [project.optional-dependencies]
     # one can use self-dependency to include other optional-dependencies
     # supported by pip>=21.2
+
+    # FUNCTIONALITIES DEPENDENCIES
     cupy = [
         "cupy >= 9.0.0",
     ]
@@ -65,15 +67,6 @@
         "torch >= 1.8, < 1.10.0",
     ]
 
-    norse-cpu = [
-        "enpheeph[torch-cpu]",
-        "enpheeph[norse]",
-    ]
-    norse-gpu = [
-        "enpheeph[torch-gpu]",
-        "enpheeph[norse]",
-    ]
-
     torch-cpu = [
         "enpheeph[numpy]",
         "enpheeph[torch]",
@@ -83,24 +76,55 @@
         "enpheeph[torch]",
     ]
 
+    norse-cpu = [
+        "enpheeph[torch-cpu]",
+        "enpheeph[norse]",
+    ]
+    norse-gpu = [
+        "enpheeph[torch-gpu]",
+        "enpheeph[norse]",
+    ]
+
+    # INTEGRATIONS DEPENDENCIES
     integrations-pytorch-lightning = [
         "enpheeph[torch]",
         "pytorch-lightning >= 1.5",
     ]
 
-    dev = [
-        "black",
-        "flake8",
-        "mypy",
-        "pre-commit",
-        "pytest",
+    # DEVELOPMENT DEPENDENCIES
+    dev-test = [
+        # for using pyproject.toml as configuration in pytest-coverage
+        "coverage[toml]",
+        "pytest >= 6.2.0",  # 6.2.5 for Python 3.10+
+        "pytest-cov",
+        "pytest-xdist",
+        "tox >= 3.20.0",
     ]
 
+    dev-tools = [
+        "black",
+        "flake8",
+        "mkinit >= 0.3.3",
+        "mypy",
+        "pre-commit",
+    ]
+
+    dev = [
+        "enpheeph[dev-test]",
+        "enpheeph[dev-tools]",
+    ]
+
+    # COMPLETE DEPENDENCIES
     full = [
         "enpheeph[integrations-pytorch-lightning]",
         "enpheeph[sqlalchemy]",
         "enpheeph[torch-cpu]",
         "enpheeph[torch-gpu]",
+    ]
+
+    full-dev = [
+        "enpheeph[full]",
+        "enpheeph[dev]",
     ]
 
 
