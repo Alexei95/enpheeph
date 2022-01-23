@@ -5,6 +5,7 @@ import typing
 import flash.image
 
 import enpheeph
+import enpheeph.injections.plugins.mask.autopytorchmaskplugin
 
 import base_config
 import cifar10_config
@@ -12,17 +13,16 @@ import quantization_config
 
 
 def config(
+    *,
     dataset_directory: pathlib.Path,
-    results_directory: pathlib.Path,
+    model_weight_file: pathlib.Path,
+    storage_file: pathlib.Path,
+    **kwargs: typing.Any,
 ) -> typing.Dict[str, typing.Any]:
-    model_file = pathlib.Path("weights/image_classification.pt")
-    complete_model_file = results_directory / model_file
-
     storage_plugin = enpheeph.injections.plugins.storage.SQLiteStoragePlugin(
-        db_url="sqlite:///"
-        + str(results_directory / model_file.with_suffix(".sqlite").name)
+        db_url="sqlite:///" + str(storage_file)
     )
-    pytorch_mask_plugin = enpheeph.injections.plugins.NumPyPyTorchMaskPlugin()
+    pytorch_mask_plugin = enpheeph.injections.plugins.mask.AutoPyTorchMaskPlugin()
     pytorch_handler_plugin = enpheeph.handlers.plugins.PyTorchHandlerPlugin()
 
     monitor_1 = enpheeph.injections.OutputPyTorchMonitor(
@@ -42,7 +42,7 @@ def config(
             dimension_dict=enpheeph.utils.constants.PYTORCH_DIMENSION_DICT,
         ),
     )
-    fault_1 = enpheeph.injections.OutputPyTorchFault(
+    fault_1 = enpheeph.injections.WeightPyTorchFault(
         location=enpheeph.utils.data_classes.FaultLocation(
             module_name="adapter.backbone.conv1",
             parameter_type=enpheeph.utils.enums.ParameterType.Weight,
@@ -53,7 +53,6 @@ def config(
                     0,
                     0,
                 ),
-                enpheeph.utils.enums.DimensionType.Batch: ...,
             },
             bit_index=[10, 16, 31],
             bit_fault_value=enpheeph.utils.enums.BitFaultValue.StuckAtOne,
@@ -82,10 +81,10 @@ def config(
     )
     monitor_3 = enpheeph.injections.OutputPyTorchMonitor(
         location=enpheeph.utils.data_classes.MonitorLocation(
-            module_name="adapter.head.0",
+            module_name="adapter.backbone",
             parameter_type=enpheeph.utils.enums.ParameterType.Activation,
             dimension_index={
-                enpheeph.utils.enums.DimensionType.Tensor: (slice(10, 100),),
+                enpheeph.utils.enums.DimensionType.Tensor: ...,
                 enpheeph.utils.enums.DimensionType.Batch: ...,
             },
             bit_index=None,
@@ -99,13 +98,13 @@ def config(
     )
     fault_2 = enpheeph.injections.OutputPyTorchFault(
         location=enpheeph.utils.data_classes.FaultLocation(
-            module_name="adapter.head.0",
+            module_name="adapter.backbone",
             parameter_type=enpheeph.utils.enums.ParameterType.Activation,
             dimension_index={
                 enpheeph.utils.enums.DimensionType.Tensor: (slice(10, 100),),
                 enpheeph.utils.enums.DimensionType.Batch: ...,
             },
-            bit_index=...,
+            bit_index=[31],
             bit_fault_value=enpheeph.utils.enums.BitFaultValue.StuckAtOne,
         ),
         low_level_torch_plugin=pytorch_mask_plugin,
@@ -115,10 +114,10 @@ def config(
     )
     monitor_4 = enpheeph.injections.OutputPyTorchMonitor(
         location=enpheeph.utils.data_classes.MonitorLocation(
-            module_name="adapter.head.0",
+            module_name="adapter.backbone",
             parameter_type=enpheeph.utils.enums.ParameterType.Activation,
             dimension_index={
-                enpheeph.utils.enums.DimensionType.Tensor: (slice(10, 100),),
+                enpheeph.utils.enums.DimensionType.Tensor: ...,
                 enpheeph.utils.enums.DimensionType.Batch: ...,
             },
             bit_index=None,
@@ -137,19 +136,14 @@ def config(
     )
     injection_handler.activate()
 
-    callback = enpheeph.integrations.pytorchlightning.InjectionCallback(
-        injection_handler=injection_handler,
-        storage_plugin=storage_plugin,
-    )
-
     model = {
         "callable": flash.image.classification.ImageClassifier.load_from_checkpoint,
         "callable_args": {
-            "checkpoint_path": str(complete_model_file),
+            "checkpoint_path": str(model_weight_file),
             # issues with loading GPU model on CPU
             # it should work with PyTorch but there must be some problems with
             # PyTorch Lightning/Flash leading to use some GPU memory
-            "map_location": "cuda",
+            "map_location": "cpu",
         },
     }
 
@@ -162,6 +156,15 @@ def config(
     # update the Trainer with flash as we are using flash models, to avoid
     # compatibility issues such as CUDA out of memory on CPU-only
     config["trainer"]["callable"] = flash.Trainer
+
+    # we delay the instantiation of the callback to allow the saving of the
+    # current configuration
+    callback = enpheeph.integrations.pytorchlightning.InjectionCallback(
+        injection_handler=injection_handler,
+        storage_plugin=storage_plugin,
+        extra_session_info=config,
+    )
+
     config["trainer"]["callable_args"]["callbacks"].append(callback)
 
     # to save the injection handler to enable/disable faults
