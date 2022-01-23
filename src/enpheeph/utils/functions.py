@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import re
+import typing
 
 
-CAMEL_TO_SNAKE_REGEX: re.Pattern[str] = re.compile(
+# Python <3.9 needs to use typing.Pattern, which can be re.Pattern in 3.9+
+CAMEL_TO_SNAKE_REGEX: typing.Pattern[str] = re.compile(
     "((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))"
 )
 
