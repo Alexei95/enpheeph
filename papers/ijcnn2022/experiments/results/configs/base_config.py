@@ -4,7 +4,9 @@ import typing
 import pytorch_lightning
 
 
-def config() -> typing.Dict[str, typing.Any]:
+def config(
+    **kwargs: typing.Any,
+) -> typing.Dict[str, typing.Any]:
     return {
         "seed_everything": {
             "seed": 42,
@@ -23,7 +25,7 @@ def config() -> typing.Dict[str, typing.Any]:
                 # one can use gpu but some functions will not be deterministic,
                 # so deterministic
                 # must be set to False
-                "accelerator": "cpu",
+                "accelerator": "gpu",
                 "devices": 1,
                 # if one uses spawn or dp it will fail
                 # as sqlite connector is not picklable
