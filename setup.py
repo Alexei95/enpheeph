@@ -4,6 +4,27 @@ import setuptools
 
 # about = importlib.util.
 
+extras_require = {
+    "full": [
+        "cupy >= 9.0.0",
+        "norse >= 0.0.7",
+        "numpy >= 1.19",
+        "pytorch-lightning >= 1.5",
+        "sqlalchemy >= 1.4.20",
+        "torch >= 1.8, < 1.10",
+    ],
+    "dev": [
+        "black",
+        "flake8",
+        "mypy",
+        "pre-commit",
+        "pytest >= 6.2.0",  # 6.2.5 for Python 3.10+
+        "pytest-cov",
+        "pytest-xdist",
+    ],
+}
+extras_require["full-dev"] = extras_require["full"] + extras_require["dev"]
+
 if __name__ == "__main__":
     setuptools.setup(
         name="enpheeph",
@@ -35,16 +56,7 @@ if __name__ == "__main__":
             "setuptools >= 58.0",
             "packaging >= 20.0",
         ],
-        extras_require={
-            "full": [
-                "cupy >= 9.0.0",
-                "norse >= 0.0.7",
-                "numpy >= 1.19",
-                "pytorch-lightning >= 1.5",
-                "sqlalchemy >= 1.4.20",
-                "torch >= 1.8, < 1.10",
-            ],
-        },
+        extras_require=extras_require,
         # test_suite="tests.test_black",
         # classifiers=[
         #     "Development Status :: 4 - Beta",
