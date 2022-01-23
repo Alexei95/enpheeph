@@ -7,7 +7,9 @@ import torchvision
 
 
 def config(
+    *,
     dataset_directory: pathlib.Path,
+    **kwargs: typing.Any,
 ) -> typing.Dict[str, typing.Any]:
     return {
         "datamodule": {
