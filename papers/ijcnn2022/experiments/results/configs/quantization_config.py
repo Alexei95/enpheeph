@@ -5,7 +5,9 @@ import torch
 import torch.quantization
 
 
-def config() -> typing.Dict[str, typing.Any]:
+def config(
+    **kwargs: typing.Any,
+) -> typing.Dict[str, typing.Any]:
     return {
         "dynamic_quantization_config": {
             "qconfig": {
