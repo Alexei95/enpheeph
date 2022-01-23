@@ -27,6 +27,12 @@ AnyIndexType = typing.Union[
     "Index1DType",
     "IndexMultiDType",
 ]
+
+ArrayType = typing.Union[
+    "cupy.ndarray",
+    "numpy.ndarray",
+]
+
 DimensionDictType = typing.Dict[
     enpheeph.utils.enums.DimensionType,
     "DimensionIndexType",
@@ -84,7 +90,6 @@ ModelType = typing.Union[
 ShapeType = typing.Tuple[int, ...]
 
 TensorType = typing.Union[
-    "cupy.ndarray",
-    "numpy.ndarray",
+    ArrayType,
     "torch.Tensor",
 ]
