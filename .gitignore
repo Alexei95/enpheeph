@@ -75,3 +75,6 @@ papers/*/configs/**/*.json
 
 ### CI/CD Actions Temporary Files ###
 mkinit-*.log
+
+### TEST FILES ###
+.tox/*
