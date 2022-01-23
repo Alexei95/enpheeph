@@ -11,6 +11,7 @@
 # the compilers might not be needed, it depends on which packages need to be built
 # gcc_linux-64
 # gxx_linux-64
+# if unsure just install them
 # NOTE: cudatoolkit-dev=10.2 DOES NOT EXIST
 
 
@@ -19,7 +20,7 @@
 # must be used as command-line options
 # --upgrade --upgrade-strategy only-if-needed
 
-# for PyTorch 1.8.2
+# for PyTorch 1.9.1
 -f https://download.pytorch.org/whl/torch/
 
 lightning-flash[all]==0.5.2
