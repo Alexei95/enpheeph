@@ -52,7 +52,7 @@ jobs:
       run: |
         python --version
         pip --version
-        pip install mkinit==0.3.3
+        pip install mkinit==0.3.4
         pip list
       shell: bash
 
