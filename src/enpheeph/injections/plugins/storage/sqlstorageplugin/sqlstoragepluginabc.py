@@ -23,6 +23,7 @@ class SQLStoragePluginABC(
 ):
     experiment_id: typing.Optional[int]
     engine: sqlalchemy.engine.Engine
+    session_id: typing.Optional[int]
 
     @classmethod
     @abc.abstractmethod
@@ -118,10 +119,18 @@ class SQLStoragePluginABC(
         # if None we skip this part
         golden_run_id: typing.Optional[int] = None,
         start_time: typing.Optional[datetime.datetime] = None,
+        extra_experiment_info: typing.Optional[
+            typing.Dict[typing.Any, typing.Any]
+        ] = None,
     ) -> int:
         # check to avoid creating an experiment on top of the existing one
         if self.experiment_id is not None:
             raise ValueError("To create an experiment the current one must be closed")
+
+        if self.session_id is None:
+            raise ValueError(
+                "To create an experiment you need to create a Session first"
+            )
 
         # we open a new Session
         with sqlalchemy.orm.Session(self.engine) as session:
@@ -133,7 +142,11 @@ class SQLStoragePluginABC(
                 completed=False,
                 golden_run_flag=golden_run_flag,
                 start_time=start_time,
+                extra_experiment_info=extra_experiment_info,
+                # we set the ID for the Session the experiment is on
+                session_id=self.session_id,
             )
+
             # we insert all the injection locations
             # depending on the class instance we create different objects
             for inj_loc in injection_locations:
@@ -162,6 +175,35 @@ class SQLStoragePluginABC(
             self.add_experiment_golden_run(golden_run_id)
 
         return self.experiment_id
+
+    def create_session(
+        self,
+        extra_session_info: typing.Optional[typing.Dict[typing.Any, typing.Any]] = None,
+    ) -> int:
+        # check to avoid creating an experiment on top of the existing one
+        if self.experiment_id is not None:
+            raise ValueError(
+                "To create a Session the current experiment must be closed"
+            )
+        if self.session_id is not None:
+            raise ValueError("To create a Session the current one must be closed")
+
+        # we open a new Session
+        with sqlalchemy.orm.Session(self.engine) as session:
+
+            # we create a new Session
+            sess = sql_data_classes.Session(
+                extra_session_info=extra_session_info,
+            )
+
+            session.add(sess)
+
+            session.commit()
+
+            # ID is available only after committing
+            self.session_id = sess.id_
+
+        return self.session_id
 
     def complete_experiment(
         self,
@@ -192,6 +234,41 @@ class SQLStoragePluginABC(
             session.commit()
 
         self.experiment_id = None
+
+    def complete_session(
+        self,
+    ) -> None:
+        if self.experiment_id is not None:
+            raise ValueError(
+                "To close the current Session the current Experiment must be closed"
+            )
+        if self.session_id is None:
+            raise ValueError("There is no current Session to close")
+
+        with sqlalchemy.orm.Session(self.engine) as session:
+            # we get the Session from the engine
+            sess = (
+                session.execute(
+                    sqlalchemy.select(sql_data_classes.Session).where(
+                        sql_data_classes.Session.id_ == self.session_id
+                    )
+                )
+                .scalars()
+                .one()
+            )  # we use .one() as there will be only one match
+
+            # **NOTE**: for now we do not do anything but it might be useful in the
+            # future
+            # ideally the Session should represent all the information which are common
+            # between Experiments from the same run, but ideally different experiments
+            # in the same run might also have different models/datasets, so more
+            # details are needed
+
+            session.add(sess)
+
+            session.commit()
+
+        self.session = None
 
     def add_experiment_metrics(
         self, metrics: typing.Dict[typing.Any, typing.Any]
