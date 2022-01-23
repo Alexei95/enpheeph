@@ -151,7 +151,7 @@ repos:
     - id: python-no-eval
     - id: python-no-log-warn
     # not needed as we use Python 3.8+
-    # - id: python-use-type-annotations
+    - id: python-use-type-annotations
     - id: rst-backticks
     - id: rst-directive-colons
     - id: rst-inline-touching-normal
