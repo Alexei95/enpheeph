@@ -8,7 +8,7 @@ import sqlalchemy.ext.compiler
 import sqlalchemy.sql.expression
 import sqlalchemy.types
 
-import enpheeph.injections.plugins.storage.sqlstorageplugin.sqlstorageplugineabc
+import enpheeph.injections.plugins.storage.sqlstorageplugin.sqlstoragepluginabc
 import enpheeph.injections.plugins.storage.sqlstorageplugin.sqlutils
 import enpheeph.injections.plugins.storage.storagepluginabc
 import enpheeph.utils.data_classes
@@ -22,7 +22,7 @@ class SQLiteStoragePlugin(
     # fmt: off
     (
         enpheeph.injections.plugins.storage.sqlstorageplugin.
-        sqlstorageplugineabc.SQLStoragePluginABC
+        sqlstoragepluginabc.SQLStoragePluginABC
     ),
     # fmt: on
 ):
@@ -42,6 +42,7 @@ class SQLiteStoragePlugin(
         # NOTE: we use experiment id so that we can reload the experiment for each
         # new Session we create
         self.experiment_id: typing.Optional[int] = None
+        self.session_id = None
         self.db_url = db_url
         self.extra_engine_args = extra_engine_args
 
