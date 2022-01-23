@@ -32,6 +32,11 @@ class PyTorchMaskMixin(abc.ABC):
         # fmt: on
     )
     mask: typing.Optional["torch.Tensor"]
+    # Callables
+    convert_tensor_to_proper_class: typing.Callable[
+        ["torch.Tensor", "torch.Tensor"],
+        "torch.Tensor",
+    ]
 
     def set_tensor_only_indexing(self) -> None:
         self.indexing_plugin.select_active_dimensions(
@@ -215,4 +220,5 @@ class PyTorchMaskMixin(abc.ABC):
         if isinstance(tensor_only, bool):
             self.indexing_plugin.reset_active_dimensions()
 
-        return final_injected_tensor
+        # conversion to proper class
+        return self.convert_tensor_to_proper_class(final_injected_tensor, tensor)
