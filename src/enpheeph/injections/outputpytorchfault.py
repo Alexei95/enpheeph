@@ -3,6 +3,7 @@ import typing
 
 import enpheeph.injections.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmaskmixin
+import enpheeph.injections.mixins.pytorchtensorobjectvalidatormixin
 import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
 import enpheeph.utils.data_classes
 
@@ -14,7 +15,9 @@ if typing.TYPE_CHECKING:
 class OutputPyTorchFault(
     enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
     enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixin,
+    enpheeph.injections.mixins.PyTorchTensorObjectValidatorMixin,
 ):
+    handle: typing.Optional["torch.utils.hooks.RemovableHandle"]
     # we need the index plugin to simplify the handling of the indices
     indexing_plugin: (
         enpheeph.injections.plugins.indexing.indexingpluginabc.IndexingPluginABC
