@@ -95,6 +95,42 @@ class CustomBaseClass(object):
 CustomBase = sqlalchemy.orm.declarative_base(cls=CustomBaseClass)
 
 
+# relationships are better in the base class unless you need multiple inheritance,
+# see Injection for polymorphism while ExperimentBaseMixin has only single inheritance
+@sqlalchemy.orm.declarative_mixin
+class SessionBaseMixin(object):
+    @sqlalchemy.orm.declared_attr
+    def extra_session_info(
+        self,
+    ) -> sqlalchemy.orm.Mapped[typing.Optional[typing.Dict[typing.Any, typing.Any]]]:
+        return sqlalchemy.Column(
+            sqlalchemy.ext.mutable.MutableDict.as_mutable(sqlalchemy.PickleType)
+        )
+
+
+# no need for the dataclass if we are instantiating everything normally and we
+# don't need other __magic__ methods from dataclass
+@dataclasses.dataclass(init=True, repr=True, eq=True)
+class Session(SessionBaseMixin, CustomBase):
+    EXPERIMENT_RUN_CLASS_ID_LAMBDA: typing.ClassVar[
+        typing.Callable[..., sqlalchemy.Column[sqlalchemy.Integer]]
+    ] = lambda: ExperimentRun.id_
+    EXPERIMENT_RUN_CLASS_LAMBDA: typing.ClassVar[
+        typing.Callable[..., typing.Type["CustomBaseClass"]]
+    ] = lambda: ExperimentRun
+    # we use backref to since it is a one-to-many from Session to ExperimentRun
+    EXPERIMENT_RUN_BACKREF_NAME: typing.ClassVar[str] = "session"
+
+    @sqlalchemy.orm.declared_attr
+    def experiment_runs(
+        cls,
+    ) -> sqlalchemy.orm.Mapped[typing.Optional[typing.List["ExperimentRun"]]]:
+        return sqlalchemy.orm.relationship(
+            cls.EXPERIMENT_RUN_CLASS_LAMBDA,
+            backref=cls.EXPERIMENT_RUN_BACKREF_NAME,
+        )
+
+
 # NOTE: declarative mixin is only useful for MyPy,
 # it does not provide any extra functionality
 @sqlalchemy.orm.declarative_mixin
@@ -128,6 +164,16 @@ class ExperimentRunBaseMixin(object):
 
     @sqlalchemy.orm.declared_attr.cascading
     def metrics(
+        self,
+    ) -> sqlalchemy.orm.Mapped[typing.Optional[typing.Dict[typing.Any, typing.Any]]]:
+        return sqlalchemy.Column(
+            sqlalchemy.ext.mutable.MutableDict.as_mutable(sqlalchemy.PickleType)
+        )
+
+    # this column contains an extra dict payload containing extra info for the
+    # experiment
+    @sqlalchemy.orm.declared_attr.cascading
+    def extra_experiment_info(
         self,
     ) -> sqlalchemy.orm.Mapped[typing.Optional[typing.Dict[typing.Any, typing.Any]]]:
         return sqlalchemy.Column(
@@ -180,6 +226,10 @@ class ExperimentRun(ExperimentRunBaseMixin, PolymorphicMixin, CustomBase):
     ] = lambda: Injection.experiment_run_id
     INJECTION_BACKPOPULATES_NAME: typing.ClassVar[str] = "experiment_run"
 
+    SESSION_CLASS_ID_LAMBDA: typing.ClassVar[
+        typing.Callable[..., sqlalchemy.Column[sqlalchemy.Integer]]
+    ] = lambda: Session.id_
+
     # relationship for having a list of InjectedRun subjected to this GoldenRun
     # we also create golden_run as referral back to the golden run
     # foreign_keys is the golden_run_id containing the ID of the golden run
@@ -199,6 +249,10 @@ class ExperimentRun(ExperimentRunBaseMixin, PolymorphicMixin, CustomBase):
         return sqlalchemy.Column(
             sqlalchemy.ForeignKey(f"{cls.__tablename__}.{cls.ID_NAME}")
         )
+
+    @sqlalchemy.orm.declared_attr
+    def session_id(cls) -> sqlalchemy.orm.Mapped[int]:
+        return sqlalchemy.Column(sqlalchemy.ForeignKey(cls.SESSION_CLASS_ID_LAMBDA()))
 
     # a list of all the injections in this experiment
     @sqlalchemy.orm.declared_attr
