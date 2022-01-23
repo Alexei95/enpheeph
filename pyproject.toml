@@ -164,7 +164,27 @@
 
 
 # section for coverage.py config
-# [tool.coverage]
+[tool.coverage]
+
+[tool.coverage.run]
+    # everything to be included in coverage, include is valid if source is not set
+    # and it works as a pattern matcher
+    # include = [
+    #     "src/*",
+    # ]
+    # to avoid measuring the coverage of test files
+    # must be a list
+    omit = [
+        "tests/*",
+        # to avoid covering the __init__
+        "*/__init__.py",
+        # avoid covering __about__.py
+        "*/__about__.py",
+    ]
+    # source to define where to look for packages
+    source = [
+        "src/",
+    ]
 
 
 # [tool.distutils.bdist_rpm]
@@ -203,7 +223,14 @@
     check_untyped_defs = true
     disallow_any_generics = true
     disallow_untyped_defs = true
-    exclude = "(src/enpheeph/injections/plugins/storage/sqlstorageplugin)"
+    # we exclude this folder due to the issues with mypy-sqlalchemy plugin
+    # also we skip the tests folder
+    # we can use multiline and single quotes to avoid escaping slashes
+    exclude = [
+        '/sqlstorageplugin/',
+        '/tests/',
+        '/setup\.py$'
+    ]
     ignore_missing_imports = true
     no_implicit_optional = true
     no_implicit_reexport = true
@@ -228,17 +255,25 @@
 
 # pytest config
 # check if required
-# [tool.pytest.ini_options]
-# minversion = "6.0"
-# addopts = "-ra -q"
-# testpaths = [
-#     "tests",
-#     "integration",
-# ]
+[tool.pytest.ini_options]
+    # cli options, -ra to show extra summary for all tests except passed
+    # -rA shows summary for everything
+    # -n auto is for pytest-xdist to distribute tests
+    # the cov config is in pyproject.toml, while cov is for the path to coverage
+    addopts = "-rA -n auto --cov-config=pyproject.toml -vvv --durations=0 --full-trace"
+    # do not show progress bar
+    console_output_style = "classic"
+    # minimum pytest version
+    minversion = "6.2"
+    # the paths to be searched for tests
+    testpaths = [
+        "tests",
+    ]
 
 
 [tool.setuptools]
-    packages = {find = {}}
+    # we look for packages in src only
+    packages = {find = "src"}
     include-package-data = true
     zip-safe = false
 
@@ -246,3 +281,27 @@
 [tool.setuptools.dynamic]
     # version = {attr = "enpheeph.__about__.__version__"}
     version = "0.0.1"
+
+# tox is a tool for multiple local test environments
+[tool.tox]
+# isolated_build is to use pyproject.toml when building
+# isolated_build = True
+# tox-conda enables using conda for installing extra dependencies
+# it additionally auto-installs the required python versions if not present
+# requires = tox-conda
+# py310 does not work as norse and torch have issues
+# we use the pytest --cov command to ensure proper coverage data collection
+# otherwise coverage does not have access to the proper source code if referred to
+# the local directory
+# https://github.com/pytest-dev/pytest-cov/issues/98#issuecomment-382583824
+# pytest --cov={envsitepackagesdir}/enpheeph
+legacy_tox_ini = """
+[tox]
+envlist = py38,py39
+requires = tox-conda
+
+[testenv]
+commands =
+    pytest --cov={envsitepackagesdir}/enpheeph
+extras = dev
+"""
