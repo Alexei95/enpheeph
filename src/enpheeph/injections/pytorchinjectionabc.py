@@ -29,7 +29,10 @@ class PyTorchInjectionABC(enpheeph.injections.injectionabc.InjectionABC):
     ) -> "torch.nn.Module":
         # safe get the handle attribute if not defined
         if getattr(self, "handle", None) is not None:
-            self.handle.remove()  # type: ignore[union-attr]
+            typing.cast(
+                "torch.utils.hooks.RemovableHandle",
+                self.handle,
+            ).remove()
             self.handle = None
 
         return module
