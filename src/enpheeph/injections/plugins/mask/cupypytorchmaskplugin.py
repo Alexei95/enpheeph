@@ -55,11 +55,12 @@ class CuPyPyTorchMaskPlugin(
                 int_fill_value,
                 dtype=cupy.dtype(f"u{str(placeholder.dtype.itemsize)}"),
             )
-        # we broadcast it onto the correct shape
-        mask = cupy.broadcast_to(fill_value, shape)
-        # we set the indices to the mask value
-        mask[mask_index] = int_mask
-        # we convert the mask to the right dtype
-        mask = mask.view(dtype=placeholder.dtype)
-        # we return the mask
-        return mask
+            # we broadcast it onto the correct shape
+            # we need to copy it to avoid issues with broadcasting
+            mask = cupy.broadcast_to(fill_value, shape).copy()
+            # we set the indices to the mask value
+            mask[mask_index] = int_mask
+            # we convert the mask to the right dtype
+            mask = mask.view(dtype=placeholder.dtype)
+            # we return the mask
+            return mask
