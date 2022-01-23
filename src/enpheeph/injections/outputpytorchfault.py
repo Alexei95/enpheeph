@@ -15,7 +15,12 @@ if typing.TYPE_CHECKING:
 class OutputPyTorchFault(
     enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
     enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixin,
-    enpheeph.injections.mixins.PyTorchTensorObjectValidatorMixin,
+    (
+        # fmt: off
+        enpheeph.injections.mixins.
+        pytorchtensorobjectvalidatormixin.PyTorchTensorObjectValidatorMixin
+        # fmt: on
+    ),
 ):
     handle: typing.Optional["torch.utils.hooks.RemovableHandle"]
     # we need the index plugin to simplify the handling of the indices

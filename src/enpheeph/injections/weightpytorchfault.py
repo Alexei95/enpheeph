@@ -17,7 +17,12 @@ if typing.TYPE_CHECKING:
 class WeightPyTorchFault(
     enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
     enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixin,
-    enpheeph.injections.mixins.PyTorchTensorObjectValidatorMixin,
+    (
+        # fmt: off
+        enpheeph.injections.mixins.
+        pytorchtensorobjectvalidatormixin.PyTorchTensorObjectValidatorMixin
+        # fmt: on
+    ),
 ):
     backup: typing.Optional["torch.Tensor"]
     # we need the index plugin to simplify the handling of the indices

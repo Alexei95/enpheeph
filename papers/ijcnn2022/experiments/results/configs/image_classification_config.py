@@ -22,7 +22,9 @@ def config(
     storage_plugin = enpheeph.injections.plugins.storage.SQLiteStoragePlugin(
         db_url="sqlite:///" + str(storage_file)
     )
-    pytorch_mask_plugin = enpheeph.injections.plugins.mask.AutoPyTorchMaskPlugin()
+    pytorch_mask_plugin = (
+        enpheeph.injections.plugins.mask.autopytorchmaskplugin.AutoPyTorchMaskPlugin()
+    )
     pytorch_handler_plugin = enpheeph.handlers.plugins.PyTorchHandlerPlugin()
 
     monitor_1 = enpheeph.injections.OutputPyTorchMonitor(
