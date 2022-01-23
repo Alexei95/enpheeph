@@ -10,6 +10,7 @@ import enpheeph.utils.data_classes
 class StoragePluginABC(abc.ABC):
     # the id of the current experiment
     experiment_id: typing.Optional[int]
+    session_id: typing.Optional[int]
 
     @abc.abstractmethod
     def get_experiments(
@@ -42,6 +43,16 @@ class StoragePluginABC(abc.ABC):
         # if None we skip this part
         golden_run_id: typing.Optional[int] = None,
         start_time: typing.Optional[datetime.datetime] = None,
+        extra_experiment_info: typing.Optional[
+            typing.Dict[typing.Any, typing.Any]
+        ] = None,
+    ) -> int:
+        pass
+
+    @abc.abstractmethod
+    def create_session(
+        self,
+        extra_session_info: typing.Optional[typing.Dict[typing.Any, typing.Any]] = None,
     ) -> int:
         pass
 
@@ -49,6 +60,12 @@ class StoragePluginABC(abc.ABC):
     def complete_experiment(
         self,
         total_duration: typing.Optional[datetime.timedelta] = None,
+    ) -> None:
+        pass
+
+    @abc.abstractmethod
+    def complete_session(
+        self,
     ) -> None:
         pass
 
