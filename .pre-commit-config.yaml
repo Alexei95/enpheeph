@@ -108,6 +108,8 @@ repos:
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.910-1  # Use the sha / tag you want to point at
     hooks:
+    # there are issues in using the project-wide configuration, so
+    # things should be repeated here if needed, e.g. skipping tests
     - id: mypy
       # the additional dependencies are installed if required in the
       # execution
@@ -125,9 +127,9 @@ repos:
       args: [
         # mypy is used from a venv, so it will not have all the
         # dependencies available
-        # it uses the pyproject.toml config
         --ignore-missing-imports,
       ]
+      files: ^src/enpheeph,
       # we remove the manual stage for mypy, as there are problems in the CI
       # with sqlalchemy
       # they have been fixed but it has not been released yet
