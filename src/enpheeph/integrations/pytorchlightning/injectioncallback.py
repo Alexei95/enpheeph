@@ -39,6 +39,12 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         # if True, we use the first test run as golden run
         # otherwise, we expect it to be a valid id for the golden run reference
         first_golden_run: typing.Union[bool, int] = True,
+        # extra session info
+        extra_session_info: typing.Optional[typing.Dict[typing.Any, typing.Any]] = None,
+        # extra experiment info which can be used to identify experiments
+        extra_experiment_info: typing.Optional[
+            typing.Dict[typing.Any, typing.Any]
+        ] = None,
     ):
         self.experiment_time_start = None
 
@@ -48,6 +54,9 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         # in terms of batch index
         self.metrics_save_frequency = metrics_save_frequency
         self.first_golden_run = first_golden_run
+
+        self.extra_experiment_info = extra_experiment_info
+        self.extra_session_info = extra_session_info
 
         self.test_epoch: int = 0
         # we use a defaultdict inside a defaultdict, so that when we access epoch, batch
@@ -60,6 +69,15 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
             # mypy has issues with nested defaultdict
             lambda: collections.defaultdict(dict)  # type: ignore[arg-type]
         )
+
+        # we create a new Session which will be closed on __del__
+        self.storage_plugin.create_session(extra_session_info=extra_session_info)
+
+    def __del__(self, *args, **kwargs):
+        self.storage_plugin.complete_session()
+
+        # not needed
+        # super().__del__(*args, **kwargs)
 
     def on_test_start(
         self,
@@ -95,6 +113,7 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
                 else None,
                 # we use UTC for dates as it is generic
                 start_time=self.experiment_time_start,
+                extra_experiment_info=self.extra_experiment_info,
             )
 
             # it will be True at most at the first iteration as we change it into int
