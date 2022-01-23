@@ -4,6 +4,7 @@ import typing
 
 import enpheeph.injections.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmaskmixin
+import enpheeph.injections.mixins.pytorchtensorobjectvalidatormixin
 import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
 import enpheeph.utils.data_classes
 
@@ -12,10 +13,17 @@ if typing.TYPE_CHECKING:
     import torch
 
 
+# no need to use handles here as the change is done when the injection is setup
 class WeightPyTorchFault(
     enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
     enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixin,
+    enpheeph.injections.mixins.PyTorchTensorObjectValidatorMixin,
 ):
+    backup: typing.Optional["torch.Tensor"]
+    # we need the index plugin to simplify the handling of the indices
+    indexing_plugin: (
+        enpheeph.injections.plugins.indexing.indexingpluginabc.IndexingPluginABC
+    )
     location: enpheeph.utils.data_classes.FaultLocation
     low_level_plugin: (
         # black has issues with long names
@@ -28,6 +36,7 @@ class WeightPyTorchFault(
 
     def __init__(
         self,
+        indexing_plugin: enpheeph.injections.plugins.indexing.IndexingPluginABC,
         location: enpheeph.utils.data_classes.FaultLocation,
         low_level_torch_plugin: (
             # black has issues with long names
@@ -39,10 +48,12 @@ class WeightPyTorchFault(
     ) -> None:
         super().__init__()
 
+        self.indexing_plugin = indexing_plugin
         self.location = location
         self.low_level_plugin = low_level_torch_plugin
 
         self.backup = None
+        self.handle = None
         self.mask = None
 
     @property
@@ -68,8 +79,16 @@ class WeightPyTorchFault(
         )
         self.backup = copy.deepcopy(weight)
 
-        self.generate_mask(weight, tensor_only=True)
-        masked_weight = self.inject_mask(weight, tensor_only=True)
+        self.generate_mask(
+            weight,
+            tensor_only=True,
+            batches_exist=False,
+        )
+        masked_weight = self.inject_mask(
+            weight,
+            tensor_only=True,
+            batches_exist=False,
+        )
 
         setattr(
             module,
@@ -80,6 +99,7 @@ class WeightPyTorchFault(
             typing.cast(str, self.location.parameter_name),
             masked_weight,
         )
+
         return module
 
     def restore_weight(
@@ -93,7 +113,7 @@ class WeightPyTorchFault(
 
         setattr(  # type: ignore[unreachable]
             module,
-            self.location.parameter_name,
+            typing.cast(str, self.location.parameter_name),
             copy.deepcopy(self.backup),
         )
         self.backup = None
