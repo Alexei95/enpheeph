@@ -194,7 +194,7 @@ jobs:
           - windows-latest
         python-version:
           # we use only 3.9 as all the environment are created by tox-conda
-          # - 3.8
+          - 3.8
           - 3.9
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
@@ -205,23 +205,11 @@ jobs:
     - name: Repository check-out
       uses: actions/checkout@v2.4.0
 
-    - name: Setup conda
-      uses: conda-incubator/setup-miniconda@v2.1.1
-      # https://github.com/tox-dev/tox-conda/blob/
-      # 9bd14a47e7a9f4d1258d64fc0e562b33aefa6288/.github/workflows/check.yml
-      # taken from tox-conda CI workflow
-      with:
-        miniconda-version: "latest"
-        python-version: ${{ matrix.python-version }}
-
     # we set up the Python environment
-    # not needed if using conda
-    # - name: Set up Python ${{ matrix.python-version }}
-    #   uses: actions/setup-python@v2.3.1
-    #   with:
-    #     python-version: ${{ matrix.python-version }}
-
-    # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2.3.1
+      with:
+        python-version: 3.9
 
     # we run all the tests in sequence, as the parallel version does not work with
     # tox-gh and tox-conda as of 2022/01/24
@@ -232,7 +220,7 @@ jobs:
       run: |
         python --version
         python -m pip --version
-        python -m pip install tox
+        python -m pip install tox-gh
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       # shell: bash -l {0}
@@ -241,20 +229,31 @@ jobs:
     # Python version running in the GitHub Actions runners
     - name: Create log directories
       run: |
-        import os
-        os.makedirs(".logs/tools/tox", exist_ok=True)
+        import pathlib
+        pathlib.Path(".logs/tools/tox").mkdir(parents=True, exist_ok=True)
       shell: python
+
+    - name: Setup conda
+      uses: conda-incubator/setup-miniconda@v2.1.1
+      # https://github.com/tox-dev/tox-conda/blob/
+      # 9bd14a47e7a9f4d1258d64fc0e562b33aefa6288/.github/workflows/check.yml
+      # taken from tox-conda CI workflow
+      with:
+        miniconda-version: "latest"
+        python-version: 3.9
+
+    # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
 
     - name: Setup tox test suite
       run: |
-        tox -vvv --notest > .logs/tools/tox/tox-setup.log
+        tox4 -vvv --notest > .logs/tools/tox/tox-setup.log
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       # shell: bash -l {0}
 
     - name: Run tox test suite
       run: |
-        tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
+        tox 4-vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       # shell: bash -l {0}
