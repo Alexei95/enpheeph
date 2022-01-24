@@ -193,6 +193,7 @@ jobs:
           - ubuntu-18.04
           - ubuntu-20.04
         python-version:
+          - 3.8
           - 3.9
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
@@ -223,27 +224,30 @@ jobs:
 
     # we run all the tests in sequence, as the parallel version does not work with
     # tox-gh and tox-conda as of 2022/01/24
+    # the bug is pytest is not found when initializing the environment
     # to use tox-gh and tox-conda, hopefully there will be a fix, and the changes
     # are simply tox-gh instead of tox in pip and tox4 instead of tox in commands
     - name: Install tox
       run: |
         python --version
         python -m pip --version
-        python -m pip install tox
+        python -m pip install tox-gh
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
 
     - name: Setup tox test suite
       run: |
-        tox -vvv --notest > .logs/tools/tox/tox-setup.log
+        mkdir --parents .logs/tools/tox
+        tox4 -vvv --notest > .logs/tools/tox/tox-setup.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
 
     - name: Run tox test suite
       run: |
-        tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
+        mkdir --parents .logs/tools/tox
+        tox4 -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
