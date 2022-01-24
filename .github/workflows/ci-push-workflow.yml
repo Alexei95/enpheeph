@@ -193,7 +193,8 @@ jobs:
           - ubuntu-18.04
           - ubuntu-20.04
         python-version:
-          - 3.8
+          # we use only 3.9 as all the environment are created by tox-conda
+          # - 3.8
           - 3.9
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
@@ -231,7 +232,7 @@ jobs:
       run: |
         python --version
         python -m pip --version
-        python -m pip install tox-gh
+        python -m pip install tox
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
@@ -239,7 +240,7 @@ jobs:
     - name: Setup tox test suite
       run: |
         mkdir --parents .logs/tools/tox
-        tox4 -vvv --notest > .logs/tools/tox/tox-setup.log
+        tox -vvv --notest > .logs/tools/tox/tox-setup.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
@@ -247,7 +248,7 @@ jobs:
     - name: Run tox test suite
       run: |
         mkdir --parents .logs/tools/tox
-        tox4 -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
+        tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
