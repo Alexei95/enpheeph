@@ -319,7 +319,7 @@ envlist = clean,py38,py39,report
 [testenv]
 envlogdir = .logs/
 commands =
-    pytest \
+    python -m pytest \
         -vv \
         --cov={envsitepackagesdir}/enpheeph \
         --cov-append \
@@ -336,14 +336,14 @@ envlogdir = .logs/
 deps = coverage[toml]
 skip_install = true
 commands =
-    coverage report
-    coverage xml -o {envlogdir}/tools/coverage/coverage.xml
+    python -m coverage report
+    python -m coverage xml -o {envlogdir}/tools/coverage/coverage.xml
 
 [testenv:clean]
 envlogdir = .logs/
 deps = coverage[toml]
 skip_install = true
-commands = coverage erase
+commands = python -m coverage erase
 
 [gh]
 python =
