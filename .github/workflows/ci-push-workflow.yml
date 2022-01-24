@@ -40,7 +40,7 @@ jobs:
     - name: Get current date/time
       id: datetime
       run: |
-        echo "::set-output name=datetime::$(date +'%Y-%m-%dT%H:%M:%S')"
+        echo "::set-output name=datetime::$(date +'%Y-%m-%dT%H_%M_%S')"
 
     # answer https://stackoverflow.com/a/60302058
     # it gets only the branch name from GITHUB_REF refs/heads/<branch_name>
@@ -53,10 +53,9 @@ jobs:
     - name: Install mkinit
       run: |
         python --version
-        pip --version
-        pip install mkinit==0.3.4
-        pip list
-      shell: bash
+        python -m pip --version
+        python -m pip install mkinit==0.3.4
+        python -m pip list
 
     - name: Run mkinit
       # we run mkinit in a recursive way, defining also the internal __init__.py
@@ -68,7 +67,7 @@ jobs:
       # **NOTE**: we need to use both 1 and 2 redirection as debug info is going
       # to the stderr stream
       run: |
-        mkinit --recursive --black --lazy --write --verbose 2 src/enpheeph 1> mkinit-${{ steps.datetime.outputs.datetime }}.log 2> mkinit-${{ steps.datetime.outputs.datetime }}.log
+        python -m mkinit --recursive --black --lazy --write --verbose 2 src/enpheeph 1> mkinit-${{ steps.datetime.outputs.datetime }}.log 2> mkinit-${{ steps.datetime.outputs.datetime }}.log
 
     - uses: stefanzweifel/git-auto-commit-action@v4.13.1
       with:
@@ -132,8 +131,8 @@ jobs:
     - name: Upload mkinit log
       uses: actions/upload-artifact@v2.3.1
       with:
-        name: mkunit-${{ steps.datetime.outputs.datetime }}
-        path: mkunit-${{ steps.datetime.outputs.datetime }}.log
+        name: mkinit-${{ steps.datetime.outputs.datetime }}
+        path: mkinit-${{ steps.datetime.outputs.datetime }}.log
 
 
   pre-commit:
@@ -229,6 +228,7 @@ jobs:
         python --version
         python -m pip --version
         python -m pip install tox
+        python -m pip list
 
     # we use os.makedirs instead of pathlib.Path as it does not work with older
     # Python version running in the GitHub Actions runners
