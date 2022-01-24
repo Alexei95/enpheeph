@@ -23,8 +23,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-        python-version:
-          - 3.9
 
     steps:
     # we check out the repository
@@ -32,10 +30,10 @@ jobs:
       uses: actions/checkout@v2.4.0
 
     # we set up the Python environment
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python 3.9
       uses: actions/setup-python@v2.3.1
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: 3.9
 
     # answer https://stackoverflow.com/a/60942437
     # then the datetime is available as ${{ steps.datetime.outputs.datetime }}
@@ -67,8 +65,10 @@ jobs:
       # accessed
       # write is to write the changes
       # verbose 2 is the DEBUG level for the Python logging
+      # **NOTE**: we need to use both 1 and 2 redirection as debug info is going
+      # to the stderr stream
       run: |
-        mkinit --recursive --black --lazy --write --verbose 2 src/enpheeph > mkinit-${{ steps.datetime.outputs.datetime }}.log
+        mkinit --recursive --black --lazy --write --verbose 2 src/enpheeph 1> mkinit-${{ steps.datetime.outputs.datetime }}.log 2> mkinit-${{ steps.datetime.outputs.datetime }}.log
 
     - uses: stefanzweifel/git-auto-commit-action@v4.13.1
       with:
@@ -190,7 +190,14 @@ jobs:
           - ubuntu-18.04
           - ubuntu-20.04
           - ubuntu-latest
+
+          - macos-10.15
+          - macos-11
           - macos-latest
+
+          - windows-2016
+          - windows-2019
+          - windows-2022
           - windows-latest
         # when running tox sequentially we don't need a python matrix, as we use
         # only 3.9 manually
