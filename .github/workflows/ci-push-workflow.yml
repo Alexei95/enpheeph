@@ -223,6 +223,8 @@ jobs:
 
     # we run all the tests in sequence, as the parallel version does not work with
     # tox-gh and tox-conda as of 2022/01/24
+    # to use tox-gh and tox-conda, hopefully there will be a fix, and the changes
+    # are simply tox-gh instead of tox in pip and tox4 instead of tox in commands
     - name: Install tox
       run: |
         python --version
@@ -234,14 +236,14 @@ jobs:
 
     - name: Setup tox test suite
       run: |
-        tox -vv --notest > tox-setup.log
+        tox -vvv --notest > .logs/tools/tox/tox-setup.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
 
     - name: Run tox test suite
       run: |
-        tox -vv --skip-pkg-install > tox-run.log
+        tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
@@ -254,7 +256,7 @@ jobs:
       uses: actions/upload-artifact@v2.3.1
       with:
         # longer name ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-${{ matrix.release }}
-        name: tox-results-${{ runner.os }}-${{ matrix.python-version }}
+        name: tox-results-${{ matrix.os }}-${{ matrix.python-version }}
         path: .logs/tools/
 
     # this is required for sharing data with other jobs, as each job has a
@@ -263,8 +265,8 @@ jobs:
       uses: actions/upload-artifact@v2.3.1
       with:
         # longer name
-        name: tox-setup-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}
-        path: tox-setup.log
+        name: tox-setup-${{ matrix.os }}-${{ matrix.python-version }}
+        path: .logs/tools/tox/tox-setup.log
       if: failure()
 
     # this is required for sharing data with other jobs, as each job has a
@@ -273,8 +275,8 @@ jobs:
       uses: actions/upload-artifact@v2.3.1
       with:
         # longer name
-        name: tox-run-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}
-        path: tox-run.log
+        name: tox-run-${{ matrix.os }}-${{ matrix.python-version }}
+        path: .logs/tools/tox/tox-run.log
       if: failure()
 
     # for uploading coverage to codecov
