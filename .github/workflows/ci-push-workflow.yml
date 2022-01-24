@@ -193,9 +193,10 @@ jobs:
           - macos-latest
           - windows-latest
         python-version:
-          # we use only 3.9 as all the environment are created by tox-conda
-          - 3.8
-          - 3.9
+          # when running tox sequentially we don't need a python matrix, as we use
+          # only 3.9 manually
+          # - 3.8
+          # - 3.9
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 40
@@ -220,10 +221,7 @@ jobs:
       run: |
         python --version
         python -m pip --version
-        python -m pip install tox-gh
-      # for using/running conda, we need -l {0} to run as login shell and have conda
-      # enabled
-      # shell: bash -l {0}
+        python -m pip install tox
 
     # we use os.makedirs instead of pathlib.Path as it does not work with older
     # Python version running in the GitHub Actions runners
@@ -246,14 +244,14 @@ jobs:
 
     - name: Setup tox test suite
       run: |
-        tox4 -vvv --notest > .logs/tools/tox/tox-setup.log
+        tox -vvv --notest > .logs/tools/tox/tox-setup.log
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       # shell: bash -l {0}
 
     - name: Run tox test suite
       run: |
-        tox 4-vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
+        tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       # shell: bash -l {0}
