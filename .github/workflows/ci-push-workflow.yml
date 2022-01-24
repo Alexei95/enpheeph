@@ -26,9 +26,6 @@ jobs:
         python-version:
           - 3.9
 
-    # Timeout: https://stackoverflow.com/a/59076067/4521646
-    timeout-minutes: 40
-
     steps:
     # we check out the repository
     - name: Repository check-out
@@ -192,6 +189,9 @@ jobs:
         os:
           - ubuntu-18.04
           - ubuntu-20.04
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
         python-version:
           # we use only 3.9 as all the environment are created by tox-conda
           # - 3.8
@@ -235,19 +235,23 @@ jobs:
         python -m pip install tox
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
-      shell: bash -l {0}
+      # shell: bash -l {0}
+
+    - name: Create log directories
+      run: |
+        import pathlib
+        pathlib.Path(".logs/tools/tox").mkdir(exist_ok=True, parents=True)
+      shell: python
 
     - name: Setup tox test suite
       run: |
-        mkdir --parents .logs/tools/tox
         tox -vvv --notest > .logs/tools/tox/tox-setup.log
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
-      shell: bash -l {0}
+      # shell: bash -l {0}
 
     - name: Run tox test suite
       run: |
-        mkdir --parents .logs/tools/tox
         tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
