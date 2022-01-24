@@ -15,6 +15,7 @@ extras_require = {
     ],
     "dev": [
         "black",
+        "coverage[toml]",
         "flake8",
         "mypy",
         "pre-commit",
