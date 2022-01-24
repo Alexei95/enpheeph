@@ -59,7 +59,7 @@ jobs:
       run: |
         python --version
         pip --version
-        pip install mkinit==0.3.3
+        pip install mkinit==0.3.4
         pip list
       shell: bash
 
@@ -73,7 +73,7 @@ jobs:
       run: |
         mkinit --recursive --black --lazy --write --verbose 2 src/enpheeph > mkinit-${{ steps.datetime.outputs.datetime }}.log
 
-    - uses: stefanzweifel/git-auto-commit-action@v4
+    - uses: stefanzweifel/git-auto-commit-action@v4.13.1
       with:
         # Optional, but recommended
         # Defaults to "Apply automatic changes"
@@ -92,7 +92,9 @@ jobs:
         # See the `pathspec`-documentation for git
         # - https://git-scm.com/docs/git-add#Documentation/git-add.txt-ltpathspecgt82308203
         # - https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
-        file_pattern: "**/__init__.py"
+        file_pattern: [
+          "**/__init__.py",
+        ]
 
         # Optional local file path to the repository
         # Defaults to the root of the repository
@@ -210,8 +212,8 @@ jobs:
         # activate-environment and auto-activate-base are used to automatically
         # enable base
         # in this case we only need base
-        activate-environment: true
-        auto-activate-base: true
+        activate-environment: ${{ job.container.id }}
+        auto-activate-base: false
         auto-update-conda: true
         python-version: ${{ matrix.python-version }}
 
