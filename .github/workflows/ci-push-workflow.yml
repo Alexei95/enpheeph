@@ -15,7 +15,7 @@ jobs:
   mkinit-init-attribute-update:
     # this needs to be executed only if there is a push, as there are commit
     # permissions with the secrets
-    if: github.event == 'push'
+    if: github.event_name == 'push'
     # the system to run on
     runs-on: ${{ matrix.os }}
     strategy:
@@ -142,7 +142,7 @@ jobs:
   pre-commit:
     # this needs to be executed only if there is a push, as there are commit
     # permissions with the secrets
-    if: github.event == 'push'
+    if: github.event_name == 'push'
     # to run after the job from the same workflow
     # if on different workflows, see https://stackoverflow.com/a/65698892
     needs: mkinit-init-attribute-update
