@@ -204,17 +204,6 @@ jobs:
     - name: Repository check-out
       uses: actions/checkout@v2.4.0
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2.3.1
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Install tox
-      run: |
-        python --version
-        python -m pip --version
-        python -m pip install tox
-
     - name: Setup conda
       uses: conda-incubator/setup-miniconda@v2.1.1
       # https://github.com/tox-dev/tox-conda/blob/
@@ -233,10 +222,19 @@ jobs:
 
     # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
 
+    - name: Install tox
+      run: |
+        python --version
+        python -m pip --version
+        python -m pip install tox-gh
+      # for using/running conda, we need -l {0} to run as login sheel and have conda
+      # enabled
+      shell: bash -l {0}
+
     - name: Setup tox test suite
       # we need tox4 as we are running tox v4.0.0a10
       run: |
-        tox -r -vv --notest > tox-setup.log
+        tox4 -r -vv --notest > tox-setup.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
@@ -244,10 +242,12 @@ jobs:
     - name: Run tox test suite
       # we need tox4 as we are running tox v4.0.0a10
       run: |
-        tox -r -vv --skip-pkg-install > tox-run.log
+        tox4 -r -vv --skip-pkg-install > tox-run.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
+      env:
+        CI_RUN: "yes"
 
     # this is required for sharing data with other jobs, as each job has a
     # different runner
