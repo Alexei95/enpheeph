@@ -213,7 +213,7 @@ jobs:
       run: |
         python --version
         python -m pip --version
-        python -m pip install tox-gh
+        python -m pip install tox
 
     - name: Setup conda
       uses: conda-incubator/setup-miniconda@v2.1.1
@@ -236,7 +236,7 @@ jobs:
     - name: Setup tox test suite
       # we need tox4 as we are running tox v4.0.0a10
       run: |
-        tox4 -r -vv --notest > tox-setup.log
+        tox -r -vv --notest > tox-setup.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
@@ -244,7 +244,7 @@ jobs:
     - name: Run tox test suite
       # we need tox4 as we are running tox v4.0.0a10
       run: |
-        tox4 -r -vv --skip-pkg-install > tox-run.log
+        tox -r -vv --skip-pkg-install > tox-run.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
