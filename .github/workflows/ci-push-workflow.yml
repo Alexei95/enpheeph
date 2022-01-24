@@ -227,23 +227,21 @@ jobs:
       run: |
         python --version
         python -m pip --version
-        python -m pip install tox==4.0.0a10
+        python -m pip install tox
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
 
     - name: Setup tox test suite
-      # we need tox4 as we are running tox v4.0.0a10
       run: |
-        tox4 -vv --notest > tox-setup.log
+        tox -vv --notest > tox-setup.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
 
     - name: Run tox test suite
-      # we need tox4 as we are running tox v4.0.0a10
       run: |
-        tox4 -vv --skip-pkg-install > tox-run.log
+        tox -vv --skip-pkg-install > tox-run.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
