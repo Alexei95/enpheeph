@@ -71,6 +71,8 @@ __getattr__ = lazy_import(
             'Monitor',
             'MonitorBaseMixin',
             'PolymorphicMixin',
+            'Session',
+            'SessionBaseMixin',
             'fix_pysqlite',
             'pysqlite_begin_emission_fix_on_connect',
             'set_sqlite_pragma',
@@ -92,7 +94,8 @@ def __dir__():
 __all__ = ['CustomBase', 'CustomBaseClass', 'ExperimentRun',
            'ExperimentRunBaseMixin', 'Fault', 'FaultBaseMixin', 'Injection',
            'Monitor', 'MonitorBaseMixin', 'PolymorphicMixin',
-           'SQLStoragePluginABC', 'SQLiteStoragePlugin', 'fix_pysqlite',
+           'SQLStoragePluginABC', 'SQLiteStoragePlugin', 'Session',
+           'SessionBaseMixin', 'fix_pysqlite',
            'pysqlite_begin_emission_fix_on_connect', 'set_sqlite_pragma',
            'sql_data_classes', 'sqlalchemy_begin_emission_pysqlite',
            'sqlitestorageplugin', 'sqlstoragepluginabc', 'sqlutils']

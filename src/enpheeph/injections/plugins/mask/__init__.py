@@ -54,11 +54,15 @@ def lazy_import(module_name, submodules, submod_attrs):
 __getattr__ = lazy_import(
     __name__,
     submodules={
+        'autopytorchmaskplugin',
         'cupypytorchmaskplugin',
         'lowleveltorchmaskpluginabc',
         'numpypytorchmaskplugin',
     },
     submod_attrs={
+        'autopytorchmaskplugin': [
+            'AutoPyTorchMaskPlugin',
+        ],
         'cupypytorchmaskplugin': [
             'CuPyPyTorchMaskPlugin',
         ],
@@ -75,7 +79,8 @@ __getattr__ = lazy_import(
 def __dir__():
     return __all__
 
-__all__ = ['CuPyPyTorchMaskPlugin', 'LowLevelTorchMaskPluginABC',
-           'NumPyPyTorchMaskPlugin', 'cupypytorchmaskplugin',
+__all__ = ['AutoPyTorchMaskPlugin', 'CuPyPyTorchMaskPlugin',
+           'LowLevelTorchMaskPluginABC', 'NumPyPyTorchMaskPlugin',
+           'autopytorchmaskplugin', 'cupypytorchmaskplugin',
            'lowleveltorchmaskpluginabc', 'numpypytorchmaskplugin']
 # </AUTOGEN_INIT>

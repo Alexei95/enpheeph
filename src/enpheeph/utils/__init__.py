@@ -94,6 +94,7 @@ __getattr__ = lazy_import(
         ],
         'functions': [
             'camel_to_snake',
+            'get_object_library',
         ],
         'imports': [
             'compare_version',
@@ -102,6 +103,7 @@ __getattr__ = lazy_import(
         'typings': [
             'ActiveDimensionIndexType',
             'AnyIndexType',
+            'ArrayType',
             'DimensionDictType',
             'DimensionIndexType',
             'DimensionLocationIndexType',
@@ -121,18 +123,19 @@ __getattr__ = lazy_import(
 def __dir__():
     return __all__
 
-__all__ = ['ActiveDimensionIndexType', 'AnyIndexType', 'BaseInjectionLocation',
-           'BitFaultMaskInfo', 'BitFaultValue', 'BitIndexInfo', 'BitWidth',
-           'DimensionDictType', 'DimensionIndexType',
-           'DimensionLocationIndexType', 'DimensionType', 'Endianness',
-           'FaultLocation', 'FaultLocationMixin', 'FaultMaskOperation',
-           'FaultMaskValue', 'FunctionCallerNameMixin', 'HandlerStatus',
-           'IDGenerator', 'IDGeneratorSubclass', 'Index1DType',
-           'IndexMultiDType', 'IndexTimeType', 'InjectionLocationABC',
-           'LocationMixin', 'LocationModuleNameMixin', 'LocationOptionalMixin',
-           'LowLevelMaskArrayType', 'ModelType', 'MonitorLocation',
-           'MonitorMetric', 'ParameterType', 'PathType', 'Positive',
-           'ShapeType', 'TensorType', 'camel_to_snake', 'classes',
+__all__ = ['ActiveDimensionIndexType', 'AnyIndexType', 'ArrayType',
+           'BaseInjectionLocation', 'BitFaultMaskInfo', 'BitFaultValue',
+           'BitIndexInfo', 'BitWidth', 'DimensionDictType',
+           'DimensionIndexType', 'DimensionLocationIndexType', 'DimensionType',
+           'Endianness', 'FaultLocation', 'FaultLocationMixin',
+           'FaultMaskOperation', 'FaultMaskValue', 'FunctionCallerNameMixin',
+           'HandlerStatus', 'IDGenerator', 'IDGeneratorSubclass',
+           'Index1DType', 'IndexMultiDType', 'IndexTimeType',
+           'InjectionLocationABC', 'LocationMixin', 'LocationModuleNameMixin',
+           'LocationOptionalMixin', 'LowLevelMaskArrayType', 'ModelType',
+           'MonitorLocation', 'MonitorMetric', 'ParameterType', 'PathType',
+           'Positive', 'ShapeType', 'TensorType', 'camel_to_snake', 'classes',
            'compare_version', 'constants', 'data_classes', 'enums',
-           'functions', 'imports', 'is_module_available', 'typings']
+           'functions', 'get_object_library', 'imports', 'is_module_available',
+           'typings']
 # </AUTOGEN_INIT>
