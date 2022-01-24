@@ -211,7 +211,7 @@ jobs:
         # enable base
         # in this case we only need base
         activate-environment: tox-conda-pytest-coverage
-        auto-activate-base: true
+        # auto-activate-base: true
         auto-update-conda: true
         python-version: ${{ matrix.python-version }}
 
@@ -226,7 +226,6 @@ jobs:
 
     - name: Install tox
       run: |
-        conda activate tox-conda-pytest-coverage
         python --version
         python -m pip --version
         python -m pip install tox-gh
@@ -235,17 +234,17 @@ jobs:
       shell: bash -l {0}
 
     - name: Setup tox test suite
+      # we need tox4 as we are running tox v4.0.0a10
       run: |
-        conda activate tox-conda-pytest-coverage
-        tox -r -vv --notest > tox-setup.log
+        tox4 -r -vv --notest > tox-setup.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
 
     - name: Run tox test suite
+      # we need tox4 as we are running tox v4.0.0a10
       run: |
-        conda activate tox-conda-pytest-coverage
-        tox -r -vv --skip-pkg-install > tox-run.log
+        tox4 -r -vv --skip-pkg-install > tox-run.log
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
