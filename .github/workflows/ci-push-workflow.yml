@@ -255,7 +255,7 @@ jobs:
         tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
-      shell: bash -l {0}
+      # shell: bash -l {0}
       env:
         CI_RUN: "yes"
 
