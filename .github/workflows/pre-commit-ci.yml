@@ -1,6 +1,6 @@
 name: pre-commit-ci
 
-# we run pre-commit only on push
+# we run pre-commit only on push, as otherwise it would leak secrets
 on:
   - push
 

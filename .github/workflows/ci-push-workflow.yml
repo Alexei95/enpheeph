@@ -1,14 +1,21 @@
-# we update the inits whenever there is a push
-name: init_update
+name: ci-push-workflow
 
 # events that trigger the workflow
 on:
-  - push
+  # we select push for the selected branches
+  push:
+    # branches:
+    #   - main
+    #   - dev
 
 jobs:
   # name of the job
-  mkinit:
-
+  # this job updates the __init__.pys to include recursively all the attributes
+  # it is run on all push/pull requests
+  mkinit-init-attribute-update:
+    # this needs to be executed only if there is a push, as there are commit
+    # permissions with the secrets
+    if: github.event == 'push'
     # the system to run on
     runs-on: ${{ matrix.os }}
     strategy:
@@ -52,7 +59,7 @@ jobs:
       run: |
         python --version
         pip --version
-        pip install mkinit==0.3.4
+        pip install mkinit==0.3.3
         pip list
       shell: bash
 
@@ -130,3 +137,124 @@ jobs:
       with:
         name: mkunit-${{ steps.datetime.outputs.datetime }}
         path: mkunit-${{ steps.datetime.outputs.datetime }}.log
+
+
+  pre-commit:
+    # this needs to be executed only if there is a push, as there are commit
+    # permissions with the secrets
+    if: github.event == 'push'
+    # to run after the job from the same workflow
+    # if on different workflows, see https://stackoverflow.com/a/65698892
+    needs: mkinit-init-attribute-update
+    # the system to run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        python-version:
+          - 3.9
+
+    steps:
+    - name: Repository check-out
+      uses: actions/checkout@v2
+      with:
+        # to have unlimited depth for pushing
+        fetch-depth: 0
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: pre-commit Action
+      uses: pre-commit/action@v2.0.3
+      # to allow pushing
+      with:
+        extra_args: --hook-stage manual
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  # this job runs the tests with tox-conda using pytest and coverage
+  # it must run after the init update
+  # name of the job
+  tox-conda-pytest-coverage:
+    # to run after the job from the same workflow
+    # if on different workflows, see https://stackoverflow.com/a/65698892
+    needs: mkinit-init-attribute-update
+    # the system to run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # for now a small grid is more than enough
+        os:
+          - ubuntu-18.04
+          - ubuntu-20.04
+        python-version:
+          - 3.8
+          - 3.9
+
+    # Timeout: https://stackoverflow.com/a/59076067/4521646
+    timeout-minutes: 40
+
+    steps:
+    # we check out the repository
+    - name: Repository check-out
+      uses: actions/checkout@v2
+
+    - name: Setup conda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        # activate-environment and auto-activate-base are used to automatically
+        # enable base
+        # in this case we only need base
+        activate-environment: true
+        auto-activate-base: true
+        auto-update-conda: true
+        python-version: ${{ matrix.python-version }}
+
+    # we set up the Python environment
+    # not needed if using conda
+    # - name: Set up Python ${{ matrix.python-version }}
+    #   uses: actions/setup-python@v2
+    #   with:
+    #     python-version: ${{ matrix.python-version }}
+
+    # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
+
+    - name: Install tox
+      run: |
+        python --version
+        python -m pip --version
+        python -m pip install tox-gh
+      shell: bash
+
+    - name: Setup tox test suite
+      run: tox -r -vv --notest > tox-setup.log
+
+    - name: Run tox test suite
+      run: tox -r -vv --skip-pkg-install > tox-run.log
+
+    # this is required for sharing data with other jobs, as each job has a
+    # different runner
+    - name: Upload tox results
+      uses: actions/upload-artifact@v2
+      with:
+        # longer name ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-${{ matrix.release }}
+        name: tox-results-${{ runner.os }}-${{ matrix.python-version }}
+        path: .logs/tools/
+
+    # for uploading coverage to codecov
+    # - name: Upload coverage to Codecov
+    #   uses: codecov/codecov-action@v1
+    #   if: always()
+    #   # see: https://github.com/actions/toolkit/issues/399
+    #   continue-on-error: true
+    #   with:
+    #     token: ${{ secrets.CODECOV_TOKEN }}
+    #     file: coverage.xml
+    #     flags: cpu,pytest,python${{ matrix.python-version }}
+    #     name: CPU-coverage
+    #     fail_ci_if_error: false
