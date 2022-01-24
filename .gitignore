@@ -78,3 +78,5 @@ mkinit-*.log
 
 ### TEST FILES ###
 .tox/*
+.logs/*
+enpheeph-*/
