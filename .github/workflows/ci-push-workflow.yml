@@ -210,7 +210,7 @@ jobs:
         # activate-environment and auto-activate-base are used to automatically
         # enable base
         # in this case we only need base
-        activate-environment: conda
+        activate-environment: tox-conda-pytest-coverage
         auto-activate-base: false
         auto-update-conda: true
         python-version: ${{ matrix.python-version }}
@@ -226,6 +226,7 @@ jobs:
 
     - name: Install tox
       run: |
+        conda activate tox-conda-pytest-coverage
         python --version
         python -m pip --version
         python -m pip install tox-gh
