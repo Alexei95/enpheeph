@@ -193,7 +193,6 @@ jobs:
           - ubuntu-18.04
           - ubuntu-20.04
         python-version:
-          - 3.8
           - 3.9
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
@@ -222,11 +221,13 @@ jobs:
 
     # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
 
+    # we run all the tests in sequence, as the parallel version does not work with
+    # tox-gh and tox-conda as of 2022/01/24
     - name: Install tox
       run: |
         python --version
         python -m pip --version
-        python -m pip install tox-gh
+        python -m pip install tox==4
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
