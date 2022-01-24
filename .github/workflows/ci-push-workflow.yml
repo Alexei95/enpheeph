@@ -230,14 +230,25 @@ jobs:
         python --version
         python -m pip --version
         python -m pip install tox-gh
-      # for using/running conda
+      # for using/running conda, we need -l {0} to run as login sheel and have conda
+      # enabled
       shell: bash -l {0}
 
     - name: Setup tox test suite
-      run: tox -r -vv --notest > tox-setup.log
+      run: |
+        conda activate tox-conda-pytest-coverage
+        tox -r -vv --notest > tox-setup.log
+      # for using/running conda, we need -l {0} to run as login sheel and have conda
+      # enabled
+      shell: bash -l {0}
 
     - name: Run tox test suite
-      run: tox -r -vv --skip-pkg-install > tox-run.log
+      run: |
+        conda activate tox-conda-pytest-coverage
+        tox -r -vv --skip-pkg-install > tox-run.log
+      # for using/running conda, we need -l {0} to run as login sheel and have conda
+      # enabled
+      shell: bash -l {0}
 
     # this is required for sharing data with other jobs, as each job has a
     # different runner
