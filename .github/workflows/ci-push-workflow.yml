@@ -192,9 +192,9 @@ jobs:
           - ubuntu-latest
           - macos-latest
           - windows-latest
-        python-version:
-          # when running tox sequentially we don't need a python matrix, as we use
-          # only 3.9 manually
+        # when running tox sequentially we don't need a python matrix, as we use
+        # only 3.9 manually
+        # python-version:
           # - 3.8
           # - 3.9
 
