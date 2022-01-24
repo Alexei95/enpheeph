@@ -237,10 +237,12 @@ jobs:
       # enabled
       # shell: bash -l {0}
 
+    # we use os.makedirs instead of pathlib.Path as it does not work with older
+    # Python version running in the GitHub Actions runners
     - name: Create log directories
       run: |
-        import pathlib
-        pathlib.Path(".logs/tools/tox").mkdir(exist_ok=True, parents=True)
+        import os
+        os.makedirs(".logs/tools/tox", exist_ok=True)
       shell: python
 
     - name: Setup tox test suite
