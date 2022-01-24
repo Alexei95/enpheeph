@@ -233,7 +233,7 @@ jobs:
         python --version
         python -m pip --version
         python -m pip install tox
-      # for using/running conda, we need -l {0} to run as login sheel and have conda
+      # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       shell: bash -l {0}
 
@@ -241,7 +241,7 @@ jobs:
       run: |
         mkdir --parents .logs/tools/tox
         tox -vvv --notest > .logs/tools/tox/tox-setup.log
-      # for using/running conda, we need -l {0} to run as login sheel and have conda
+      # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       shell: bash -l {0}
 
@@ -249,7 +249,7 @@ jobs:
       run: |
         mkdir --parents .logs/tools/tox
         tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
-      # for using/running conda, we need -l {0} to run as login sheel and have conda
+      # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       shell: bash -l {0}
       env:
