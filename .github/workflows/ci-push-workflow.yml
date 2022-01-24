@@ -92,9 +92,7 @@ jobs:
         # See the `pathspec`-documentation for git
         # - https://git-scm.com/docs/git-add#Documentation/git-add.txt-ltpathspecgt82308203
         # - https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
-        file_pattern: [
-          "**/__init__.py",
-        ]
+        file_pattern: "**/__init__.py"
 
         # Optional local file path to the repository
         # Defaults to the root of the repository
@@ -130,7 +128,7 @@ jobs:
 
         # Optional. Prevents the shell from expanding filenames.
         # Details: https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html
-        # disable_globbing: true
+        disable_globbing: true
 
     # this is required for sharing data with other jobs, as each job has a
     # different runner
