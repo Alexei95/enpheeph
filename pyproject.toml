@@ -315,7 +315,6 @@
 legacy_tox_ini = """
 [tox]
 envlist = clean,py38,py39,report
-requires = tox-conda
 
 [testenv]
 envlogdir = .logs/
