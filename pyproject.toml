@@ -303,13 +303,51 @@
 # the local directory
 # https://github.com/pytest-dev/pytest-cov/issues/98#issuecomment-382583824
 # pytest --cov={envsitepackagesdir}/enpheeph
+# additional pytest options and depends in [testenv] are used for coverage report
+# when using tox https://pytest-cov.readthedocs.io/en/latest/tox.html
+# cov-append appends the report
+# depends create the execution order, where clean must be executed before the tests
+# and report only afterwards
+# [gh] is the section for GitHub Actions, taken from tox-gh on GitHub
+# {posargs} add additional positional arguments taken from cli or env
+# envtmpdir can be used as temporary log, but it is cleared with every testenv
+# use envlogdir which is in common, but with custom sub-paths
 legacy_tox_ini = """
 [tox]
-envlist = py38,py39
+envlist = clean,py38,py39,report
 requires = tox-conda
 
 [testenv]
+envlogdir = .logs/
 commands =
-    pytest --cov={envsitepackagesdir}/enpheeph
+    pytest \
+        -vv \
+        --cov={envsitepackagesdir}/enpheeph \
+        --cov-append \
+        --cov-report=term-missing \
+        --junitxml={envlogdir}/tools/pytest/junit-{envname}.xml \
+        {posargs}
 extras = dev
+depends =
+    {py38,py39}: clean
+    report: py38,py39
+
+[testenv:report]
+envlogdir = .logs/
+deps = coverage[toml]
+skip_install = true
+commands =
+    coverage report
+    coverage xml -o {envlogdir}/tools/coverage/coverage.xml
+
+[testenv:clean]
+envlogdir = .logs/
+deps = coverage[toml]
+skip_install = true
+commands = coverage erase
+
+[gh]
+python =
+    3.8 = py38
+    3.9 = py39
 """
