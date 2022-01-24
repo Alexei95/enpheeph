@@ -226,7 +226,7 @@ jobs:
       run: |
         python --version
         python -m pip --version
-        python -m pip install tox-gh
+        python -m pip install tox-gh pytest
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
