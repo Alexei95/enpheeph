@@ -206,13 +206,11 @@ jobs:
 
     - name: Setup conda
       uses: conda-incubator/setup-miniconda@v2.1.1
+      # https://github.com/tox-dev/tox-conda/blob/
+      # 9bd14a47e7a9f4d1258d64fc0e562b33aefa6288/.github/workflows/check.yml
+      # taken from tox-conda CI workflow
       with:
-        # activate-environment and auto-activate-base are used to automatically
-        # enable base
-        # in this case we only need base
-        activate-environment: tox-conda-pytest-coverage
-        # auto-activate-base: true
-        auto-update-conda: true
+        miniconda-version: "latest"
         python-version: ${{ matrix.python-version }}
 
     # we set up the Python environment
@@ -248,6 +246,9 @@ jobs:
       # for using/running conda, we need -l {0} to run as login sheel and have conda
       # enabled
       shell: bash -l {0}
+      env:
+        CI_RUN: "yes"
+        DIFF_AGAINST: HEAD
 
     # this is required for sharing data with other jobs, as each job has a
     # different runner

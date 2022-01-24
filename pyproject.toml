@@ -349,5 +349,5 @@ commands = coverage erase
 [gh]
 python =
     3.8 = py38
-    3.9 = py39
+    3.9 = py39, report, clean
 """
