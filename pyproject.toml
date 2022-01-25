@@ -314,7 +314,7 @@
 # use envlogdir which is in common, but with custom sub-paths
 legacy_tox_ini = """
 [tox]
-envlist = clean,py38,py39,report
+envlist = clean,py38,py39,py310,report
 requires = tox-conda
 
 [testenv]
@@ -329,8 +329,8 @@ commands =
         {posargs}
 extras = dev
 depends =
-    {py38,py39}: clean
-    report: py38,py39
+    {py38,py39,py310}: clean
+    report: py38,py39,py310
 
 [testenv:report]
 envlogdir = .logs/
@@ -350,4 +350,5 @@ commands = python -m coverage erase
 python =
     3.8 = py38
     3.9 = py39, report, clean
+    3.10 = py310
 """
