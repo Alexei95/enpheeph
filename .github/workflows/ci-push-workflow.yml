@@ -192,12 +192,12 @@ jobs:
 
           # - macos-10.15
           # - macos-11
-          - macos-latest
+          # - macos-latest
 
           # - windows-2016
           # - windows-2019
           # - windows-2022
-          - windows-latest
+          # - windows-latest
         # when running tox sequentially we don't need a python matrix, as we use
         # only 3.9 manually
         # python-version:
