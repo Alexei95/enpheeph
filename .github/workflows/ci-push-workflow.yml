@@ -186,17 +186,17 @@ jobs:
       matrix:
         # for now a small grid is more than enough
         os:
-          - ubuntu-18.04
-          - ubuntu-20.04
+          # - ubuntu-18.04
+          # - ubuntu-20.04
           - ubuntu-latest
 
-          - macos-10.15
-          - macos-11
+          # - macos-10.15
+          # - macos-11
           - macos-latest
 
-          - windows-2016
-          - windows-2019
-          - windows-2022
+          # - windows-2016
+          # - windows-2019
+          # - windows-2022
           - windows-latest
         # when running tox sequentially we don't need a python matrix, as we use
         # only 3.9 manually
@@ -249,23 +249,24 @@ jobs:
 
     # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
     # set environment variable https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable
+    # we skip py310 on Windows
+    # these variables are accessible at yml level using ${{ env.variable_name }}
+    # otherwise they are used as environment for the commands
     - name: Set the environment variable TOX_SKIP_ENV=py310 if on Windows
       run: |
-        echo "TOX_SKIP_ENV=py310" >> $GITHUB_ENV
+        echo "TOX_SKIP_ENV=py310" >> $env:GITHUB_ENV
       if: runner.os == 'Windows'
 
-    # we must skip py310 as it does not work on Windows yet
     - name: Setup tox test suite
       run: |
-        TOX_SKIP_ENV=${{ env.TOX_SKIP_ENV }} tox -vvv --notest > .logs/tools/tox/tox-setup.log
+        tox -vvv --notest > .logs/tools/tox/tox-setup.log
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       # shell: bash -l {0}
 
-    # we must skip py310 as it does not work on Windows yet
     - name: Run tox test suite
       run: |
-        TOX_SKIP_ENV=${{ env.TOX_SKIP_ENV }} tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
+        tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       # shell: bash -l {0}
