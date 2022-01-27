@@ -1,12 +1,15 @@
-name: ci-push-workflow
+name: ci-testing
 
 # events that trigger the workflow
 on:
-  # we select push for the selected branches
+  # we operate on push and pull
+  # **BE CAREFUL NOT TO LEAK COMMIT PERSMISSIONS TO PR**
+  pull_request:
+    branches:
+      - main
   push:
-    # branches:
-    #   - main
-    #   - dev
+    branches:
+      - main
 
 jobs:
   # name of the job
@@ -186,18 +189,18 @@ jobs:
       matrix:
         # for now a small grid is more than enough
         os:
-          # - ubuntu-18.04
-          # - ubuntu-20.04
+          - ubuntu-18.04
+          - ubuntu-20.04
           - ubuntu-latest
 
-          # - macos-10.15
-          # - macos-11
-          # - macos-latest
+          - macos-10.15
+          - macos-11
+          - macos-latest
 
-          # - windows-2016
-          # - windows-2019
-          # - windows-2022
-          # - windows-latest
+          - windows-2016
+          - windows-2019
+          - windows-2022
+          - windows-latest
         # when running tox sequentially we don't need a python matrix, as we use
         # only 3.9 manually
         # python-version:
