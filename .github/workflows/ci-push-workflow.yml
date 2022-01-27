@@ -248,10 +248,16 @@ jobs:
         python-version: 3.9
 
     # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
+    # set environment variable https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable
+    - name: Set the environment variable TOX_SKIP_ENV=py310 if on Windows
+      run: |
+        echo "TOX_SKIP_ENV=py310" >> $GITHUB_ENV
+      if: runner.os == "Windows"
 
+    # we must skip py310 as it does not work on Windows yet
     - name: Setup tox test suite
       run: |
-        tox -vvv --notest > .logs/tools/tox/tox-setup.log
+        TOX_SKIP_ENV=${{ env.TOX_SKIP_ENV }} tox -vvv --notest > .logs/tools/tox/tox-setup.log
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       # shell: bash -l {0}
