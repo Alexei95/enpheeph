@@ -332,7 +332,9 @@ class SQLStoragePluginABC(
                 sqlalchemy.select(sql_data_classes.Injection)
                 .select_from(sql_data_classes.ExperimentRun)
                 .join(sql_data_classes.Injection)
-                .where(sql_data_classes.ExperimentRun.id_ == self.experiment_id)
+                .where(
+                    sql_data_classes.Injection.experiment_run_id == self.experiment_id
+                )
                 .where(sql_data_classes.Injection.location == location)
                 .where(sql_data_classes.Injection.internal_id == location._id)
             )
