@@ -262,9 +262,10 @@ jobs:
       # enabled
       # shell: bash -l {0}
 
+    # we must skip py310 as it does not work on Windows yet
     - name: Run tox test suite
       run: |
-        tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
+        TOX_SKIP_ENV=${{ env.TOX_SKIP_ENV }} tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       # shell: bash -l {0}
