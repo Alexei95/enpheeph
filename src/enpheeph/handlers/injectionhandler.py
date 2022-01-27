@@ -82,12 +82,20 @@ class InjectionHandler(object):
         if injections is None:
             injections = self.injections
 
+        # we use a dict to filter the duplicates in injections + self.active_injections
+        # otherwise bad things might happen in the SQL as the same object will be
+        # processed multiple times
+        injections = {
+            inj: counter
+            for counter, inj in enumerate(list(injections) + self.active_injections)
+        }.keys()
+
         # by summing active_injections we remember the already-active
         # injections from previous activate calls
         self.active_injections = [
             # we need to convert injections to a list to sum it with active_injections
             inj
-            for inj in list(injections) + self.active_injections
+            for inj in injections
             if inj in self.injections
         ]
 
