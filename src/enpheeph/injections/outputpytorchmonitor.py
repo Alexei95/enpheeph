@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import typing
 
+import enpheeph.injections.monitorabc
 import enpheeph.injections.plugins.indexing.indexingpluginabc
 import enpheeph.injections.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmonitorpostprocessormixin
@@ -14,6 +15,7 @@ if typing.TYPE_CHECKING:
 
 
 class OutputPyTorchMonitor(
+    enpheeph.injections.monitorabc.MonitorABC,
     enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
     (
         # black has issues with very long names

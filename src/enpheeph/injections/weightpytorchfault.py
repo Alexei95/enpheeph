@@ -2,6 +2,7 @@
 import copy
 import typing
 
+import enpheeph.injections.faultabc
 import enpheeph.injections.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmaskmixin
 import enpheeph.injections.mixins.pytorchtensorobjectvalidatormixin
@@ -15,6 +16,7 @@ if typing.TYPE_CHECKING:
 
 # no need to use handles here as the change is done when the injection is setup
 class WeightPyTorchFault(
+    enpheeph.injections.faultabc.FaultABC,
     enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
     enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixin,
     (
