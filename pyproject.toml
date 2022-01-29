@@ -312,6 +312,7 @@
 # {posargs} add additional positional arguments taken from cli or env
 # envtmpdir can be used as temporary log, but it is cleared with every testenv
 # use envlogdir which is in common, but with custom sub-paths
+# py310 does not work on Windows yet, at least on GitHub Actions
 legacy_tox_ini = """
 [tox]
 envlist = clean,py38,py39,py310,report
