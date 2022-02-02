@@ -1,4 +1,20 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import pathlib
 import typing
 
@@ -29,7 +45,10 @@ def config(
 
     monitor_1 = enpheeph.injections.OutputPyTorchMonitor(
         location=enpheeph.utils.data_classes.MonitorLocation(
-            module_name="adapter.backbone.conv1",
+            # resnet18
+            # module_name="adapter.backbone.conv1",
+            # vgg11
+            module_name="adapter.backbone.0",
             parameter_type=enpheeph.utils.enums.ParameterType.Activation,
             dimension_index={
                 enpheeph.utils.enums.DimensionType.Tensor: ...,
@@ -46,7 +65,10 @@ def config(
     )
     fault_1 = enpheeph.injections.WeightPyTorchFault(
         location=enpheeph.utils.data_classes.FaultLocation(
-            module_name="adapter.backbone.conv1",
+            # resnet18
+            # module_name="adapter.backbone.conv1",
+            # vgg11
+            module_name="adapter.backbone.0",
             parameter_type=enpheeph.utils.enums.ParameterType.Weight,
             parameter_name="weight",
             dimension_index={
@@ -66,7 +88,10 @@ def config(
     )
     monitor_2 = enpheeph.injections.OutputPyTorchMonitor(
         location=enpheeph.utils.data_classes.MonitorLocation(
-            module_name="adapter.backbone.conv1",
+            # resnet18
+            # module_name="adapter.backbone.conv1",
+            # vgg11
+            module_name="adapter.backbone.0",
             parameter_type=enpheeph.utils.enums.ParameterType.Activation,
             dimension_index={
                 enpheeph.utils.enums.DimensionType.Tensor: ...,
@@ -103,7 +128,7 @@ def config(
             module_name="adapter.backbone",
             parameter_type=enpheeph.utils.enums.ParameterType.Activation,
             dimension_index={
-                enpheeph.utils.enums.DimensionType.Tensor: (slice(10, 100),),
+                enpheeph.utils.enums.DimensionType.Tensor: (slice(10, 15),),
                 enpheeph.utils.enums.DimensionType.Batch: ...,
             },
             bit_index=[31],
