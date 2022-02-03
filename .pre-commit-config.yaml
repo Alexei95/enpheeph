@@ -174,7 +174,7 @@ repos:
       args:
         - --license-filepath
         # defaults to: LICENSE.txt
-        - LICENSE_notice.txt
+        - COPYRIGHT
         - --comment-style
         # defaults to: #
         - "#"
