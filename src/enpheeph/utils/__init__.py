@@ -68,6 +68,7 @@ __getattr__ = lazy_import(
             'IDGenerator',
             'IDGeneratorSubclass',
             'Positive',
+            'SkipIfErrorContextManager',
         ],
         'data_classes': [
             'BaseInjectionLocation',
@@ -134,8 +135,8 @@ __all__ = ['ActiveDimensionIndexType', 'AnyIndexType', 'ArrayType',
            'InjectionLocationABC', 'LocationMixin', 'LocationModuleNameMixin',
            'LocationOptionalMixin', 'LowLevelMaskArrayType', 'ModelType',
            'MonitorLocation', 'MonitorMetric', 'ParameterType', 'PathType',
-           'Positive', 'ShapeType', 'TensorType', 'camel_to_snake', 'classes',
-           'compare_version', 'constants', 'data_classes', 'enums',
-           'functions', 'get_object_library', 'imports', 'is_module_available',
-           'typings']
+           'Positive', 'ShapeType', 'SkipIfErrorContextManager', 'TensorType',
+           'camel_to_snake', 'classes', 'compare_version', 'constants',
+           'data_classes', 'enums', 'functions', 'get_object_library',
+           'imports', 'is_module_available', 'typings']
 # </AUTOGEN_INIT>
