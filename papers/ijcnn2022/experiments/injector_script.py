@@ -1,4 +1,20 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import argparse
 import collections.abc
 import importlib
@@ -140,6 +156,7 @@ def main(args=None):
     # if the static quantization was selected
     # we train the model for an additional epoch (set in the default trainer config)
     # to be able to create the proper static quantization weights + activations
+    # **NOTE**: static quantization is not supported on GPU
     if namespace.static_quantize:
         config["injection_handler"].deactivate()
         trainer.callbacks.append(
@@ -152,7 +169,7 @@ def main(args=None):
         )
     # with the dynamic quantization we quantize only the weights by a fixed
     # configuration
-    # dynamic quantization does not work on GPU, due to PyTorch missing the kernels
+    # **NOTE**: dynamic quantization does not work on GPU
     elif namespace.dynamic_quantize:
         model = torch.quantization.quantize_dynamic(
             model,
