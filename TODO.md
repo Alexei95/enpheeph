@@ -50,6 +50,20 @@
 30. #30 Make SQLStoragePluginABC into a real ABC and move all the implementations in SQLStoragePluginMixin
 31. #31 Fix spiking injection
 32. #32 Add memory profiling
+33. {#33} Add GPG signature for commits
+34. #34 Switch to a custom-federated Gitea instance
+35. #35 Find a way of auto-updating the dependencies found in GitHub Actions, e.g. mkinit, which is not mentioned anywhere else
+    1. #35-1 Additionally consider the introduction of automation bots like DependaBot and similar
+36. #36 Improve bit_index behaviour using BitIndexInfo and MSB/LSB Enums for relative computations.
+37. {#37} Fix bug with injection working too much for GPU vs CPU
+38. {#38} Fix bug on multiple injections not working in sequence
+39. #39 Add regression tests for #37, #38
+40. #40 Implement a CI for updating the copyright year
+    1. #40-1 It can be done using insert-license CI from pre-commit, using the CLI option --remove-header to remove the current license notice, than modifying the license and re-running insert-license without --remove-header
+    2. #40-2 There is a GitHub Action for that, which creates a PR that can be automatically merged ``FantasticFiasco/action-update-license-yearFantasticFiasco/action-update-license-year``
+41. {#41} Expand SkipIfError to support a tuple of errors
+42. #42 Possible issues with PyTorch 1.10 due to layer parametrization, e.g., functions that are run on weight/other attributes, and modify ``.weight`` to be a property and be recomputed from ``<module>.parametrizations.weight.original`` every time the property is called
+    1. #42-1 Parametrization might also be fun for implementing injections in future
 
 ## |Duplicates|
 
@@ -69,3 +83,7 @@
 6. {#9} Dependencies are now better managed
 7. {#23}, {#23-1} Now we can select also batches depending on the corresponding index and the flag, and also the mask is saved accordingly. The corresponding indexing plugin has been implemented and integrated with the common faults, some tests will have to be written to guarantee proper operation.
 8. {#26} InjectionCallback computes start and stop times and gives them to the storage plugin
+9. {#37} The cause was the mask not being properly instantiated as it was missing the first "batch" dimension. It is now fixed with better indexing and proper copies of the mask on CuPy
+10. {#38} SQL was giving errors of multiple objects, the culprits were the use of ExperimentRun.id_ instead of Injection.experiment_run_id as well as the improper checks in integrations with PyTorch Lightning, adding the same injection twice to the list. It is fixed now with using dict keys to remove duplicates.
+11. {#33} Unfortunately it can only be committed using ``git commit`` from the terminal
+12. {#41} SkipIfError now supports tuples of Exceptions
