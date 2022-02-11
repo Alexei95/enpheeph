@@ -1,4 +1,21 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import collections.abc
 import inspect
 import types
 import typing
@@ -125,7 +142,8 @@ class IDGenerator(object):
 
 class FunctionCallerNameMixin(object):
     @classmethod
-    def caller_name(cls, depth: typing.Annotated[int, Positive()] = 1) -> str:
+    # Annotated is not supported before Python 3.9
+    def caller_name(cls, depth: int = 1) -> str:
         frame: typing.Optional[types.FrameType] = None
         try:
             # we get the name of the called function through the current frame
@@ -153,3 +171,48 @@ class FunctionCallerNameMixin(object):
             del frame
 
         return name
+
+
+class SkipIfErrorContextManager(object):
+    def __init__(
+        self,
+        # use typing.Type as type is not subscriptable in Python 3.8
+        error: typing.Union[
+            typing.Type[BaseException], typing.Sequence[typing.Type[BaseException]]
+        ],
+        string_to_check: typing.Optional[str] = None,
+    ) -> None:
+        # we save the error in a tuple if it is a single class
+        if not isinstance(error, collections.abc.Sequence):
+            error = (error,)
+        error = tuple(error)
+        # we check for each element to be a BaseException subclass
+        for e in error:
+            if not issubclass(e, BaseException):
+                raise TypeError(f"Not a valid BaseException subclass: {e}")
+
+        self.error = error
+        self.string_to_check = string_to_check
+
+    def __enter__(self) -> None:
+        pass
+
+    # how to type a context manager
+    # https://adamj.eu/tech/2021/07/04/python-type-hints-how-to-type-a-context-manager/
+    def __exit__(
+        self,
+        # use typing.Type as type is not subscriptable in Python 3.8
+        exc_type: typing.Optional[typing.Type[BaseException]],
+        exc_val: typing.Optional[BaseException],
+        exc_tb: typing.Optional[types.TracebackType],
+    ) -> typing.Optional[bool]:
+        # if we have received the error to be caught with its string, we return True
+        # to avoid the error from propagating
+        if exc_type is not None and exc_val is not None:
+            error_presence = exc_type in self.error
+            string_check = (
+                self.string_to_check in str(exc_val)
+                if self.string_to_check is not None
+                else True
+            )
+            return error_presence and string_check
