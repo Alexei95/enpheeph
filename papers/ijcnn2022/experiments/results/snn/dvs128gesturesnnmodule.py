@@ -23,6 +23,8 @@ import norse
 import pytorch_lightning
 import pytorch_lightning.utilities.cli
 import torch
+import torchmetrics
+import torchvision
 
 
 class SNNReturnTuple(typing.NamedTuple):
@@ -92,7 +94,7 @@ def snn_module_forward_decorator(model_forward):
     return inner_forward
 
 
-class SNNModule(pytorch_lightning.LightningModule):
+class DVS128GestureSNNModule(pytorch_lightning.LightningModule):
     DEFAULT_ENCODER = torch.nn.Identity()
     DEFAULT_DECODER = torch.nn.Identity()
 
@@ -633,3 +635,86 @@ class SNNModule(pytorch_lightning.LightningModule):
     @snn_module_forward_decorator
     def forward(self, x, state=None):
         return self.sequential.forward(x, state=state)
+
+    # NOTE: this is a temporary solution, as it is difficult to implement
+    # temporary function with JSON
+    @staticmethod
+    def random_noise_max_membrane_voltage_log_softmax_decoder(inputs):
+        # we add some random noise
+        temp = inputs + 0.001 * torch.randn(*inputs.size(), device=inputs.device)
+        # we get the maximum for each membrane voltage over the time steps,
+        # dim=0
+        max_inputs, _ = torch.max(temp, dim=0)
+        return max_inputs
+
+    # NOTE: this is a temporary solution, as it is difficult to implement
+    # temporary function with JSON
+    @staticmethod
+    def label_smoothing_loss(y_hat, y, alpha=0.2):
+        log_probs = torch.nn.functional.log_softmax(y_hat, dim=-1)
+        xent = torch.nn.functional.nll_loss(log_probs, y, reduction="none")
+        KL = -log_probs.mean(dim=-1)
+        loss = (1 - alpha) * xent + alpha * KL
+        return loss.sum()
+
+    @staticmethod
+    def custom_softmax_accuracy(y_hat, y):
+        return torchmetrics.Accuracy().to(y_hat.device)(
+            torch.nn.functional.softmax(y_hat, dim=-1), y
+        )
+
+    # the following functions are for MNIST SNN training, from the norse
+    # tutorial
+    @staticmethod
+    def custom_argmax_accuracy(y_hat, y):
+        return torchmetrics.Accuracy().to(y_hat.device)(torch.argmax(y_hat, dim=-1), y)
+
+    # must be used if the target is one-hot encoded
+    @staticmethod
+    def custom_one_hot_argmax_accuracy(y_hat, y):
+        return torchmetrics.Accuracy().to(y_hat.device)(
+            torch.argmax(y_hat, dim=-1),
+            torch.max(y, dim=-1)[1],
+        )
+
+    @staticmethod
+    def max_log_softmax_probability(x):
+        x, _ = torch.max(x, 0)
+        log_p_y = torch.nn.functional.log_softmax(x, dim=-1)
+        return log_p_y
+
+    @staticmethod
+    def decoder_ncars(x):
+        return DVS128GestureSNNModule.max_log_softmax_probability(x)
+
+    @classmethod
+    def encoder_ncars(cls, input_):
+        encoder_name = "_encoder_ncars"
+        if (encoder := getattr(cls, encoder_name, None)) is None:
+            encoder = torchvision.transforms.Compose(
+                [
+                    pynndora.datasets.utils.transforms.todense.ToDense(),
+                    pynndora.datasets.utils.transforms.todtype.ToDtype(torch.float32),
+                    pynndora.datasets.utils.transforms.permute.Permute([1, 0, 2, 3, 4]),
+                ]
+            )
+            setattr(cls, encoder_name, encoder)
+        return encoder(input_)
+
+    @staticmethod
+    def decoder_dvs128gesture(x):
+        return DVS128GestureSNNModule.max_log_softmax_probability(x)
+
+    @classmethod
+    def encoder_dvs128gesture(cls, input_):
+        encoder_name = "_encoder_dvs128gesture"
+        if (encoder := getattr(cls, encoder_name, None)) is None:
+            encoder = torchvision.transforms.Compose(
+                [
+                    pynndora.datasets.utils.transforms.todense.ToDense(),
+                    pynndora.datasets.utils.transforms.todtype.ToDtype(torch.float32),
+                    pynndora.datasets.utils.transforms.permute.Permute([1, 0, 2, 3, 4]),
+                ]
+            )
+            setattr(cls, encoder_name, encoder)
+        return encoder(input_)
