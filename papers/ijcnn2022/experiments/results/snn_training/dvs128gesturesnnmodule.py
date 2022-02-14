@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import collections
 import functools
 import typing
 
@@ -98,41 +97,18 @@ class DVS128GestureSNNModule(pytorch_lightning.LightningModule):
     DEFAULT_ENCODER = torch.nn.Identity()
     DEFAULT_DECODER = torch.nn.Identity()
 
+    DEFAULT_OPTIMIZER_CLASS = torch.optim.Adam
+    DEFAULT_LEARNING_RATE = 1e-3
+
     DEFAULT_RETURN_STATE = False
     DEFAULT_ENCODING_FLAG = True
     DEFAULT_DECODING_FLAG = True
     DEFAULT_TRAINABLE_NEURON_PARAMETERS = True
 
-    SCHEDULER_KEY = "scheduler"
-    DEFAULT_OPTIMIZER_CLASSES = (
-        {
-            "class_path": "torch.optim.Adam",
-            "init_args": {},
-        },
-    )
-    DEFAULT_LR_SCHEDULER_CLASSES = tuple(tuple())
-    DEFAULT_LR_SCHEDULER_CONFIGS = tuple(tuple())
-    # the default normalization function is softmax, and we compute it along
-    # the last dimension as the first dimension is the batches, and we want
-    # the results to be normalized across the elements in the batch
-    DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION = {
-        "class_path": "torch.nn.Softmax",
-        "init_args": {"dim": -1},
-    }
-    DEFAULT_LOSS_FUNCTION = {
-        "class_path": "torch.nn.CrossEntropyLoss",
-        "init_args": {},
-    }
-    DEFAULT_PRE_ACCURACY_FUNCTION = {
-        "class_path": "torch.nn.Identity",
-        "init_args": {},
-    }
-    DEFAULT_ACCURACY_FUNCTION = {
-        "class_path": "torchmetrics.Accuracy",
-        "init_args": {},
-    }
+    DEFAULT_EXAMPLE_INPUT_ARRAY_SIZE = (1, 1, 1, 128, 128)
     DEFAULT_DIMS = None
     DEFAULT_NUM_CLASSES = None
+
     DIMS = (1, 128, 128)
     NUM_CLASSES = 11
 
@@ -145,50 +121,20 @@ class DVS128GestureSNNModule(pytorch_lightning.LightningModule):
         encoding_flag: bool = DEFAULT_ENCODING_FLAG,
         decoding_flag: bool = DEFAULT_DECODING_FLAG,
         trainable_neuron_parameters: bool = DEFAULT_TRAINABLE_NEURON_PARAMETERS,
-        # each class in this list should accept params and lr
-        # this should be
-        # typing.Sequence[typing.Callable[[typing.Iterable[
-        # torch.nn.parameter.Parameter], float, typing.Any, ...],
-        # torch.optim.Optimizer]
-        # but Callable cannot be used for jsonargparse to work properly
-        optimizer_classes: typing.Sequence[typing.Dict] = DEFAULT_OPTIMIZER_CLASSES,
-        # the schedules should also be a list of dicts with configurations
-        # the classes in scheduler will be mapped 1-to-1 onto the optimizer
-        # classes
-        # hence, they should accept a singple argument which is the
-        # corresponding optimizer
-        # this should be
-        # typing.Sequence[typing.Callable[[torch.optim.Optimizer,
-        # typing.Any, ...],
-        # torch.optim.lr_scheduler._LRScheduler]
-        # but Callable cannot be used for jsonargparse to work properly
-        lr_scheduler_classes: typing.Sequence[
-            typing.Sequence[typing.Dict]
-        ] = DEFAULT_LR_SCHEDULER_CLASSES,
-        # this is for configurations of the learning rate schedulers
-        lr_scheduler_configs: typing.Sequence[
-            typing.Sequence[typing.Dict]
-        ] = DEFAULT_LR_SCHEDULER_CONFIGS,
-        # all these ones should be
-        # typing.Callable[[torch.Tensor], torch.Tensor]
-        # but Callable cannot be used for jsonargparse to work properly
-        normalize_prob_func: typing.Any = DEFAULT_PROBABILITY_NORMALIZATION_FUNCTION,
-        loss_func: typing.Any = DEFAULT_LOSS_FUNCTION,
-        pre_accuracy_func: typing.Any = DEFAULT_PRE_ACCURACY_FUNCTION,
-        accuracy_func: typing.Any = DEFAULT_ACCURACY_FUNCTION,
-        dims: typing.Optional[typing.Sequence[int]] = DEFAULT_DIMS,
-        num_classes: typing.Optional[int] = DEFAULT_NUM_CLASSES,
+        dims: typing.Optional[typing.Sequence[int]] = DIMS,
+        num_classes: typing.Optional[int] = NUM_CLASSES,
+        example_input_array_size: typing.Optional[
+            typing.Sequence[int]
+        ] = DEFAULT_EXAMPLE_INPUT_ARRAY_SIZE,
+        optimizer_class: type(torch.optim.Optimizer) = DEFAULT_OPTIMIZER_CLASS,
+        learning_rate: float = DEFAULT_LEARNING_RATE,
         **kwargs: typing.Any,
     ):
         super().__init__(*args, **kwargs)
         self.save_hyperparameters()
 
-        self.encoder = pytorch_lightning.utilities.cli.instantiate_class(
-            tuple(), self.hparams.encoder
-        )
-        self.decoder = pytorch_lightning.utilities.cli.instantiate_class(
-            tuple(), self.hparams.decoder
-        )
+        self.encoder = encoder
+        self.decoder = decoder
 
         self.encoding_flag = self.hparams.encoding_flag
         self.decoding_flag = self.hparams.decoding_flag
@@ -197,52 +143,29 @@ class DVS128GestureSNNModule(pytorch_lightning.LightningModule):
 
         self.trainable_neuron_parameters = self.hparams.trainable_neuron_parameters
 
-        self.optimizer_classes = self.hparams.optimizer_classes
-        self.lr_scheduler_classes = self.hparams.lr_scheduler_classes
-        self.lr_scheduler_configs = self.hparams.lr_scheduler_configs
+        self.optimizer_classes = optimizer_class
+        self.learning_rates = learning_rate
 
-        self.normalize_prob_func = pytorch_lightning.utilities.cli.instantiate_class(
-            tuple(), self.hparams.normalize_prob_func
-        )
-        self.loss_func = pytorch_lightning.utilities.cli.instantiate_class(
-            tuple(), self.hparams.loss_func
-        )
-        self.pre_accuracy_func = pytorch_lightning.utilities.cli.instantiate_class(
-            tuple(), self.hparams.pre_accuracy_func
-        )
-        self.accuracy_func = pytorch_lightning.utilities.cli.instantiate_class(
-            tuple(), self.hparams.accuracy_func
-        )
+        self.normalize_prob_func = torch.nn.Identity()
+        self.pre_accuracy_func = torch.nn.Identity()
+        self.loss_func = torch.nn.CrossEntropyLoss()
+        self.accuracy_func = self.custom_argmax_accuracy
+
         # we save the input size
-        self.dims = self.hparams.dims
+        self.dims = dims
         if self.dims is None and hasattr(self, "DIMS"):
             self.dims = self.DIMS
         # we save the number of classes
-        self.num_classes = self.hparams.num_classes
+        self.num_classes = num_classes
         if self.num_classes is None and hasattr(self, "NUM_CLASSES"):
             self.num_classes = self.NUM_CLASSES
-
-        self.lazy_model_init()
-        self.post_init()
-
-    def post_init(self):
-        # where to place eventual fixes for LIF JIT functions
-
-        self.register_snn_parameters()
-
-    def check_hyperparameters(self):
-        callable_ = (
-            callable(self.normalize_prob_func)
-            and callable(self.loss_func)
-            and callable(self.pre_accuracy_func)
-            and callable(self.accuracy_func)
-        )
-        if not callable_:
-            raise ValueError("The functions should be callable")
+        self.example_input_array_size = example_input_array_size
+        if self.example_input_array_size is not None:
+            self.example_input_array = torch.randn(*self.example_input_array_size)
 
         self._check_encoder_decoder()
 
-        self._check_lr_opt_sched()
+        self.model_definition()
 
     def _check_encoder_decoder(self):
         callable_ = callable(self.encoder) and callable(self.decoder)
@@ -357,70 +280,11 @@ class DVS128GestureSNNModule(pytorch_lightning.LightningModule):
         # this may not be needed, as for logging we already use self.log_dict
         # return metrics
 
-    # this function is used to check that lr, optimizers and schedulers
-    # follow the general rules
-    # lr can be either one for all optimizers or one for each
-    # schedulers can be in any number up to optimizers and they will
-    # be fed the corresponding optimizer in the list
-    def _check_lr_opt_sched(self):
-        assert isinstance(
-            self.optimizer_classes, collections.abc.Sequence
-        ), "Optimizer classes must be a list"
-        assert isinstance(
-            self.learning_rate, (float, collections.abc.Sequence)
-        ), "LR must be either a float or a list"
-
-        if isinstance(self.learning_rate, collections.abc.Sequence):
-            error = (
-                "Learning rates in a list must be provided "
-                "for all optimzers one-to-one"
-            )
-            flag = len(self.learning_rate) == len(self.optimizer_classes)
-            assert flag, error
-
-        if isinstance(self.learning_rate, float):
-            learning_rates = tuple(
-                self.learning_rate for _ in range(len(self.optimizer_classes))
-            )
-            self.learning_rate = learning_rates
-
-        error = (
-            "List of scheduler lists and config lists should be "
-            "the same length as the optimizer list"
-        )
-        flag = len(self.optimizer_classes) == len(self.lr_scheduler_classes)
-        flag2 = len(self.optimizer_classes) == len(self.lr_scheduler_configs)
-        assert flag and flag2, error
-
     def configure_optimizers(self):
-        self._check_lr_opt_sched()
+        optimizer = self.optimizer_classes(self.parameters(), self.learning_rates)
+        return optimizer
 
-        optimizers = [
-            pytorch_lightning.utilities.cli.instantiate_class(
-                (self.parameters(), lr), init=opt
-            )
-            for opt, lr in zip(self.optimizer_classes, self.learning_rate)
-        ]
-        lr_scheds = [
-            # in this way we can save all the configurations
-            # while overwriting the class with the correct object
-            # instantiated using the corresponding optimizer
-            {
-                **config,
-                self.SCHEDULER_KEY: (
-                    pytorch_lightning.utilities.cli.instantiate_class(opt, class_)
-                ),
-            }
-            # we zip over the lists for scheduler classes and configs
-            for sublist_classes, sublist_configs, opt in zip(
-                self.lr_scheduler_classes, self.lr_scheduler_configs, optimizers
-            )
-            # we go over each scheduler and its config in the sublists
-            for class_, config in zip(sublist_classes, sublist_configs)
-        ]
-        return optimizers, lr_scheds
-
-    def lazy_model_init(self):
+    def model_definition(self):
         if self.trainable_neuron_parameters:
             lif1 = norse.torch.LIFCell(
                 p=norse.torch.LIFParameters(
@@ -684,24 +548,6 @@ class DVS128GestureSNNModule(pytorch_lightning.LightningModule):
         return log_p_y
 
     @staticmethod
-    def decoder_ncars(x):
-        return DVS128GestureSNNModule.max_log_softmax_probability(x)
-
-    @classmethod
-    def encoder_ncars(cls, input_):
-        encoder_name = "_encoder_ncars"
-        if (encoder := getattr(cls, encoder_name, None)) is None:
-            encoder = torchvision.transforms.Compose(
-                [
-                    pynndora.datasets.utils.transforms.todense.ToDense(),
-                    pynndora.datasets.utils.transforms.todtype.ToDtype(torch.float32),
-                    pynndora.datasets.utils.transforms.permute.Permute([1, 0, 2, 3, 4]),
-                ]
-            )
-            setattr(cls, encoder_name, encoder)
-        return encoder(input_)
-
-    @staticmethod
     def decoder_dvs128gesture(x):
         return DVS128GestureSNNModule.max_log_softmax_probability(x)
 
@@ -711,9 +557,13 @@ class DVS128GestureSNNModule(pytorch_lightning.LightningModule):
         if (encoder := getattr(cls, encoder_name, None)) is None:
             encoder = torchvision.transforms.Compose(
                 [
-                    pynndora.datasets.utils.transforms.todense.ToDense(),
-                    pynndora.datasets.utils.transforms.todtype.ToDtype(torch.float32),
-                    pynndora.datasets.utils.transforms.permute.Permute([1, 0, 2, 3, 4]),
+                    lambda x: x.to_dense() if x.is_sparse else x,
+                    lambda x: x[:, :, 0:1, :, :],
+                    functools.partial(
+                        lambda x, dtype: x.to(dtype=dtype) if x.dtype != dtype else x,
+                        dtype=torch.float32,
+                    ),
+                    lambda x: x.permute(1, 0, 2, 3, 4),
                 ]
             )
             setattr(cls, encoder_name, encoder)
