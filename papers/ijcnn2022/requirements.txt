@@ -24,7 +24,9 @@
 -f https://download.pytorch.org/whl/torch/
 
 lightning-flash[all]==0.5.2
+norse==0.0.7.post1
 pytorch-lightning[extra]==1.5.2
+tonic==1.0.13
 torch==1.9.1+cu102
 torchaudio==0.9.1
 torchvision==0.10.1
