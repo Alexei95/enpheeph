@@ -40,7 +40,7 @@ MONITOR_METRIC_LOSS = "val_loss_epoch"
 MONITOR_METRIC_LOSS_MODE = "min"
 # MONITOR_METRIC_LOSS = "val_acc_epoch"
 # MONITOR_METRIC_LOSS_MODE = "max"
-SEED = 420
+SEED = 42
 TRAINING_DIR = pathlib.Path(__file__).parent / "checkpoints" / "dvs128gesture_snn"
 
 
