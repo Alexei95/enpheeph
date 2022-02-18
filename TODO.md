@@ -64,6 +64,7 @@
 41. {#41} Expand SkipIfError to support a tuple of errors
 42. #42 Possible issues with PyTorch 1.10 due to layer parametrization, e.g., functions that are run on weight/other attributes, and modify ``.weight`` to be a property and be recomputed from ``<module>.parametrizations.weight.original`` every time the property is called
     1. #42-1 Parametrization might also be fun for implementing injections in future
+43. #43 Add tests for ``add_injections`` and ``remove_injections``
 
 ## |Duplicates|
 
