@@ -1,4 +1,20 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import typing
 
 import enpheeph.handlers.plugins.libraryhandlerpluginabc
@@ -85,18 +101,13 @@ class InjectionHandler(object):
         # we use a dict to filter the duplicates in injections + self.active_injections
         # otherwise bad things might happen in the SQL as the same object will be
         # processed multiple times
-        injections = {
+        filtered_injections = {
             inj: counter
             for counter, inj in enumerate(list(injections) + self.active_injections)
         }.keys()
 
-        # by summing active_injections we remember the already-active
-        # injections from previous activate calls
         self.active_injections = [
-            # we need to convert injections to a list to sum it with active_injections
-            inj
-            for inj in injections
-            if inj in self.injections
+            inj for inj in filtered_injections if inj in self.injections
         ]
 
         return self.active_injections
@@ -124,3 +135,51 @@ class InjectionHandler(object):
         ]
 
         return self.active_injections
+
+    # to add injections to the current list of injections
+    def add_injections(
+        self,
+        injections: typing.Sequence[enpheeph.injections.injectionabc.InjectionABC],
+    ) -> typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]:
+        if self.check_running_status():
+            print("Cannot do anything while running, try after the execution")
+            return self.injections
+
+        # we use a dict to filter the duplicates in injections + self.active_injections
+        # otherwise bad things might happen in the SQL as the same object will be
+        # processed multiple times
+        filtered_injections = {
+            inj: counter
+            for counter, inj in enumerate(list(injections) + self.injections)
+        }.keys()
+
+        self.injections = list(filtered_injections)
+
+        # we call activate with the list of active injections to remove
+        # the ones not included
+        self.activate(self.active_injections)
+
+        return self.injections
+
+    # to remove injections from the current list
+    # if None we remove all of them
+    def remove_injections(
+        self,
+        injections: typing.Optional[
+            typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]
+        ] = None,
+    ) -> typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]:
+        if self.check_running_status():
+            print("Cannot do anything while running, try after the execution")
+            return self.injections
+
+        if injections is None:
+            injections = self.injections
+
+        self.injections = [inj for inj in self.injections if inj not in injections]
+
+        # we call activate with the list of active injections to remove
+        # the ones not included
+        self.activate(self.active_injections)
+
+        return self.injections
