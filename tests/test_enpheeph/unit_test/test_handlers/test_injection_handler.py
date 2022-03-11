@@ -15,10 +15,24 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# import pytest
+import collections
 
-# import enpheeph.handlers.injectionhandler
+import pytest
+
+import enpheeph.handlers.injectionhandler
 
 
 class TestInjectionHandler(object):
-    pass
+    @pytest.mark.skip(reason="InjectionHandler tests are not ready")
+    @pytest.mark.parametrize(
+        argnames=("injections", "library_name"),
+        argvalues=[
+            pytest.param(
+                collections.defaultdict(),
+                "collections",
+                id="",
+            ),
+        ],
+    )
+    def test_add_injections(self, obj, library_name):
+        assert enpheeph.utils.functions.get_object_library(obj) == library_name
