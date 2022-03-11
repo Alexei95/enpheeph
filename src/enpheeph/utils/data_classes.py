@@ -1,4 +1,20 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import abc
 import dataclasses
 import typing
@@ -75,10 +91,8 @@ class LocationModuleNameMixin(object):
 
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)
 class LocationMixin(object):
-    # type of parameter, activation or weight
+    # parameter, activation or weight type
     parameter_type: enpheeph.utils.enums.ParameterType
-    # batch/tensor/time indices are now inside the dimension_index
-    dimension_index: enpheeph.utils.typings.DimensionLocationIndexType
     # same for the bit injection info
     bit_index: enpheeph.utils.typings.Index1DType
 
@@ -88,6 +102,14 @@ class LocationOptionalMixin(object):
     # name of parameters to get, default is None as it is required if it is not
     # an activation injection
     parameter_name: typing.Optional[str] = None
+    # batch/tensor/time indices are now inside the dimension_index
+    dimension_index: typing.Optional[
+        enpheeph.utils.typings.DimensionLocationIndexType
+    ] = None
+    # mask for batch/tensor/time
+    dimension_mask: typing.Optional[
+        enpheeph.utils.typings.DimensionLocationMaskType
+    ] = None
 
     def __post_init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         # not needed, it should be done in sub-classes
@@ -97,12 +119,26 @@ class LocationOptionalMixin(object):
             self.parameter_type.Activation  # type: ignore[attr-defined]
             not in self.parameter_type  # type: ignore[attr-defined]
         )
+        at_least_one_dimension = (
+            self.dimension_index is not None or self.dimension_mask is not None
+        )
 
         if not_activation_type and self.parameter_name is None:
             raise ValueError(
                 "'parameter_name' must be provided "
                 "if the type of parameter is not an activation"
             )
+        if not at_least_one_dimension:
+            raise ValueError(
+                "at least one between 'dimension_index' and "
+                "'dimension_mask' must be given"
+            )
+        else:
+            dim_index = self.dimension_index if self.dimension_index is not None else {}
+            dim_mask = self.dimension_mask if self.dimension_mask is not None else {}
+            overlap_dimension = set(dim_index.keys()).intersection(dim_mask.keys())
+            if overlap_dimension:
+                raise ValueError("dimensions overlap some indices")
 
 
 @dataclasses.dataclass(init=True, repr=True, eq=True, frozen=True, unsafe_hash=True)

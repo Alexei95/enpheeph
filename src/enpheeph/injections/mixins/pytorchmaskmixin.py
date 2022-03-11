@@ -1,4 +1,20 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import abc
 import typing
 
@@ -122,18 +138,35 @@ class PyTorchMaskMixin(abc.ABC):
             tensor_shape = self.indexing_plugin.filter_dimensions(
                 tensor.shape,
             )
+            # we get the values for mask and mask_index
+            # if they are None we use None otherwise we get it from the dict
+            # with default as None
+            mask = (
+                self.location.dimension_mask.get(
+                    enpheeph.utils.enums.DimensionType.Tensor, None
+                )
+                if self.location.dimension_mask is not None
+                else None
+            )
+            mask_index = (
+                self.location.dimension_index.get(
+                    enpheeph.utils.enums.DimensionType.Tensor, None
+                )
+                if self.location.dimension_index is not None
+                else None
+            )
             # we create the low-level mask
             # using the filtered dimensions
             # we only need the tensor_index, as we do not cover the time/batch
             # dimensions
             mask_array = self.low_level_plugin.make_mask_array(
                 int_mask=int_mask,
+                # we give only the tensor dimension as possible mask
+                mask=mask,
                 # we use only the tensor index as the mask will be the same even
                 # across different batches/time-steps
                 # so it can be expanded/repeated later
-                mask_index=self.location.dimension_index[
-                    enpheeph.utils.enums.DimensionType.Tensor
-                ],
+                mask_index=mask_index,
                 int_fill_value=(2 ** (bytewidth * 8) - 1) * bit_mask_info.fill_value,
                 shape=tensor_shape,
                 torch_placeholder=tensor_placeholder,
