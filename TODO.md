@@ -65,6 +65,14 @@
 42. #42 Possible issues with PyTorch 1.10 due to layer parametrization, e.g., functions that are run on weight/other attributes, and modify ``.weight`` to be a property and be recomputed from ``<module>.parametrizations.weight.original`` every time the property is called
     1. #42-1 Parametrization might also be fun for implementing injections in future
 43. #43 Add tests for ``add_injections`` and ``remove_injections``
+44. #44 Implement ``dimension_masked_index``, to allow masking instead of indexing. Masking works well for selecting patterns which are not easily translatable into broadcastable indices. Additionally, it can be mixed with ``dimension_index`` for different dimensions to allow both indexing and masking. However, they need not to overlap, as this would cause problem.
+    1. #44-1 The solution is using both as optional and overlapping them, but at least one must be provided
+    2. #44-2 Implement tests
+    3. #44-3 Add support for batch mask as well
+    4. #44-4 Add support for masks in Monitors
+45. #45 Fix execution of Fault for Linear layers in SNNs
+46. #46 Improve implementation of FPQuantizedOutputPyTorchFault
+    1. #46-1 Use a mixin as for DenseSparse
 
 ## |Duplicates|
 
