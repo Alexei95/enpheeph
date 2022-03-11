@@ -56,6 +56,7 @@ __getattr__ = lazy_import(
     submodules={
         'pytorchmaskmixin',
         'pytorchmonitorpostprocessormixin',
+        'pytorchquantizationmixin',
         'pytorchsparseinterfacemixin',
         'pytorchtensorobjectvalidatormixin',
     },
@@ -83,6 +84,6 @@ def __dir__():
 __all__ = ['PyTorchMaskMixin', 'PyTorchMonitorPostProcessorMixin',
            'PyTorchSparseInterfaceMixin', 'PyTorchTensorObjectValidatorMixin',
            'pytorchmaskmixin', 'pytorchmonitorpostprocessormixin',
-           'pytorchsparseinterfacemixin', 'pytorchtensorobjectvalidatormixin',
-           'torch_geometric_mean']
+           'pytorchquantizationmixin', 'pytorchsparseinterfacemixin',
+           'pytorchtensorobjectvalidatormixin', 'torch_geometric_mean']
 # </AUTOGEN_INIT>
