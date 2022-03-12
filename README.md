@@ -12,10 +12,6 @@ Download a release from GitHub release or from the dev branch and use
 
 This will install the selected release.
 
-## Usage
-
-Some test scripts can be found in the ```papers/``` folder.
-
 ## Development
 
 ### Conventions
