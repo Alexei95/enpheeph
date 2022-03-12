@@ -25,14 +25,14 @@ import enpheeph.handlers.injectionhandler
 class TestInjectionHandler(object):
     @pytest.mark.skip(reason="InjectionHandler tests are not ready")
     @pytest.mark.parametrize(
-        argnames=("injections", "library_name"),
+        argnames=("injections",),
         argvalues=[
             pytest.param(
                 collections.defaultdict(),
-                "collections",
-                id="",
+                "injections",
+                id="injections",
             ),
         ],
     )
-    def test_add_injections(self, obj, library_name):
-        assert enpheeph.utils.functions.get_object_library(obj) == library_name
+    def test_add_injections(self, injections):
+        assert enpheeph.handlers.injectionhandler
