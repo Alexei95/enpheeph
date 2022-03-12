@@ -29,7 +29,6 @@ class TestInjectionHandler(object):
         argvalues=[
             pytest.param(
                 collections.defaultdict(),
-                "injections",
                 id="injections",
             ),
         ],
