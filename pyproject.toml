@@ -1,49 +1,28 @@
 # setuptools configuration
-# this is the default for setuptools and wheel
+# this is the default for setuptools
 [build-system]
-    requires = ["setuptools >= 58.0", "wheel"]
+    requires = ["setuptools >= 61.0"]
     build-backend = "setuptools.build_meta"
 
 # this is still not supported by setuptools
 [project]
     name = "enpheeph"
     description = "Neural Fault Injection Framework"
-    readme = "README.md"
-    classifiers = [
-        "Development Status :: 2 - Pre-Alpha",
-        "Intended Audience :: Developers",
-        # "License :: OSI Approved :: BSD License",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-    ]
-    # dynamic = ["version"]
+    keywords = ["faultinjection", "neuralnetworks"]
+    license = {text = "GNU Affero General Public License v3 or later (AGPLv3+)"}
+    dynamic = ["classifiers", "readme", "version"]
     requires-python = ">=3.8"
     dependencies = [
         # for pkg_resources, to parse version info from optional requirements
         "setuptools >= 58.0",
         "packaging >= 20.0",
     ]
-
-    [[project.author]]
-        name = "Alessio Colucci"
-        email = "pm@alexei95.aleeas.com"
-
-
-[project.license]
-    text = "AGPLv3"
-
-
-# [project.urls]
-# Homepage = "https://www.djangoproject.com/"
-# Documentation = "https://docs.djangoproject.com/"
-# "Release notes" = "https://docs.djangoproject.com/en/stable/releases/"
-# Funding = "https://www.djangoproject.com/fundraising/"
-# Source = "https://github.com/django/django"
-# Tracker = "https://code.djangoproject.com/"
+    authors = [
+        {name = "Alessio 'Alexei95' Colucci", email = "enpheeph@alexei95.aleeas.com"},
+    ]
+    maintainers = [
+        {name = "Alessio 'Alexei95' Colucci", email = "enpheeph@alexei95.aleeas.com"},
+    ]
 
 
 [project.optional-dependencies]
@@ -128,8 +107,11 @@
     ]
 
 
-# [project.scripts]
-# django-admin = "django.core.management:execute_from_command_line"
+# [project.urls]
+#     homepage = "example.com"
+#     documentation = "readthedocs.org"
+#     repository = "github.com"
+#     changelog = "github.com/me/spam/blob/master/CHANGELOG.md"
 
 
 # black configuration
@@ -280,15 +262,32 @@
 
 
 [tool.setuptools]
-    # we look for packages in src only
-    packages = {find = "src"}
     include-package-data = true
-    zip-safe = false
+    zip-safe = true
 
 
 [tool.setuptools.dynamic]
-    # version = {attr = "enpheeph.__about__.__version__"}
-    version = "0.0.1"
+    classifiers = {file = "CLASSIFIERS"}
+    readme = {file = ["README.md",]}
+    version = {attr = "enpheeph.__about__.__version__"}
+
+
+# both of them do not work for setuptools 61.2
+# it creates a namespace package for src, so for enpheeph it would be src.enpheeph
+# the automatic discovery with no packages works well, it gets the src-layout without
+# tests
+# [tool.setuptools.packages.find]
+#     where = ["src"]  # ["."] by default
+#     # we need to append the star to include all the files in the directory tree
+#     # they work as glob patterns, and each submodule is independent
+#     include = ["enpheeph*"]  # ["*"] by default
+#     # namespace means that the folder is importable as namespace,
+#     # even without __init__.py
+#     # but since enpheeph is inside src, we do not want this to happen also to src
+#     # and not to enpheeph
+#     namespaces = false  # true by default
+# [tool.setuptools.package-dir]
+#     enpheeph = "src/enpheeph"
 
 # tox is a tool for multiple local test environments
 [tool.tox]
