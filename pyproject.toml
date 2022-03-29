@@ -1,5 +1,7 @@
 # setuptools configuration
 # this is the default for setuptools
+# build is only required for building the distribution
+# it is not strictly required for creating the package
 [build-system]
     requires = ["setuptools >= 61.0"]
     build-backend = "setuptools.build_meta"
@@ -312,10 +314,13 @@
 # envtmpdir can be used as temporary log, but it is cleared with every testenv
 # use envlogdir which is in common, but with custom sub-paths
 # py310 does not work on Windows yet, at least on GitHub Actions
+# isolated_build is required otherwise it would not work when building the package
+# with pyproject.toml
 legacy_tox_ini = """
 [tox]
 envlist = clean,py38,py39,py310,report
 requires = tox-conda
+isolated_build = true
 
 [testenv]
 envlogdir = .logs/
@@ -344,7 +349,8 @@ commands =
 envlogdir = .logs/
 deps = coverage[toml]
 skip_install = true
-commands = python -m coverage erase
+commands =
+    python -m coverage erase
 
 [gh]
 python =
