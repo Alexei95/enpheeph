@@ -12,6 +12,8 @@ __pycache__
 # to remove the built distribution/editable install
 *.egg-info
 dist/
+# used by tox with isolated build
+build/
 ####
 
 #### PROJECT SETTINGS
