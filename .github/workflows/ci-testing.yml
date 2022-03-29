@@ -71,17 +71,17 @@ jobs:
       matrix:
         # for now a small grid is more than enough
         os:
-          - ubuntu-18.04
-          - ubuntu-20.04
+          # - ubuntu-18.04
+          # - ubuntu-20.04
           - ubuntu-latest
 
-          - macos-10.15
-          - macos-11
-          - macos-latest
+          # - macos-10.15
+          # - macos-11
+          # - macos-latest
 
-          - windows-2019
-          - windows-2022
-          - windows-latest
+          # - windows-2019
+          # - windows-2022
+          # - windows-latest
         # when running tox sequentially we don't need a python matrix, as we use
         # only 3.9 manually
         # python-version:
