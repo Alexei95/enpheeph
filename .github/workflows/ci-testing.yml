@@ -18,7 +18,7 @@ jobs:
   pre-commit:
     # this needs to be executed only if there is a push, as there are commit
     # permissions with the secrets
-    if: github.event_name == 'push'
+    if: ${{ github.event_name == 'push' }}
     # to run after the job from the same workflow
     # if on different workflows, see https://stackoverflow.com/a/65698892
     # needs: mkinit-init-attribute-update
@@ -63,7 +63,7 @@ jobs:
     # too many resources
     # github.base_ref is defined only in a pull request
     # additionally we check if we are in release mode
-    if: github.event_name == 'release' || github.ref == 'refs/heads/main' || github.base_ref == 'main'
+    if: ${{ github.event_name == 'release' }} || ${{ github.ref == 'refs/heads/main' }} || ${{ github.base_ref == 'main' }}
     # the system to run on
     runs-on: ${{ matrix.os }}
     strategy:
@@ -161,22 +161,11 @@ jobs:
 
     # this is required for sharing data with other jobs, as each job has a
     # different runner
-    - name: Upload tox setup log if failed
+    - name: Upload tox log if failed
       uses: actions/upload-artifact@v2.3.1
       with:
-        # longer name
         name: tox-${{ matrix.os }}
-        path: .logs/tools/tox/tox-setup.log
-      if: failure()
-
-    # this is required for sharing data with other jobs, as each job has a
-    # different runner
-    - name: Upload tox run log if failed
-      uses: actions/upload-artifact@v2.3.1
-      with:
-        # longer name
-        name: tox-${{ matrix.os }}
-        path: .logs/tools/tox/tox-run.log
+        path: .logs/tools/tox/tox.log
       if: failure()
 
     # for uploading coverage to codecov
