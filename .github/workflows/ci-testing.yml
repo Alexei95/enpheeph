@@ -141,16 +141,9 @@ jobs:
         echo "TOX_SKIP_ENV=py310" >> $env:GITHUB_ENV
       if: runner.os == 'Windows'
 
-    - name: Setup tox test suite
+    - name: tox test suite full CI run
       run: |
-        tox -vvv --notest > .logs/tools/tox/tox-setup.log
-      # for using/running conda, we need -l {0} to run as login shell and have conda
-      # enabled
-      # shell: bash -l {0}
-
-    - name: Run tox test suite
-      run: |
-        tox -vvv --skip-pkg-install > .logs/tools/tox/tox-run.log
+        tox -vvv > .logs/tools/tox/tox.log
       # for using/running conda, we need -l {0} to run as login shell and have conda
       # enabled
       # shell: bash -l {0}
