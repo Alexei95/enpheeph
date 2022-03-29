@@ -139,7 +139,7 @@ jobs:
     - name: Set the environment variable TOX_SKIP_ENV=py310 if on Windows
       run: |
         echo "TOX_SKIP_ENV=py310" >> $env:GITHUB_ENV
-      if: runner.os == 'Windows'
+      if: ${{ runner.os == 'Windows' }}
 
     - name: tox test suite full CI run
       run: |
