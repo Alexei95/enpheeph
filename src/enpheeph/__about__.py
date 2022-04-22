@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# taken as example from PyTorch Lightning
-
 # use importlib.metadata to gather the info from the package information
 # these are saved in setup.py until we can use pyproject.toml
 # import importlib.metadata
