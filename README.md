@@ -12,6 +12,14 @@ Download a release from GitHub release or from the dev branch and use
 
 This will install the selected release.
 
+Otherwise, use
+
+```pip install -e .```
+
+to install the downloaded source in editable mode, hence it will be linked directly to the download location, rather than being a copy in the default site-packages folder in the Python distribution.
+
+**NOTE**: ``enpheeph`` cannot be used without installing it, as the dependency checks and the imports are absolute, i.e. independent of where the actual folder is, but require the installation to be working.
+
 ## Development
 
 ### Conventions
