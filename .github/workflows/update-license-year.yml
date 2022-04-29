@@ -1,0 +1,57 @@
+name: Update copyright year(s) in LICENSE/COPYRIGHT files and sources
+
+on:
+  schedule:
+    - cron: "0 3 1 1 *"
+
+jobs:
+  update-license-year:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: FantasticFiasco/action-update-license-year@v2
+        with:
+          commitAuthorEmail: 1548472+Alexei95@users.noreply.github.com
+          gpgPrivateKey: ${{ secrets.gpgPrivateKey }}
+          gpgPassphrase: ${{ secrets.gpgPassphrase }}
+          path: |
+            COPYRIGHT
+            LICENSE
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Merge pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Replace '--merge' with '--rebase' to rebase the commits onto the base
+          # branch, or with '--squash' to squash the commits into one commit and merge
+          # it into the base branch.
+          # For more information regarding the merge command, please see
+          # https://cli.github.com/manual/gh_pr_merge.
+          gh pr merge --merge --delete-branch
+  update-license-year-sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: FantasticFiasco/action-update-license-year@v2
+        with:
+          commitAuthorEmail: 1548472+Alexei95@users.noreply.github.com
+          gpgPrivateKey: ${{ secrets.gpgPrivateKey }}
+          gpgPassphrase: ${{ secrets.gpgPassphrase }}
+          path: |
+            COPYRIGHT
+            LICENSE
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Merge pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Replace '--merge' with '--rebase' to rebase the commits onto the base
+          # branch, or with '--squash' to squash the commits into one commit and merge
+          # it into the base branch.
+          # For more information regarding the merge command, please see
+          # https://cli.github.com/manual/gh_pr_merge.
+          gh pr merge --merge --delete-branch
