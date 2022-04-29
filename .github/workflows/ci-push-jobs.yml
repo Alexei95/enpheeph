@@ -23,7 +23,7 @@ jobs:
     steps:
     # we check out the repository
     - name: Repository check-out
-      uses: actions/checkout@v2.4.0
+      uses: actions/checkout@v3
 
     # we set up the Python environment
     - name: Set up Python 3.9
