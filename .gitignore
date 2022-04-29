@@ -42,6 +42,10 @@ build/
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode
 
 
+### EMACS FILES
+# this covers Emacs temporary files
+.#*
+
 # Spyder settings
 .spyproject
 ####
