@@ -19,8 +19,8 @@
         1. {#8-1-1} It can be used as CI/CD action in GitHub whenver something is pushed
     2. {#8-2} ```mkinit``` is not the best, as it fills up the main namespace, but still it might be useful as all the classes are available without the submodules
 9. {#9} Fix requirements.txt and dependencies in setup.py
-10. #10 Check for project metadata to be saved in pyproject.toml
-    1. #10-1 Reformat requirements.txt to use '.' and install all the required dependencies
+10. {#10} Check for project metadata to be saved in pyproject.toml
+    1. {#10-1} Reformat requirements.txt to use '.' and install all the required dependencies
 11. #11 Use bumpversion or any alternative to automatically bump the version of the repository and create a tag
 12. {#12} Fix all modules using extra dependencies, dependency must be installed when importing the module for everything to work properly
     1. {#12-1} For now we were going through the safe route of checking for imports and raising errors at runtime, but it is not safe
@@ -29,12 +29,14 @@
 14. {#14} Remove unnecessary files/code
 15. #15 Use towncrier for changelogs and updates
 16. #16 Move all info in setup.py and load them in ```__about__``` using ```importlib.metadata```
-17. #17 Wait for pyproject.toml support in setuptools before moving everything from setup.py to pyproject.toml
+17. {#17}|#10| Wait for pyproject.toml support in setuptools before moving everything from setup.py to pyproject.toml
 18. #18 Implement logging throughout the code.
     1. #18-1 Just write some ```logger = logging.getLogger(__name__)``` and ```logger.debug(...)``` throughout the code
 19. #19 Implement early stopping callback inheriting from PyTorch Lightning but checking at each batch
 20. #20 Add jax support for CPU/GPU/TPU operations, as it supports dlpack
     1. #20-1 Add support for automatic switching of the mask support across NumPy/CuPy/JAX for CPU/GPU/TPU support
+    2. #20-2 Improve mask plugins, as we can have bit-level plugins and tensor-level plugins interacting with each others, as we can use DLPack as intermediary for both NumPy/CuPy/JAX and PyTorch/TensorFlow/JAX, ...
+        1. #20-2-1 However, this is limited to very recent versions, like Numpy 1.23.0 and PyTorch 1.11
 21. #21 Add support for bit_index in MonitorLocation, so that we can save only some bits
 22. #22 Add support for a registry mapping each set of parameter type / injection to a possible class
     1. #22-1 Follow the registry used in PyTorch Lightning Flash
@@ -58,9 +60,9 @@
 37. {#37} Fix bug with injection working too much for GPU vs CPU
 38. {#38} Fix bug on multiple injections not working in sequence
 39. #39 Add regression tests for #37, #38
-40. #40 Implement a CI for updating the copyright year
-    1. #40-1 It can be done using insert-license CI from pre-commit, using the CLI option --remove-header to remove the current license notice, than modifying the license and re-running insert-license without --remove-header
-    2. #40-2 There is a GitHub Action for that, which creates a PR that can be automatically merged ``FantasticFiasco/action-update-license-yearFantasticFiasco/action-update-license-year``
+40. {#40} Implement a CI for updating the copyright year
+    1. {#40-1} It can be done using insert-license CI from pre-commit, using the CLI option --remove-header to remove the current license notice, than modifying the license and re-running insert-license without --remove-header
+    2. {#40-2} There is a GitHub Action for that, which creates a PR that can be automatically merged ``FantasticFiasco/action-update-license-yearFantasticFiasco/action-update-license-year``
 41. {#41} Expand SkipIfError to support a tuple of errors
 42. #42 Possible issues with PyTorch 1.10 due to layer parametrization, e.g., functions that are run on weight/other attributes, and modify ``.weight`` to be a property and be recomputed from ``<module>.parametrizations.weight.original`` every time the property is called
     1. #42-1 Parametrization might also be fun for implementing injections in future
@@ -71,12 +73,14 @@
     3. #44-3 Add support for batch mask as well
     4. #44-4 Add support for masks in Monitors
 45. #45 Fix execution of Fault for Linear layers in SNNs
+    1. #45-1 It should be able to inject in the potential before the threshold operation as well
 46. #46 Improve implementation of FPQuantizedOutputPyTorchFault
     1. #46-1 Use a mixin as for DenseSparse
 
 ## |Duplicates|
 
 1. #13 duplicates #1
+2. #17 duplicates #10
 
 ## (In progress)
 
@@ -96,3 +100,5 @@
 10. {#38} SQL was giving errors of multiple objects, the culprits were the use of ExperimentRun.id_ instead of Injection.experiment_run_id as well as the improper checks in integrations with PyTorch Lightning, adding the same injection twice to the list. It is fixed now with using dict keys to remove duplicates.
 11. {#33} Unfortunately it can only be committed using ``git commit`` from the terminal
 12. {#41} SkipIfError now supports tuples of Exceptions
+13. {#10}, {#10-1} Fixed with setuptools >= 61.0, as they support pyproject.toml as setup configuration. setup.py is still required for editable installs in pip.
+14. {#40}, {#40-1}, {#40-2} The CI has been implemented but it is not easily testable
