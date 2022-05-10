@@ -1,4 +1,24 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# here we could use importlib.resources but it does not provide the get_distribution
+# method, so we keep using pkg_resources for now
+# we can use importlib.metadata.distribution, as we only need the version from
+# pkg_resources, or even importlib.metadata.version
 import importlib.metadata
 import importlib.util
 import typing
@@ -6,7 +26,6 @@ import typing
 import packaging.requirements
 import packaging.specifiers
 import packaging.version
-import pkg_resources
 
 
 # we use the spec from importlib to check the availability of a library
@@ -28,9 +47,7 @@ def compare_version(
 ) -> bool:
     if not is_module_available(module_name=module_name):
         return False
-    version = packaging.version.parse(
-        pkg_resources.get_distribution(module_name).version
-    )
+    version = packaging.version.parse(importlib.metadata.version(module_name))
     return version_specifier.contains(version)
 
 
