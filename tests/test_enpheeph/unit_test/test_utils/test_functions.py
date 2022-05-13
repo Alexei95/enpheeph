@@ -22,7 +22,7 @@ import pytest
 import enpheeph.utils.functions
 
 
-class TestFunctions(object):
+class TestCamelCaseToSnakeCaseFunction(object):
     @pytest.mark.parametrize(
         argnames=("camel", "snake"),
         argvalues=[
@@ -46,6 +46,8 @@ class TestFunctions(object):
     def test_camel_to_snake(self, camel, snake):
         assert enpheeph.utils.functions.camel_to_snake(camel) == snake
 
+
+class TestGetObjectLibraryFunction(object):
     @pytest.mark.skip(
         reason=(
             "PyTest/unittest do not support mocking __module__ in __class__ "
