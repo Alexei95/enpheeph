@@ -52,7 +52,7 @@ class TestFunctions(object):
             "of an object, however this code is left here as memorandum"
         ),
     )
-    def test_object_library_with_mocks(self, mock_object_with_library):
+    def test_get_object_library_with_mocks(self, mock_object_with_library):
         obj, library_name = mock_object_with_library
         assert enpheeph.utils.functions.get_object_library(obj) == library_name
 
@@ -76,5 +76,5 @@ class TestFunctions(object):
             ),
         ],
     )
-    def test_object_library_with_real_objs(self, obj, library_name):
+    def test_get_object_library_with_real_objs(self, obj, library_name):
         assert enpheeph.utils.functions.get_object_library(obj) == library_name

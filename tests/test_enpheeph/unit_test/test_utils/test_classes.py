@@ -24,7 +24,7 @@ import pytest
 import enpheeph.utils.classes
 
 
-class TestClasses(object):
+class TestSkipIfErrorContextManagerClass(object):
     @pytest.mark.parametrize(
         argnames=("error", "string_param"),
         argvalues=[
@@ -151,36 +151,3 @@ class TestClasses(object):
                 error=error,
                 string_to_check=string_param,
             )
-
-    @pytest.mark.skip(
-        reason=(
-            "PyTest/unittest do not support mocking __module__ in __class__ "
-            "of an object, however this code is left here as memorandum"
-        ),
-    )
-    def test_object_library_with_mocks(self, mock_object_with_library):
-        obj, library_name = mock_object_with_library
-        assert enpheeph.utils.functions.get_object_library(obj) == library_name
-
-    @pytest.mark.parametrize(
-        argnames=("obj", "library_name"),
-        argvalues=[
-            pytest.param(
-                1,
-                "builtins",
-                id="builtins",
-            ),
-            pytest.param(
-                pytest.hookspec,
-                "pluggy",
-                id="pluggy_from_pytest",
-            ),
-            pytest.param(
-                collections.defaultdict(),
-                "collections",
-                id="collections",
-            ),
-        ],
-    )
-    def test_object_library_with_real_objs(self, obj, library_name):
-        assert enpheeph.utils.functions.get_object_library(obj) == library_name
