@@ -64,10 +64,8 @@ __getattr__ = lazy_import(
     },
     submod_attrs={
         'classes': [
-            'FunctionCallerNameMixin',
             'IDGenerator',
             'IDGeneratorSubclass',
-            'Positive',
             'SkipIfErrorContextManager',
         ],
         'data_classes': [
@@ -134,14 +132,14 @@ __all__ = ['ActiveDimensionIndexType', 'AnyIndexType', 'AnyMaskType',
            'DimensionIndexType', 'DimensionLocationIndexType',
            'DimensionLocationMaskType', 'DimensionType', 'Endianness',
            'FaultLocation', 'FaultLocationMixin', 'FaultMaskOperation',
-           'FaultMaskValue', 'FunctionCallerNameMixin', 'HandlerStatus',
-           'IDGenerator', 'IDGeneratorSubclass', 'Index1DType',
-           'IndexMultiDType', 'IndexTimeType', 'InjectionLocationABC',
-           'LocationMixin', 'LocationModuleNameMixin', 'LocationOptionalMixin',
+           'FaultMaskValue', 'HandlerStatus', 'IDGenerator',
+           'IDGeneratorSubclass', 'Index1DType', 'IndexMultiDType',
+           'IndexTimeType', 'InjectionLocationABC', 'LocationMixin',
+           'LocationModuleNameMixin', 'LocationOptionalMixin',
            'LowLevelMaskArrayType', 'Mask1DType', 'MaskMultiDType',
            'ModelType', 'MonitorLocation', 'MonitorMetric', 'ParameterType',
-           'PathType', 'Positive', 'ShapeType', 'SkipIfErrorContextManager',
-           'TensorType', 'camel_to_snake', 'classes', 'compare_version',
-           'constants', 'data_classes', 'enums', 'functions',
-           'get_object_library', 'imports', 'is_module_available', 'typings']
+           'PathType', 'ShapeType', 'SkipIfErrorContextManager', 'TensorType',
+           'camel_to_snake', 'classes', 'compare_version', 'constants',
+           'data_classes', 'enums', 'functions', 'get_object_library',
+           'imports', 'is_module_available', 'typings']
 # </AUTOGEN_INIT>
