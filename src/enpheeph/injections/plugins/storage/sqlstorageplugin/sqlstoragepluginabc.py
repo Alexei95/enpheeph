@@ -1,4 +1,20 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import abc
 import datetime
 import typing
@@ -152,11 +168,11 @@ class SQLStoragePluginABC(
             for inj_loc in injection_locations:
                 if isinstance(inj_loc, enpheeph.utils.data_classes.FaultLocation):
                     sql_inj_loc = sql_data_classes.Fault(
-                        location=inj_loc, internal_id=inj_loc._id
+                        location=inj_loc, internal_id=inj_loc.unique_instance_id
                     )
                 elif isinstance(inj_loc, enpheeph.utils.data_classes.MonitorLocation):
                     sql_inj_loc = sql_data_classes.Monitor(
-                        location=inj_loc, internal_id=inj_loc._id
+                        location=inj_loc, internal_id=inj_loc.unique_instance_id
                     )
                 else:
                     raise ValueError(f"Unsupported injection, {inj_loc}")
@@ -336,7 +352,10 @@ class SQLStoragePluginABC(
                     sql_data_classes.Injection.experiment_run_id == self.experiment_id
                 )
                 .where(sql_data_classes.Injection.location == location)
-                .where(sql_data_classes.Injection.internal_id == location._id)
+                .where(
+                    sql_data_classes.Injection.internal_id
+                    == location.unique_instance_id
+                )
             )
 
             inj = session.execute(stmt).scalars().one()
