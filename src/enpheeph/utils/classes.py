@@ -16,17 +16,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import collections.abc
-import inspect
 import types
 import typing
 
 
 IDGeneratorSubclass = typing.TypeVar("IDGeneratorSubclass", bound="IDGenerator")
-
-
-# to define positive numbers
-class Positive:
-    pass
 
 
 # base class for generating sequential IDs for different instances
@@ -35,16 +29,20 @@ class Positive:
 class IDGenerator(object):
     # these are the defaults for all the options
     # this is taken from the root if shared
-    _ID_COUNTER: typing.Optional[int] = None
-    _RESET_VALUE: int = 0
+    _INSTANCE_ID_COUNTER: typing.Optional[int] = None
+    _INSTANCE_ID_COUNTER_RESET_VALUE: int = 0
     # this flag is for each class
-    _USE_SHARED: bool = False
+    _INSTANCE_ID_COUNTER_USE_SHARED: bool = False
     # we need a flag to know which one is the root
     # if none of them have it, we resort to the base class, IDGenerator
-    _SHARED_ROOT_FLAG: bool = False
+    _INSTANCE_ID_COUNTER_SHARED_ROOT_FLAG: bool = False
 
     # we define the typing for each class instance, to avoid mypy errors
-    _id: int
+    _unique_instance_id: int
+
+    @property
+    def unique_instance_id(self) -> int:
+        return self._unique_instance_id
 
     # we override init_subclass, to get the arguments from the class definition
     # we can set the reset value for the counter (starting value)
@@ -53,15 +51,15 @@ class IDGenerator(object):
     @classmethod
     def __init_subclass__(
         cls: typing.Type[IDGeneratorSubclass],
-        reset_value: int = _RESET_VALUE,
-        use_shared: bool = _USE_SHARED,
-        shared_root_flag: bool = _SHARED_ROOT_FLAG,
+        reset_value: int = _INSTANCE_ID_COUNTER_RESET_VALUE,
+        use_shared: bool = _INSTANCE_ID_COUNTER_USE_SHARED,
+        shared_root_flag: bool = _INSTANCE_ID_COUNTER_SHARED_ROOT_FLAG,
         **kwargs: typing.Any,
     ) -> None:
         # we set the class defaults overriding the root defaults
-        cls._RESET_VALUE = reset_value
-        cls._USE_SHARED = use_shared
-        cls._SHARED_ROOT_FLAG = shared_root_flag
+        cls._INSTANCE_ID_COUNTER_RESET_VALUE = reset_value
+        cls._INSTANCE_ID_COUNTER_USE_SHARED = use_shared
+        cls._INSTANCE_ID_COUNTER_SHARED_ROOT_FLAG = shared_root_flag
         # this call with reset=True is **FUNDAMENTAL** for not sharing the counter
         # otherwise the subclass would receive the setup done on the parent
         # and this would cause the child to have a reference to the parent class
@@ -74,22 +72,22 @@ class IDGenerator(object):
         super().__init_subclass__(**kwargs)  # type: ignore[call-arg]
 
     # we have to use the shared flag if the flag is set
-    # we go through the mros (which are from lowest to object) to reach a class which
-    # has the root flag enabled
+    # we go through the mros (which are from the most specific class backward to object)
+    # to reach a class which has the root flag enabled
     # if this does not happen, we go through the mros from object down until we find
     # the deepest root which has an id counter
     @classmethod
     def _get_root_with_id(
         cls: typing.Type[IDGeneratorSubclass],
     ) -> typing.Type[IDGeneratorSubclass]:
-        if cls._USE_SHARED:
+        if cls._INSTANCE_ID_COUNTER_USE_SHARED:
             for cls_ in cls.mro():
-                if hasattr(cls_, "_ID_COUNTER") and getattr(
-                    cls_, "_SHARED_ROOT_FLAG", False
+                if hasattr(cls_, "_INSTANCE_ID_COUNTER") and getattr(
+                    cls_, "_INSTANCE_ID_COUNTER_SHARED_ROOT_FLAG", False
                 ):
                     return cls_
             for cls_ in reversed(cls.mro()):
-                if hasattr(cls_, "_ID_COUNTER"):
+                if hasattr(cls_, "_INSTANCE_ID_COUNTER"):
                     return cls_
         return cls
 
@@ -102,8 +100,8 @@ class IDGenerator(object):
         cls: typing.Type[IDGeneratorSubclass], reset: bool = False
     ) -> None:
         cls_ = cls._get_root_with_id()
-        if reset or cls_._ID_COUNTER is None:
-            cls_._ID_COUNTER = cls_._RESET_VALUE
+        if reset or cls_._INSTANCE_ID_COUNTER is None:
+            cls_._INSTANCE_ID_COUNTER = cls_._INSTANCE_ID_COUNTER_RESET_VALUE
 
     # we update the counter in the correct class
     @classmethod
@@ -111,13 +109,13 @@ class IDGenerator(object):
         cls_ = cls._get_root_with_id()
         cls_._setup_id_counter(reset=False)
         # we ignore this type error as we setup the id counter in the previous line
-        cls_._ID_COUNTER += 1  # type: ignore[operator]
+        cls_._INSTANCE_ID_COUNTER += 1  # type: ignore[operator]
 
     # to return the id counter
     @classmethod
     def _get_id_counter(cls: typing.Type[IDGeneratorSubclass]) -> typing.Optional[int]:
         cls_ = cls._get_root_with_id()
-        return cls_._ID_COUNTER
+        return cls_._INSTANCE_ID_COUNTER
 
     # to set the id in the current instance
     # this is supposed to be called during __new__, to set the instance id after the
@@ -127,7 +125,7 @@ class IDGenerator(object):
 
         # frozen instance trick
         # no need for the trick in the classmethods
-        object.__setattr__(self, "_id", self._get_id_counter())
+        object.__setattr__(self, "_unique_instance_id", self._get_id_counter())
 
         self._update_id_counter()
 
@@ -138,39 +136,6 @@ class IDGenerator(object):
         obj: IDGeneratorSubclass = super().__new__(cls)
         obj._set_instance_id()
         return obj
-
-
-class FunctionCallerNameMixin(object):
-    @classmethod
-    # Annotated is not supported before Python 3.9
-    def caller_name(cls, depth: int = 1) -> str:
-        frame: typing.Optional[types.FrameType] = None
-        try:
-            # we get the name of the called function through the current frame
-            # everything is inside a try finally block to delete the frame after the
-            # string has been taken and avoid reference cycles
-            frame = inspect.currentframe()
-            if frame is None:
-                raise RuntimeError(
-                    "Must be run on CPython, as other implementations "
-                    "are not currently supported"
-                )
-            for i in range(depth + 1):
-                frame_new = frame.f_back
-                del frame
-                frame = frame_new
-                if frame is None:
-                    raise RuntimeError(
-                        "Must be run on CPython, as other implementations "
-                        "are not currently supported"
-                    )
-            # we need to get the calling frame f_back for the current one before getting
-            # the function name co_name from its code f_code
-            name: str = frame.f_code.co_name
-        finally:
-            del frame
-
-        return name
 
 
 class SkipIfErrorContextManager(object):
