@@ -317,6 +317,7 @@
 # py310 does not work on Windows yet, at least on GitHub Actions
 # isolated_build is required otherwise it would not work when building the package
 # with pyproject.toml
+# -rA in pytest shows a summary at the end, including the passed tests
 legacy_tox_ini = """
 [tox]
 envlist = clean,py38,py39,py310,report
@@ -327,7 +328,7 @@ isolated_build = true
 envlogdir = .logs/
 commands =
     python -m pytest \
-        -vv \
+        -vv -rA \
         --cov={envsitepackagesdir}/enpheeph \
         --cov-append \
         --cov-report=term-missing \
