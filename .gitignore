@@ -86,6 +86,7 @@ mkinit-*.log
 .tox/*
 .logs/*
 enpheeph-*/
+**/.mypy_cache
 
 ### FOSSIL REPO
 *.fossil
