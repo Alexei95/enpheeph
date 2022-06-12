@@ -32,7 +32,7 @@
     # one can use self-dependency to include other optional-dependencies
     # supported by pip>=21.2
 
-    # FUNCTIONALITIES DEPENDENCIES
+    # PACKAGE DEPENDENCIES
     cupy = [
         "cupy >= 9.0.0",
     ]
@@ -42,13 +42,25 @@
     numpy = [
         "numpy >= 1.19",
     ]
+    pytorch-lightning = [
+        "pytorch-lightning >= 1.5",
+    ]
     sqlalchemy = [
         "sqlalchemy >= 1.4.20",
     ]
     torch = [
-        "torch >= 1.8, < 1.10.0",
+        "torch >= 1.8",
     ]
 
+    # FUNCTIONALITIES DEPENDENCIES
+    norse-cpu = [
+        "enpheeph[torch-cpu]",
+        "enpheeph[norse]",
+    ]
+    norse-gpu = [
+        "enpheeph[torch-gpu]",
+        "enpheeph[norse]",
+    ]
     torch-cpu = [
         "enpheeph[numpy]",
         "enpheeph[torch]",
@@ -58,37 +70,63 @@
         "enpheeph[torch]",
     ]
 
-    norse-cpu = [
-        "enpheeph[torch-cpu]",
-        "enpheeph[norse]",
-    ]
-    norse-gpu = [
-        "enpheeph[torch-gpu]",
-        "enpheeph[norse]",
-    ]
-
     # INTEGRATIONS DEPENDENCIES
     integrations-pytorch-lightning = [
         "enpheeph[torch]",
-        "pytorch-lightning >= 1.5",
+        "enpheeph[pytorch-lightning]",
+    ]
+
+    # DEVELOPMENT PACKAGES
+    black = [
+        "black",
+    ]
+    coverage = [
+        # for using pyproject.toml as configuration in pytest-coverage
+        "coverage[toml]",
+    ]
+    flake8 = [
+        "flake8",
+    ]
+    mkinit = [
+        "mkinit >= 0.3.3",
+    ]
+    mypy = [
+        "mypy",
+    ]
+    pre-commit = [
+        "pre-commit",
+    ]
+    pyright = [
+        "pyright",
+    ]
+    pytest = [
+        "pytest >= 6.2.5",  # 6.2.5 for Python 3.10+
+        "pytest-cov",
+        "pytest-xdist",
+    ]
+    tox = [
+        "tox >= 3.20.0",
+        "tox-conda >= 0.8.0",
     ]
 
     # DEVELOPMENT DEPENDENCIES
+    # these dependencies should become a single dependency line per package as
+    # for functionalities
     dev-test = [
-        # for using pyproject.toml as configuration in pytest-coverage
-        "coverage[toml]",
-        "pytest >= 6.2.0",  # 6.2.5 for Python 3.10+
-        "pytest-cov",
-        "pytest-xdist",
-        "tox >= 3.20.0",
+        # we need the complete enpheeph to test all the integrations
+        "enpheeph[full]",
+        "enpheeph[coverage]",
+        "enpheeph[pytest]",
+        "enpheeph[tox]"
     ]
 
     dev-tools = [
-        "black",
-        "flake8",
-        "mkinit >= 0.3.3",
-        "mypy",
-        "pre-commit",
+        "enpheeph[black]",
+        "enpheeph[flake8]",
+        "enpheeph[mkinit]",
+        "enpheeph[mypy]",
+        "enpheeph[pre-commit]",
+        "enpheeph[pyright]",
     ]
 
     dev = [
@@ -99,11 +137,13 @@
     # COMPLETE DEPENDENCIES
     full = [
         "enpheeph[integrations-pytorch-lightning]",
+        "enpheeph[norse-gpu]",
         "enpheeph[sqlalchemy]",
-        "enpheeph[torch-cpu]",
         "enpheeph[torch-gpu]",
     ]
 
+    # this is identical to dev since we have
+    # enpheeph[full] as dependency
     full-dev = [
         "enpheeph[full]",
         "enpheeph[dev]",
@@ -127,7 +167,7 @@
         'py38',
         'py39',
         # Python 3.9/3.10 is not yet supported
-        # 'py310'
+        'py310'
     ]
     # the include is the standard one for all the files ending in .py
     include = '\.pyi?$'
