@@ -1,0 +1,31 @@
+# these requirements are specific for the scripts
+# if using conda, everything can be installed in this way
+# after creating a new environment, activate it and use
+# conda install python=3.10.4
+# to install python, and
+# conda install pytorch=1.11.0 torchvision=0.12.0 cudatoolkit=11.3.1 cupy=10.5.0 cutensor=1.5.0.3 cudnn=7.6.5.32 nccl=2.12.12.1 pytorch-lightning=1.6.4 lightning-flash=0.7.5 -c pytorch -c conda-forge
+# to install all the dependencies
+# afterwards one can install enpheeph[full]
+
+# to upgrade packages only if needed to match the dependencies
+# must be used as command-line options
+# --upgrade --upgrade-strategy only-if-needed
+
+# for PyTorch 1.11.0
+--extra-index-url https://download.pytorch.org/whl/cu113
+# tested with Python 3.10.4
+
+-e enpheeph[full]
+
+# NOTE: after installing cupy, run
+# this is required only if installing from pip
+# python -m cupyx.tools.install_library --cuda 11.3 --library cutensor
+# python -m cupyx.tools.install_library --cuda 11.3 --library cudnn
+# python -m cupyx.tools.install_library --cuda 11.3 --library nccl
+cupy-cuda113==10.5.0
+lightning-flash[all]==0.7.5
+pytorch-lightning[extra]==1.6.4
+torch==1.11.0+cu113
+# torchinfo is required to run the random injections
+torchinfo==1.7.0
+torchvision==0.12
