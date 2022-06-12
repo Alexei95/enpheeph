@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import torch
+
 import enpheeph.injections.pytorchinjectionabc
 
 
@@ -26,14 +28,41 @@ class TestPyTorchInjectionABC(object):
             False,
         )
 
-    def test_teardown(self):
-        # NOTE: teardown cannot be tested directly as the class cannot be instantiated
-        # directly due to the abstract methods
+    def test_teardown_not_abstract(self):
         assert not getattr(
             enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC.teardown,
             "__isabstractmethod__",
             False,
         )
+
+    def test_teardown(self):
+        class Implementation(
+            enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC
+        ):
+            def setup(self):
+                pass
+
+            def module_name(self):
+                pass
+
+        instance = Implementation()
+        module = torch.nn.ReLU()
+
+        module = instance.teardown(module)
+
+        assert module(torch.tensor([1])) == torch.tensor([1])
+
+        instance.handle = module.register_forward_hook(lambda m, i, o: o + 1)
+
+        assert module(torch.tensor([1])) == torch.tensor([2])
+
+        module = instance.teardown(module)
+
+        assert module(torch.tensor([1])) == torch.tensor([1])
+
+        module = instance.teardown(module)
+
+        assert module(torch.tensor([1])) == torch.tensor([1])
 
     def test_abstract_module_name(self):
         assert getattr(
@@ -47,3 +76,8 @@ class TestPyTorchInjectionABC(object):
             enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC.module_name,
             property,
         )
+
+    def test_attributes(self):
+        class_ = enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC
+        # __annotations__ returns the annotated attributes in the class
+        assert "handle" in class_.__annotations__

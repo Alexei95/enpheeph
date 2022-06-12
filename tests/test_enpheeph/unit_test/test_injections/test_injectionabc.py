@@ -33,3 +33,9 @@ class TestInjectionABC(object):
             "__isabstractmethod__",
             False,
         )
+
+    def test_attributes(self):
+        # __annotations__ returns the annotated attributes in the class
+        assert (
+            "location" in enpheeph.injections.injectionabc.InjectionABC.__annotations__
+        )
