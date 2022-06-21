@@ -46,11 +46,12 @@ jobs:
     #     run: |
     #       echo "::set-output name=branch_name::${GITHUB_REF#refs/heads/}"
 
+    # we need to explicitly install ordered-set as it is not included
     - name: Install mkinit
       run: |
         python --version
         python -m pip --version
-        python -m pip install mkinit==0.3.4
+        python -m pip install mkinit==0.3.4 ordered-set==4.1.0
         python -m pip list
 
     - name: Run mkinit
