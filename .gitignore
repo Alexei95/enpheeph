@@ -72,6 +72,7 @@ papers/*/configs/**/*.json
 # DSE results
 /*.csv
 /results
+scripts/results
 # Test Models
 **/model_drafts
 # Trained Models
