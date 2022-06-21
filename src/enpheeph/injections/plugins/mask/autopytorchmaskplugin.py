@@ -18,7 +18,7 @@
 import typing
 
 import enpheeph.injections.plugins.mask
-import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
+import enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc
 import enpheeph.utils.functions
 import enpheeph.utils.imports
 
@@ -63,13 +63,13 @@ class AutoPyTorchMaskPlugin(
 
     def _get_from_torch_plugin_instance(
         self, tensor: "torch.Tensor"
-    ) -> enpheeph.injections.plugins.mask.LowLevelTorchMaskPluginABC:
+    ) -> enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc:
         return self.FROM_TORCH[tensor.device.type]
 
     def _get_to_torch_plugin_instance(
         self,
         array: enpheeph.utils.typings.ArrayType,
-    ) -> enpheeph.injections.plugins.mask.LowLevelTorchMaskPluginABC:
+    ) -> enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc:
         return self.TO_TORCH[
             typing.cast(
                 str,

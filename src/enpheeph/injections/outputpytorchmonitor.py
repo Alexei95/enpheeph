@@ -1,11 +1,27 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import typing
 
-import enpheeph.injections.monitorabc
-import enpheeph.injections.plugins.indexing.indexingpluginabc
-import enpheeph.injections.pytorchinjectionabc
+import enpheeph.injections.abc.monitorabc
+import enpheeph.injections.plugins.indexing.abc.indexingpluginabc
+import enpheeph.injections.abc.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmonitorpostprocessormixin
-import enpheeph.injections.plugins.storage.storagepluginabc
+import enpheeph.injections.plugins.storage.abc.storagepluginabc
 import enpheeph.utils.data_classes
 import enpheeph.utils.enums
 
@@ -15,8 +31,8 @@ if typing.TYPE_CHECKING:
 
 
 class OutputPyTorchMonitor(
-    enpheeph.injections.monitorabc.MonitorABC,
-    enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
+    enpheeph.injections.abc.monitorabc.MonitorABC,
+    enpheeph.injections.abc.pytorchinjectionabc.PyTorchInjectionABC,
     (
         # black has issues with very long names
         # fmt: off
@@ -28,23 +44,23 @@ class OutputPyTorchMonitor(
     enabled_metrics: enpheeph.utils.enums.MonitorMetric
     # we need the index plugin to simplify the handling of the indices
     indexing_plugin: (
-        enpheeph.injections.plugins.indexing.indexingpluginabc.IndexingPluginABC
+        enpheeph.injections.plugins.indexing.abc.indexingpluginabc.IndexingPluginABC
     )
     location: enpheeph.utils.data_classes.MonitorLocation
     move_to_first: bool
     storage_plugin: (
-        enpheeph.injections.plugins.storage.storagepluginabc.StoragePluginABC
+        enpheeph.injections.plugins.storage.abc.storagepluginabc.StoragePluginABC
     )
 
     def __init__(
         self,
         indexing_plugin: (
-            enpheeph.injections.plugins.indexing.indexingpluginabc.IndexingPluginABC
+            enpheeph.injections.plugins.indexing.abc.indexingpluginabc.IndexingPluginABC
         ),
         location: enpheeph.utils.data_classes.MonitorLocation,
         enabled_metrics: enpheeph.utils.enums.MonitorMetric,
         storage_plugin: (
-            enpheeph.injections.plugins.storage.storagepluginabc.StoragePluginABC
+            enpheeph.injections.plugins.storage.abc.storagepluginabc.StoragePluginABC
         ),
         move_to_first: bool = True,
     ):

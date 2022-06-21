@@ -1,4 +1,20 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # type: ignore[misc,assignment,name-defined,unreachable,union-attr,attr-defined,operator]
 # flake8: noqa
 # we ignore mypy/flake8 errors here as this injection needs to be refactored
@@ -6,14 +22,14 @@ import typing
 
 import norse
 
-import enpheeph.injections.pytorchinjectionabc
+import enpheeph.injections.abc.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmaskmixin
-import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
+import enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc
 import enpheeph.utils.data_classes
 
 
 class SNNOutputNorseFault(
-    enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
+    enpheeph.injections.abc.pytorchinjectionabc.PyTorchInjectionABC,
     enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixin,
 ):
     def __init__(

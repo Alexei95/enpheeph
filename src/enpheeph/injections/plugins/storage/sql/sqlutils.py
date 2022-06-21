@@ -15,30 +15,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import abc
-import typing
+# import sqlalchemy
+# import sqlalchemy.dialects.postgresql
+# import sqlalchemy.ext.compiler
+# import sqlalchemy.sql.functions
+# import sqlalchemy.types
 
-import enpheeph.injections.abc.injectionabc
-import enpheeph.utils.typings
+
+# to have utc timestamps in UTC for the database
+# the default function func.time() returns the local time
+# UTC TIMESTAMP SQL
+# class utcnow(sqlalchemy.sql.functions.FunctionElement):
+#     type = sqlalchemy.types.DateTime()
 
 
-class LibraryHandlerPluginABC(abc.ABC):
-    @abc.abstractmethod
-    def library_setup(
-        self,
-        model: enpheeph.utils.typings.ModelType,
-        active_injections: typing.List[
-            enpheeph.injections.abc.injectionabc.InjectionABC
-        ],
-    ) -> enpheeph.utils.typings.ModelType:
-        pass
+# @sqlalchemy.ext.compiler.compiles(utcnow, "postgresql")
+# def pg_utcnow(element, compiler, **kw):
+#     return "TIMEZONE('utc', CURRENT_TIMESTAMP)"
 
-    @abc.abstractmethod
-    def library_teardown(
-        self,
-        model: enpheeph.utils.typings.ModelType,
-        active_injections: typing.List[
-            enpheeph.injections.abc.injectionabc.InjectionABC
-        ],
-    ) -> enpheeph.utils.typings.ModelType:
-        pass
+
+# END UTC TIMESTAMP SQL

@@ -16,29 +16,24 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import abc
-import typing
 
-import enpheeph.injections.abc.injectionabc
+import enpheeph.utils.data_classes
 import enpheeph.utils.typings
 
 
-class LibraryHandlerPluginABC(abc.ABC):
-    @abc.abstractmethod
-    def library_setup(
-        self,
-        model: enpheeph.utils.typings.ModelType,
-        active_injections: typing.List[
-            enpheeph.injections.abc.injectionabc.InjectionABC
-        ],
-    ) -> enpheeph.utils.typings.ModelType:
-        pass
+class InjectionABC(abc.ABC):
+    location: enpheeph.utils.data_classes.InjectionLocationABC
 
     @abc.abstractmethod
-    def library_teardown(
+    def setup(
         self,
-        model: enpheeph.utils.typings.ModelType,
-        active_injections: typing.List[
-            enpheeph.injections.abc.injectionabc.InjectionABC
-        ],
+        module: enpheeph.utils.typings.ModelType,
     ) -> enpheeph.utils.typings.ModelType:
-        pass
+        return NotImplemented
+
+    @abc.abstractmethod
+    def teardown(
+        self,
+        module: enpheeph.utils.typings.ModelType,
+    ) -> enpheeph.utils.typings.ModelType:
+        return NotImplemented

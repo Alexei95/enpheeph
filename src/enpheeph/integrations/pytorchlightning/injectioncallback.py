@@ -1,4 +1,20 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import collections
 import copy
 import datetime
@@ -8,7 +24,7 @@ import warnings
 import pytorch_lightning
 
 import enpheeph.handlers.injectionhandler
-import enpheeph.injections.plugins.storage.storagepluginabc
+import enpheeph.injections.plugins.storage.abc.storagepluginabc
 
 # to suppress all warnings
 warnings.filterwarnings("ignore")
@@ -23,7 +39,7 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
     ]
     metrics_save_frequency: typing.Optional[int]
     storage_plugin: typing.Optional[
-        (enpheeph.injections.plugins.storage.storagepluginabc.StoragePluginABC)
+        (enpheeph.injections.plugins.storage.abc.storagepluginabc.StoragePluginABC)
     ]
     test_epoch: int
 
@@ -31,7 +47,7 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         self,
         injection_handler: (enpheeph.handlers.injectionhandler.InjectionHandler),
         storage_plugin: typing.Optional[
-            (enpheeph.injections.plugins.storage.storagepluginabc.StoragePluginABC)
+            (enpheeph.injections.plugins.storage.abc.storagepluginabc.StoragePluginABC)
         ] = None,
         # number of batches every which to save the metrics
         # additionally we save at the end of each epoch

@@ -1,11 +1,27 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import typing
 
-import enpheeph.injections.faultabc
-import enpheeph.injections.pytorchinjectionabc
+import enpheeph.injections.abc.faultabc
+import enpheeph.injections.abc.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmaskmixin
 import enpheeph.injections.mixins.pytorchtensorobjectvalidatormixin
-import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
+import enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc
 import enpheeph.utils.data_classes
 
 # we move this import down
@@ -14,8 +30,8 @@ if typing.TYPE_CHECKING:
 
 
 class OutputPyTorchFault(
-    enpheeph.injections.faultabc.FaultABC,
-    enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
+    enpheeph.injections.abc.faultabc.FaultABC,
+    enpheeph.injections.abc.pytorchinjectionabc.PyTorchInjectionABC,
     enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixin,
     (
         # fmt: off
@@ -27,7 +43,7 @@ class OutputPyTorchFault(
     handle: typing.Optional["torch.utils.hooks.RemovableHandle"]
     # we need the index plugin to simplify the handling of the indices
     indexing_plugin: (
-        enpheeph.injections.plugins.indexing.indexingpluginabc.IndexingPluginABC
+        enpheeph.injections.plugins.indexing.abc.indexingpluginabc.IndexingPluginABC
     )
     location: enpheeph.utils.data_classes.FaultLocation
     low_level_plugin: (
@@ -42,7 +58,7 @@ class OutputPyTorchFault(
     def __init__(
         self,
         indexing_plugin: (
-            enpheeph.injections.plugins.indexing.indexingpluginabc.IndexingPluginABC
+            enpheeph.injections.plugins.indexing.abc.indexingpluginabc.IndexingPluginABC
         ),
         location: enpheeph.utils.data_classes.FaultLocation,
         low_level_torch_plugin: (

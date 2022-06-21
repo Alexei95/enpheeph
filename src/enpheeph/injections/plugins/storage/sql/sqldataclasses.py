@@ -1,4 +1,20 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # there is a bug in mypy with sqlalchemy
 # when using __mapper_args__ in declared_attr
 # https://github.com/sqlalchemy/sqlalchemy/issues/7321
@@ -20,7 +36,7 @@ import sqlalchemy.orm.decl_api
 import sqlalchemy.sql.expression
 import sqlalchemy.types
 
-import enpheeph.injections.plugins.storage.sqlstorageplugin.sqlutils
+import enpheeph.injections.plugins.storage.sql.sqlutils
 import enpheeph.utils.data_classes
 import enpheeph.utils.enums
 import enpheeph.utils.functions

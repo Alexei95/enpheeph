@@ -15,30 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import abc
-import typing
-
 import enpheeph.injections.abc.injectionabc
-import enpheeph.utils.typings
 
 
-class LibraryHandlerPluginABC(abc.ABC):
-    @abc.abstractmethod
-    def library_setup(
-        self,
-        model: enpheeph.utils.typings.ModelType,
-        active_injections: typing.List[
-            enpheeph.injections.abc.injectionabc.InjectionABC
-        ],
-    ) -> enpheeph.utils.typings.ModelType:
-        pass
-
-    @abc.abstractmethod
-    def library_teardown(
-        self,
-        model: enpheeph.utils.typings.ModelType,
-        active_injections: typing.List[
-            enpheeph.injections.abc.injectionabc.InjectionABC
-        ],
-    ) -> enpheeph.utils.typings.ModelType:
-        pass
+class FaultABC(enpheeph.injections.abc.injectionabc.InjectionABC):
+    pass

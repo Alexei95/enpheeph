@@ -18,14 +18,14 @@
 import typing
 
 import enpheeph.handlers.plugins.libraryhandlerpluginabc
-import enpheeph.injections.injectionabc
+import enpheeph.injections.abc.injectionabc
 import enpheeph.utils.enums
 import enpheeph.utils.typings
 
 
 class InjectionHandler(object):
-    active_injections: typing.List[enpheeph.injections.injectionabc.InjectionABC]
-    injections: typing.List[enpheeph.injections.injectionabc.InjectionABC]
+    active_injections: typing.List[enpheeph.injections.abc.injectionabc.InjectionABC]
+    injections: typing.List[enpheeph.injections.abc.injectionabc.InjectionABC]
     library_handler_plugin: (
         enpheeph.handlers.plugins.libraryhandlerpluginabc.LibraryHandlerPluginABC
     )
@@ -33,7 +33,7 @@ class InjectionHandler(object):
 
     def __init__(
         self,
-        injections: typing.List[enpheeph.injections.injectionabc.InjectionABC],
+        injections: typing.List[enpheeph.injections.abc.injectionabc.InjectionABC],
         library_handler_plugin: (
             enpheeph.handlers.plugins.libraryhandlerpluginabc.LibraryHandlerPluginABC
         ),
@@ -88,9 +88,9 @@ class InjectionHandler(object):
     def activate(
         self,
         injections: typing.Optional[
-            typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]
+            typing.Sequence[enpheeph.injections.abc.injectionabc.InjectionABC]
         ] = None,
-    ) -> typing.List[enpheeph.injections.injectionabc.InjectionABC]:
+    ) -> typing.List[enpheeph.injections.abc.injectionabc.InjectionABC]:
         if self.check_running_status():
             print("Cannot do anything while running, try after the execution")
             return self.active_injections
@@ -118,9 +118,9 @@ class InjectionHandler(object):
         self,
         # here Sequence is fine as we are simply iterating over/checking presence
         injections: typing.Optional[
-            typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]
+            typing.Sequence[enpheeph.injections.abc.injectionabc.InjectionABC]
         ] = None,
-    ) -> typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]:
+    ) -> typing.Sequence[enpheeph.injections.abc.injectionabc.InjectionABC]:
         if self.check_running_status():
             print("Cannot do anything while running, try after the execution")
             return self.active_injections
@@ -139,8 +139,8 @@ class InjectionHandler(object):
     # to add injections to the current list of injections
     def add_injections(
         self,
-        injections: typing.Sequence[enpheeph.injections.injectionabc.InjectionABC],
-    ) -> typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]:
+        injections: typing.Sequence[enpheeph.injections.abc.injectionabc.InjectionABC],
+    ) -> typing.Sequence[enpheeph.injections.abc.injectionabc.InjectionABC]:
         if self.check_running_status():
             print("Cannot do anything while running, try after the execution")
             return self.injections
@@ -166,9 +166,9 @@ class InjectionHandler(object):
     def remove_injections(
         self,
         injections: typing.Optional[
-            typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]
+            typing.Sequence[enpheeph.injections.abc.injectionabc.InjectionABC]
         ] = None,
-    ) -> typing.Sequence[enpheeph.injections.injectionabc.InjectionABC]:
+    ) -> typing.Sequence[enpheeph.injections.abc.injectionabc.InjectionABC]:
         if self.check_running_status():
             print("Cannot do anything while running, try after the execution")
             return self.injections

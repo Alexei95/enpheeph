@@ -1,4 +1,20 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import enum
 import operator
 
@@ -34,7 +50,7 @@ class DimensionType(enum.Enum):
     Time = enum.auto()
 
 
-# this endianness does not represent the actual endianness of the machine,
+# NOTE: this endianness does not represent the actual endianness of the machine,
 # only the endianness seen in the Python objects when accessing them
 class Endianness(enum.Enum):
     Little = "<"
@@ -87,7 +103,7 @@ class ParameterType(enum.Flag):
     State = enum.auto()
 
     # state types
-    LIFState = enum.auto()
+    LIF = enum.auto()
 
     # variables saved in state
     Voltage = enum.auto()
@@ -95,10 +111,12 @@ class ParameterType(enum.Flag):
 
     # tensor type
     Dense = enum.auto()
+    PrunedDense = enum.auto()
     Sparse = enum.auto()
 
     # sparse coordinates type
     COO = enum.auto()
+    CSR = enum.auto()
 
     # sparse coordinates
     Index = enum.auto()
@@ -107,4 +125,4 @@ class ParameterType(enum.Flag):
     # complex types
     DNNWeightDense = DNN | Weight | Dense
     DNNActivationDense = DNN | Activation | Dense
-    SNNStateLIFStateVoltageDense = SNN | State | LIFState | Voltage | Dense
+    SNNLIFStateVoltageDense = SNN | State | LIF | Voltage | Dense

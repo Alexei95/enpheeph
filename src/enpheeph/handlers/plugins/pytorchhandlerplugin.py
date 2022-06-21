@@ -1,8 +1,24 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import typing
 
 import enpheeph.handlers.plugins.libraryhandlerpluginabc
-import enpheeph.injections.injectionabc
+import enpheeph.injections.abc.injectionabc
 import enpheeph.utils.typings
 
 # we plac it after so flake8 does not complain about not-at-the-top imports
@@ -16,7 +32,9 @@ class PyTorchHandlerPlugin(
     def library_setup(
         self,
         model: enpheeph.utils.typings.ModelType,
-        active_injections: typing.List[enpheeph.injections.injectionabc.InjectionABC],
+        active_injections: typing.List[
+            enpheeph.injections.abc.injectionabc.InjectionABC
+        ],
     ) -> enpheeph.utils.typings.ModelType:
         for inj in active_injections:
             module = self.get_module(model, inj.location.module_name)
@@ -27,7 +45,9 @@ class PyTorchHandlerPlugin(
     def library_teardown(
         self,
         model: enpheeph.utils.typings.ModelType,
-        active_injections: typing.List[enpheeph.injections.injectionabc.InjectionABC],
+        active_injections: typing.List[
+            enpheeph.injections.abc.injectionabc.InjectionABC
+        ],
     ) -> enpheeph.utils.typings.ModelType:
         for inj in active_injections:
             module = self.get_module(model, inj.location.module_name)

@@ -1,4 +1,20 @@
 # -*- coding: utf-8 -*-
+# enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import typing
 
 import sqlalchemy
@@ -8,20 +24,20 @@ import sqlalchemy.ext.compiler
 import sqlalchemy.sql.expression
 import sqlalchemy.types
 
-import enpheeph.injections.plugins.storage.sqlstorageplugin.sqlstoragepluginabc
-import enpheeph.injections.plugins.storage.sqlstorageplugin.sqlutils
-import enpheeph.injections.plugins.storage.storagepluginabc
+import enpheeph.injections.plugins.storage.sql.abc.sqlstoragepluginabc
+import enpheeph.injections.plugins.storage.sql.sqlutils
+import enpheeph.injections.plugins.storage.abc.storagepluginabc
 import enpheeph.utils.data_classes
 import enpheeph.utils.typings
 
-from enpheeph.injections.plugins.storage.sqlstorageplugin import sql_data_classes
+import enpheeph.injections.plugins.storage.sql.sqldataclasses as sqldataclasses
 
 
 class SQLiteStoragePlugin(
     # we disable black to avoid too long line issue in flake8
     # fmt: off
     (
-        enpheeph.injections.plugins.storage.sqlstorageplugin.
+        enpheeph.injections.plugins.storage.sql.abc.
         sqlstoragepluginabc.SQLStoragePluginABC
     ),
     # fmt: on
@@ -64,9 +80,9 @@ class SQLiteStoragePlugin(
         ] = sqlalchemy.engine.url.make_url(db_url).get_dialect()
         # if pysqlite is in the dialect class name, we fix the engine for pysqlite
         if "pysqlite" in dialect.__qualname__:
-            sql_data_classes.fix_pysqlite(engine)
+            sqldataclasses.fix_pysqlite(engine)
 
         # we create all the tables in the engine
-        sql_data_classes.CustomBase.metadata.create_all(engine)
+        sqldataclasses.CustomBase.metadata.create_all(engine)
 
         return engine

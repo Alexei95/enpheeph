@@ -17,12 +17,12 @@
 
 import typing
 
-import enpheeph.injections.faultabc
-import enpheeph.injections.pytorchinjectionabc
+import enpheeph.injections.abc.faultabc
+import enpheeph.injections.abc.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmaskmixin
 import enpheeph.injections.mixins.pytorchsparseinterfacemixin
 import enpheeph.injections.mixins.pytorchtensorobjectvalidatormixin
-import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
+import enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc
 import enpheeph.utils.data_classes
 
 # we move this import down
@@ -31,8 +31,8 @@ if typing.TYPE_CHECKING:
 
 
 class FPQuantizedOutputPyTorchFault(
-    enpheeph.injections.faultabc.FaultABC,
-    enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC,
+    enpheeph.injections.abc.faultabc.FaultABC,
+    enpheeph.injections.abc.pytorchinjectionabc.PyTorchInjectionABC,
     enpheeph.injections.mixins.pytorchmaskmixin.PyTorchMaskMixin,
     (
         # fmt: off
@@ -54,7 +54,7 @@ class FPQuantizedOutputPyTorchFault(
     def __init__(
         self,
         indexing_plugin: (
-            enpheeph.injections.plugins.indexing.indexingpluginabc.IndexingPluginABC
+            enpheeph.injections.plugins.indexing.abc.indexingpluginabc.IndexingPluginABC
         ),
         location: enpheeph.utils.data_classes.FaultLocation,
         low_level_torch_plugin: (

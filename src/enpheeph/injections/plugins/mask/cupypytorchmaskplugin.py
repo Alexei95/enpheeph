@@ -17,7 +17,7 @@
 
 import typing
 
-import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
+import enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc
 import enpheeph.utils.functions
 import enpheeph.utils.imports
 

@@ -25,17 +25,17 @@ import sqlalchemy.ext.compiler
 import sqlalchemy.sql.expression
 import sqlalchemy.types
 
-import enpheeph.injections.plugins.storage.sqlstorageplugin.sqlutils
-import enpheeph.injections.plugins.storage.storagepluginabc
-import enpheeph.injections.plugins.storage.storage_typings
+import enpheeph.injections.plugins.storage.sql.sqlutils
+import enpheeph.injections.plugins.storage.abc.storagepluginabc
+import enpheeph.injections.plugins.storage.storagetypings
 import enpheeph.utils.data_classes
 import enpheeph.utils.typings
 
-from enpheeph.injections.plugins.storage.sqlstorageplugin import sql_data_classes
+from enpheeph.injections.plugins.storage.sql import sql_data_classes
 
 
 class SQLStoragePluginABC(
-    enpheeph.injections.plugins.storage.storagepluginabc.StoragePluginABC,
+    enpheeph.injections.plugins.storage.abc.storagepluginabc.StoragePluginABC,
 ):
     experiment_id: typing.Optional[int]
     engine: sqlalchemy.engine.Engine
@@ -61,7 +61,7 @@ class SQLStoragePluginABC(
         ] = None,
         # in the future we will add also model_info
     ) -> typing.List[
-        enpheeph.injections.plugins.storage.storage_typings.ExperimentRunProtocol,
+        enpheeph.injections.plugins.storage.storagetypings.ExperimentRunProtocol,
     ]:
         # first we open the querying session on our engine
         with sqlalchemy.orm.Session(self.engine) as session:

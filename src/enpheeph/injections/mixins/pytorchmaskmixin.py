@@ -18,9 +18,9 @@
 import abc
 import typing
 
-import enpheeph.injections.plugins.indexing.indexingpluginabc
-import enpheeph.injections.plugins.mask.lowleveltorchmaskpluginabc
-import enpheeph.injections.pytorchinjectionabc
+import enpheeph.injections.plugins.indexing.abc.indexingpluginabc
+import enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc
+import enpheeph.injections.abc.pytorchinjectionabc
 import enpheeph.utils.data_classes
 import enpheeph.utils.functions
 import enpheeph.utils.imports
@@ -36,7 +36,7 @@ if (
 class PyTorchMaskMixin(abc.ABC):
     # we need the index plugin to simplify the handling of the indices
     indexing_plugin: (
-        enpheeph.injections.plugins.indexing.indexingpluginabc.IndexingPluginABC
+        enpheeph.injections.plugins.indexing.abc.indexingpluginabc.IndexingPluginABC
     )
     # the used variables in the functions, must be initialized properly
     location: enpheeph.utils.data_classes.FaultLocation
