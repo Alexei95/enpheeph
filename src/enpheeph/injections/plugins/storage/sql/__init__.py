@@ -70,13 +70,17 @@ def lazy_import(module_name, submodules, submod_attrs):
 __getattr__ = lazy_import(
     __name__,
     submodules={
-        'sql_data_classes',
+        'abc',
+        'sqldataclasses',
         'sqlitestorageplugin',
-        'sqlstoragepluginabc',
         'sqlutils',
     },
     submod_attrs={
-        'sql_data_classes': [
+        'abc': [
+            'SQLStoragePluginABC',
+            'sqlstoragepluginabc',
+        ],
+        'sqldataclasses': [
             'CustomBase',
             'CustomBaseClass',
             'ExperimentRun',
@@ -97,9 +101,6 @@ __getattr__ = lazy_import(
         'sqlitestorageplugin': [
             'SQLiteStoragePlugin',
         ],
-        'sqlstoragepluginabc': [
-            'SQLStoragePluginABC',
-        ],
     },
 )
 
@@ -111,8 +112,8 @@ __all__ = ['CustomBase', 'CustomBaseClass', 'ExperimentRun',
            'ExperimentRunBaseMixin', 'Fault', 'FaultBaseMixin', 'Injection',
            'Monitor', 'MonitorBaseMixin', 'PolymorphicMixin',
            'SQLStoragePluginABC', 'SQLiteStoragePlugin', 'Session',
-           'SessionBaseMixin', 'fix_pysqlite',
+           'SessionBaseMixin', 'abc', 'fix_pysqlite',
            'pysqlite_begin_emission_fix_on_connect', 'set_sqlite_pragma',
-           'sql_data_classes', 'sqlalchemy_begin_emission_pysqlite',
+           'sqlalchemy_begin_emission_pysqlite', 'sqldataclasses',
            'sqlitestorageplugin', 'sqlstoragepluginabc', 'sqlutils']
 # </AUTOGEN_INIT>

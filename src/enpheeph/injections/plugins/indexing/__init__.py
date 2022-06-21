@@ -54,15 +54,16 @@ def lazy_import(module_name, submodules, submod_attrs):
 __getattr__ = lazy_import(
     __name__,
     submodules={
+        'abc',
         'indexingplugin',
-        'indexingpluginabc',
     },
     submod_attrs={
+        'abc': [
+            'IndexingPluginABC',
+            'indexingpluginabc',
+        ],
         'indexingplugin': [
             'IndexingPlugin',
-        ],
-        'indexingpluginabc': [
-            'IndexingPluginABC',
         ],
     },
 )
@@ -71,6 +72,6 @@ __getattr__ = lazy_import(
 def __dir__():
     return __all__
 
-__all__ = ['IndexingPlugin', 'IndexingPluginABC', 'indexingplugin',
+__all__ = ['IndexingPlugin', 'IndexingPluginABC', 'abc', 'indexingplugin',
            'indexingpluginabc']
 # </AUTOGEN_INIT>

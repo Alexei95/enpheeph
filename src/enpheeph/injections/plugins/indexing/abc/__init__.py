@@ -70,43 +70,11 @@ def lazy_import(module_name, submodules, submod_attrs):
 __getattr__ = lazy_import(
     __name__,
     submodules={
-        'sqlstorageplugin',
-        'storage_typings',
-        'storagepluginabc',
+        'indexingpluginabc',
     },
     submod_attrs={
-        'sqlstorageplugin': [
-            'CustomBase',
-            'CustomBaseClass',
-            'ExperimentRun',
-            'ExperimentRunBaseMixin',
-            'Fault',
-            'FaultBaseMixin',
-            'Injection',
-            'Monitor',
-            'MonitorBaseMixin',
-            'PolymorphicMixin',
-            'SQLStoragePluginABC',
-            'SQLiteStoragePlugin',
-            'Session',
-            'SessionBaseMixin',
-            'fix_pysqlite',
-            'pysqlite_begin_emission_fix_on_connect',
-            'set_sqlite_pragma',
-            'sql_data_classes',
-            'sqlalchemy_begin_emission_pysqlite',
-            'sqlitestorageplugin',
-            'sqlstoragepluginabc',
-            'sqlutils',
-        ],
-        'storage_typings': [
-            'ExperimentRunProtocol',
-            'FaultProtocol',
-            'InjectionProtocol',
-            'MonitorProtocol',
-        ],
-        'storagepluginabc': [
-            'StoragePluginABC',
+        'indexingpluginabc': [
+            'IndexingPluginABC',
         ],
     },
 )
@@ -115,14 +83,5 @@ __getattr__ = lazy_import(
 def __dir__():
     return __all__
 
-__all__ = ['CustomBase', 'CustomBaseClass', 'ExperimentRun',
-           'ExperimentRunBaseMixin', 'ExperimentRunProtocol', 'Fault',
-           'FaultBaseMixin', 'FaultProtocol', 'Injection', 'InjectionProtocol',
-           'Monitor', 'MonitorBaseMixin', 'MonitorProtocol',
-           'PolymorphicMixin', 'SQLStoragePluginABC', 'SQLiteStoragePlugin',
-           'Session', 'SessionBaseMixin', 'StoragePluginABC', 'fix_pysqlite',
-           'pysqlite_begin_emission_fix_on_connect', 'set_sqlite_pragma',
-           'sql_data_classes', 'sqlalchemy_begin_emission_pysqlite',
-           'sqlitestorageplugin', 'sqlstorageplugin', 'sqlstoragepluginabc',
-           'sqlutils', 'storage_typings', 'storagepluginabc']
+__all__ = ['IndexingPluginABC', 'indexingpluginabc']
 # </AUTOGEN_INIT>

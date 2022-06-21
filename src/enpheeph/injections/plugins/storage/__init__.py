@@ -54,12 +54,16 @@ def lazy_import(module_name, submodules, submod_attrs):
 __getattr__ = lazy_import(
     __name__,
     submodules={
-        'sqlstorageplugin',
-        'storage_typings',
-        'storagepluginabc',
+        'abc',
+        'sql',
+        'storagetypings',
     },
     submod_attrs={
-        'sqlstorageplugin': [
+        'abc': [
+            'StoragePluginABC',
+            'storagepluginabc',
+        ],
+        'sql': [
             'CustomBase',
             'CustomBaseClass',
             'ExperimentRun',
@@ -74,23 +78,21 @@ __getattr__ = lazy_import(
             'SQLiteStoragePlugin',
             'Session',
             'SessionBaseMixin',
+            'abc',
             'fix_pysqlite',
             'pysqlite_begin_emission_fix_on_connect',
             'set_sqlite_pragma',
-            'sql_data_classes',
             'sqlalchemy_begin_emission_pysqlite',
+            'sqldataclasses',
             'sqlitestorageplugin',
             'sqlstoragepluginabc',
             'sqlutils',
         ],
-        'storage_typings': [
+        'storagetypings': [
             'ExperimentRunProtocol',
             'FaultProtocol',
             'InjectionProtocol',
             'MonitorProtocol',
-        ],
-        'storagepluginabc': [
-            'StoragePluginABC',
         ],
     },
 )
@@ -104,9 +106,9 @@ __all__ = ['CustomBase', 'CustomBaseClass', 'ExperimentRun',
            'FaultBaseMixin', 'FaultProtocol', 'Injection', 'InjectionProtocol',
            'Monitor', 'MonitorBaseMixin', 'MonitorProtocol',
            'PolymorphicMixin', 'SQLStoragePluginABC', 'SQLiteStoragePlugin',
-           'Session', 'SessionBaseMixin', 'StoragePluginABC', 'fix_pysqlite',
-           'pysqlite_begin_emission_fix_on_connect', 'set_sqlite_pragma',
-           'sql_data_classes', 'sqlalchemy_begin_emission_pysqlite',
-           'sqlitestorageplugin', 'sqlstorageplugin', 'sqlstoragepluginabc',
-           'sqlutils', 'storage_typings', 'storagepluginabc']
+           'Session', 'SessionBaseMixin', 'StoragePluginABC', 'abc',
+           'fix_pysqlite', 'pysqlite_begin_emission_fix_on_connect',
+           'set_sqlite_pragma', 'sql', 'sqlalchemy_begin_emission_pysqlite',
+           'sqldataclasses', 'sqlitestorageplugin', 'sqlstoragepluginabc',
+           'sqlutils', 'storagepluginabc', 'storagetypings']
 # </AUTOGEN_INIT>
