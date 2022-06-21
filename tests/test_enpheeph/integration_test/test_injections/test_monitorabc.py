@@ -16,13 +16,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import enpheeph.injections.injectionabc
-import enpheeph.injections.monitorabc
+import enpheeph.injections.abc.injectionabc
+import enpheeph.injections.abc.monitorabc
 
 
 class TestMonitorABC(object):
     def test_subclass_injection(self):
         assert issubclass(
-            enpheeph.injections.monitorabc.MonitorABC,
-            enpheeph.injections.injectionabc.InjectionABC,
+            enpheeph.injections.abc.monitorabc.MonitorABC,
+            enpheeph.injections.abc.injectionabc.InjectionABC,
         )

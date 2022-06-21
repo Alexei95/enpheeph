@@ -16,8 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-# import enpheeph.injections.faultabc
+# import enpheeph.utils.data_classes
 
 
-class TestFaultABC(object):
+class Test(object):
     pass

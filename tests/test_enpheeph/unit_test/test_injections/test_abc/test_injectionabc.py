@@ -16,8 +16,27 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-# import enpheeph.injections.monitorabc
+import enpheeph.injections.abc.injectionabc
 
 
-class TestMonitorABC(object):
-    pass
+class TestInjectionABC(object):
+    def test_abstract_method_setup(self):
+        assert getattr(
+            enpheeph.injections.abc.injectionabc.InjectionABC.setup,
+            "__isabstractmethod__",
+            False,
+        )
+
+    def test_abstract_method_teardown(self):
+        assert getattr(
+            enpheeph.injections.abc.injectionabc.InjectionABC.teardown,
+            "__isabstractmethod__",
+            False,
+        )
+
+    def test_attributes(self):
+        # __annotations__ returns the annotated attributes in the class
+        assert (
+            "location"
+            in enpheeph.injections.abc.injectionabc.InjectionABC.__annotations__
+        )

@@ -16,26 +16,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import enpheeph.injections.injectionabc
+import pytest
+
+import enpheeph.injections.abc.monitorabc
 
 
-class TestInjectionABC(object):
-    def test_abstract_method_setup(self):
-        assert getattr(
-            enpheeph.injections.injectionabc.InjectionABC.setup,
-            "__isabstractmethod__",
-            False,
-        )
-
-    def test_abstract_method_teardown(self):
-        assert getattr(
-            enpheeph.injections.injectionabc.InjectionABC.teardown,
-            "__isabstractmethod__",
-            False,
-        )
-
-    def test_attributes(self):
-        # __annotations__ returns the annotated attributes in the class
-        assert (
-            "location" in enpheeph.injections.injectionabc.InjectionABC.__annotations__
-        )
+class TestMonitorABC(object):
+    def test_abstract_class(self):
+        # the instantiation of an abstract class leads to TypeError
+        with pytest.raises(TypeError, match="abstract method"):
+            enpheeph.injections.abc.monitorabc.MonitorABC()

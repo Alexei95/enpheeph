@@ -14,15 +14,3 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
-import enpheeph.injections.abc.faultabc
-import enpheeph.injections.abc.injectionabc
-
-
-class TestFaultABC(object):
-    def test_subclass_injection(self):
-        assert issubclass(
-            enpheeph.injections.abc.faultabc.FaultABC,
-            enpheeph.injections.abc.injectionabc.InjectionABC,
-        )

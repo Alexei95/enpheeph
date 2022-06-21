@@ -16,13 +16,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import pytest
+
 import enpheeph.injections.abc.faultabc
-import enpheeph.injections.abc.injectionabc
 
 
 class TestFaultABC(object):
-    def test_subclass_injection(self):
-        assert issubclass(
-            enpheeph.injections.abc.faultabc.FaultABC,
-            enpheeph.injections.abc.injectionabc.InjectionABC,
-        )
+    def test_abstract_class(self):
+        # the instantiation of an abstract class leads to TypeError
+        with pytest.raises(TypeError, match="abstract method"):
+            enpheeph.injections.abc.faultabc.FaultABC()

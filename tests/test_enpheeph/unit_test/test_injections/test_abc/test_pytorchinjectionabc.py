@@ -17,27 +17,27 @@
 
 import torch
 
-import enpheeph.injections.pytorchinjectionabc
+import enpheeph.injections.abc.pytorchinjectionabc
 
 
 class TestPyTorchInjectionABC(object):
     def test_abstract_method_setup(self):
         assert getattr(
-            enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC.setup,
+            enpheeph.injections.abc.pytorchinjectionabc.PyTorchInjectionABC.setup,
             "__isabstractmethod__",
             False,
         )
 
     def test_teardown_not_abstract(self):
         assert not getattr(
-            enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC.teardown,
+            enpheeph.injections.abc.pytorchinjectionabc.PyTorchInjectionABC.teardown,
             "__isabstractmethod__",
             False,
         )
 
     def test_teardown(self):
         class Implementation(
-            enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC
+            enpheeph.injections.abc.pytorchinjectionabc.PyTorchInjectionABC
         ):
             def setup(self):
                 pass
@@ -66,18 +66,18 @@ class TestPyTorchInjectionABC(object):
 
     def test_abstract_module_name(self):
         assert getattr(
-            enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC.module_name,
+            enpheeph.injections.abc.pytorchinjectionabc.PyTorchInjectionABC.module_name,
             "__isabstractmethod__",
             False,
         )
 
         # we check whether the method is a property
         assert isinstance(
-            enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC.module_name,
+            enpheeph.injections.abc.pytorchinjectionabc.PyTorchInjectionABC.module_name,
             property,
         )
 
     def test_attributes(self):
-        class_ = enpheeph.injections.pytorchinjectionabc.PyTorchInjectionABC
+        class_ = enpheeph.injections.abc.pytorchinjectionabc.PyTorchInjectionABC
         # __annotations__ returns the annotated attributes in the class
         assert "handle" in class_.__annotations__
