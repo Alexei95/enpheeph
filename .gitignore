@@ -73,6 +73,7 @@ papers/*/configs/**/*.json
 /*.csv
 /results
 scripts/results
+scripts/configs/results
 # Test Models
 **/model_drafts
 # Trained Models
