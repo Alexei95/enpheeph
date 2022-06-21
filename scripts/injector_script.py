@@ -15,16 +15,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import importlib
 import pathlib
+import sys
+import typing
+
+import pytorch_lightning
 
 import enpheeph
 
 
-def get_cifar10_classfier_config():
-    return {}
-
-
-def main() -> None:
+def get_injection_callback() -> pytorch_lightning.Callback:
     storage_file = (
         pathlib.Path(__file__).absolute().parent.parent
         / "results/injection_test/database.sqlite"
@@ -50,6 +51,32 @@ def main() -> None:
         # dataset, including the configuration for injections
         # extra_session_info=config,
     )
+    return callback
+
+
+def get_trainer_config(args=sys.argv) -> typing.Dict[str, typing.Any]:
+    config = pathlib.Path(args[1]).absolute()
+
+    sys.path.append(str(config.parent))
+
+    module_name = config.with_suffix("").name
+
+    module = importlib.import_module(module_name)
+
+    sys.path.pop()
+
+    config_dict = module.config()
+
+    return config_dict
+
+
+def main() -> None:
+    config_dict = get_trainer_config()
+
+    injection_callback = get_injection_callback()
+
+    trainer = config_dict["trainer"]
+    trainer.callbacks.append(injection_callback)
 
 
 if __name__ == "__main__":

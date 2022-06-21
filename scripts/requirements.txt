@@ -1,11 +1,9 @@
 # these requirements are specific for the scripts
 # if using conda, everything can be installed in this way
 # after creating a new environment, activate it and use
-# conda install python=3.10.4
-# to install python, and
-# conda install pytorch=1.11.0 torchvision=0.12.0 cudatoolkit=11.3.1 cupy=10.5.0 cutensor=1.5.0.3 cudnn=7.6.5.32 nccl=2.12.12.1 pytorch-lightning=1.6.4 lightning-flash=0.7.5 -c pytorch -c conda-forge
+# conda install python=3.10.5 pytorch=1.11.0 torchvision=0.12.0 cudatoolkit=11.3.1 cupy=10.5.0 cutensor=1.5.0.3 cudnn=7.6.5.32 nccl=2.12.12.1 pytorch-lightning=1.6.4 lightning-flash=0.7.5 gcc_linux-64 gxx_linux-64 -c pytorch -c conda-forge
 # to install all the dependencies
-# afterwards one can install enpheeph[full]
+# afterwards one can install enpheeph[full] as well as lightning-flash[full] and pytorch-lightning[extra]
 
 # to upgrade packages only if needed to match the dependencies
 # must be used as command-line options
