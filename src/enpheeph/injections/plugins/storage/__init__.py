@@ -55,13 +55,27 @@ __getattr__ = lazy_import(
     __name__,
     submodules={
         'abc',
+        'csv',
         'sql',
-        'storagetypings',
+        'utils',
     },
     submod_attrs={
         'abc': [
             'StoragePluginABC',
             'storagepluginabc',
+        ],
+        'csv': [
+            'CSVStoragePluginABC',
+            'ExperimentRun',
+            'Fault',
+            'Injection',
+            'Monitor',
+            'PandasCSVStoragePlugin',
+            'abc',
+            'csvdataclasses',
+            'csvstorageplugin',
+            'csvstoragepluginabc',
+            'utils',
         ],
         'sql': [
             'CustomBase',
@@ -87,12 +101,15 @@ __getattr__ = lazy_import(
             'sqlitestorageplugin',
             'sqlstoragepluginabc',
             'sqlutils',
+            'utils',
         ],
-        'storagetypings': [
+        'utils': [
             'ExperimentRunProtocol',
             'FaultProtocol',
             'InjectionProtocol',
             'MonitorProtocol',
+            'SessionProtocol',
+            'storagetypings',
         ],
     },
 )
@@ -101,14 +118,16 @@ __getattr__ = lazy_import(
 def __dir__():
     return __all__
 
-__all__ = ['CustomBase', 'CustomBaseClass', 'ExperimentRun',
-           'ExperimentRunBaseMixin', 'ExperimentRunProtocol', 'Fault',
-           'FaultBaseMixin', 'FaultProtocol', 'Injection', 'InjectionProtocol',
-           'Monitor', 'MonitorBaseMixin', 'MonitorProtocol',
-           'PolymorphicMixin', 'SQLStoragePluginABC', 'SQLiteStoragePlugin',
-           'Session', 'SessionBaseMixin', 'StoragePluginABC', 'abc',
+__all__ = ['CSVStoragePluginABC', 'CustomBase', 'CustomBaseClass',
+           'ExperimentRun', 'ExperimentRunBaseMixin', 'ExperimentRunProtocol',
+           'Fault', 'FaultBaseMixin', 'FaultProtocol', 'Injection',
+           'InjectionProtocol', 'Monitor', 'MonitorBaseMixin',
+           'MonitorProtocol', 'PandasCSVStoragePlugin', 'PolymorphicMixin',
+           'SQLStoragePluginABC', 'SQLiteStoragePlugin', 'Session',
+           'SessionBaseMixin', 'SessionProtocol', 'StoragePluginABC', 'abc',
+           'csv', 'csvdataclasses', 'csvstorageplugin', 'csvstoragepluginabc',
            'fix_pysqlite', 'pysqlite_begin_emission_fix_on_connect',
            'set_sqlite_pragma', 'sql', 'sqlalchemy_begin_emission_pysqlite',
            'sqldataclasses', 'sqlitestorageplugin', 'sqlstoragepluginabc',
-           'sqlutils', 'storagepluginabc', 'storagetypings']
+           'sqlutils', 'storagepluginabc', 'storagetypings', 'utils']
 # </AUTOGEN_INIT>

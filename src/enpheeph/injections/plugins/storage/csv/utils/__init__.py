@@ -70,45 +70,14 @@ def lazy_import(module_name, submodules, submod_attrs):
 __getattr__ = lazy_import(
     __name__,
     submodules={
-        'abc',
-        'sql',
-        'storagetypings',
+        'csvdataclasses',
     },
     submod_attrs={
-        'abc': [
-            'StoragePluginABC',
-            'storagepluginabc',
-        ],
-        'sql': [
-            'CustomBase',
-            'CustomBaseClass',
+        'csvdataclasses': [
             'ExperimentRun',
-            'ExperimentRunBaseMixin',
             'Fault',
-            'FaultBaseMixin',
             'Injection',
             'Monitor',
-            'MonitorBaseMixin',
-            'PolymorphicMixin',
-            'SQLStoragePluginABC',
-            'SQLiteStoragePlugin',
-            'Session',
-            'SessionBaseMixin',
-            'abc',
-            'fix_pysqlite',
-            'pysqlite_begin_emission_fix_on_connect',
-            'set_sqlite_pragma',
-            'sqlalchemy_begin_emission_pysqlite',
-            'sqldataclasses',
-            'sqlitestorageplugin',
-            'sqlstoragepluginabc',
-            'sqlutils',
-        ],
-        'storagetypings': [
-            'ExperimentRunProtocol',
-            'FaultProtocol',
-            'InjectionProtocol',
-            'MonitorProtocol',
         ],
     },
 )
@@ -117,14 +86,5 @@ __getattr__ = lazy_import(
 def __dir__():
     return __all__
 
-__all__ = ['CustomBase', 'CustomBaseClass', 'ExperimentRun',
-           'ExperimentRunBaseMixin', 'ExperimentRunProtocol', 'Fault',
-           'FaultBaseMixin', 'FaultProtocol', 'Injection', 'InjectionProtocol',
-           'Monitor', 'MonitorBaseMixin', 'MonitorProtocol',
-           'PolymorphicMixin', 'SQLStoragePluginABC', 'SQLiteStoragePlugin',
-           'Session', 'SessionBaseMixin', 'StoragePluginABC', 'abc',
-           'fix_pysqlite', 'pysqlite_begin_emission_fix_on_connect',
-           'set_sqlite_pragma', 'sql', 'sqlalchemy_begin_emission_pysqlite',
-           'sqldataclasses', 'sqlitestorageplugin', 'sqlstoragepluginabc',
-           'sqlutils', 'storagepluginabc', 'storagetypings']
+__all__ = ['ExperimentRun', 'Fault', 'Injection', 'Monitor', 'csvdataclasses']
 # </AUTOGEN_INIT>

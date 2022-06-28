@@ -56,7 +56,7 @@ __getattr__ = lazy_import(
     submodules={
         'classes',
         'constants',
-        'data_classes',
+        'dataclasses',
         'enums',
         'functions',
         'imports',
@@ -68,7 +68,7 @@ __getattr__ = lazy_import(
             'IDGeneratorSubclass',
             'SkipIfErrorContextManager',
         ],
-        'data_classes': [
+        'dataclasses': [
             'BaseInjectionLocation',
             'BitFaultMaskInfo',
             'BitIndexInfo',
@@ -140,6 +140,6 @@ __all__ = ['ActiveDimensionIndexType', 'AnyIndexType', 'AnyMaskType',
            'ModelType', 'MonitorLocation', 'MonitorMetric', 'ParameterType',
            'PathType', 'ShapeType', 'SkipIfErrorContextManager', 'TensorType',
            'camel_to_snake', 'classes', 'compare_version', 'constants',
-           'data_classes', 'enums', 'functions', 'get_object_library',
+           'dataclasses', 'enums', 'functions', 'get_object_library',
            'imports', 'is_module_available', 'typings']
 # </AUTOGEN_INIT>
