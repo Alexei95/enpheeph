@@ -27,6 +27,21 @@ import torchvision
 
 DEFAULT_RESULT_DIRECTORY = "results/inference_pruned_image_classifier_resnet18_cifar10"
 
+# DEFAULT_MODEL_CHECKPOINT = (
+#     "results/pruned_image_classifier_resnet18_cifar10/default/"
+#     "version_9/checkpoints/epoch=64-step=81250.ckpt"
+# )
+# val acc 0.798 val loss 0.642 pruning 31%
+# DEFAULT_MODEL_CHECKPOINT = (
+#     "results/pruned_image_classifier_resnet18_cifar10/default/"
+#     "version_11/checkpoints/epoch=19-step=25000.ckpt"
+# )
+# val acc 0.711 val loss 0.837 pruning 71.9%
+DEFAULT_MODEL_CHECKPOINT = (
+    "results/pruned_image_classifier_resnet18_cifar10/default/"
+    "version_11/checkpoints/epoch=62-step=78750.ckpt"
+)
+
 
 def compute_pruning_amount(epoch):
     return 0.01
@@ -73,12 +88,7 @@ def config(
         val_split=0.2,
     )
 
-    model = flash.image.ImageClassifier(
-        backbone="resnet18",
-        learning_rate=0.001,
-        num_classes=10,
-        pretrained=True,
-    )
+    model = flash.image.ImageClassifier.load_from_checkpoint(DEFAULT_MODEL_CHECKPOINT)
 
     trainer = flash.Trainer(
         accelerator="auto",

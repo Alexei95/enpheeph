@@ -106,8 +106,13 @@ def config(
                 every_n_train_steps=None,
                 filename=None,
                 mode="min",
-                monitor="val_cross_entropy",
+                # otherwise saving at the end of the training epoch would not have a
+                # proper validation loss available
+                monitor="train_cross_entropy",
                 save_last=True,
+                # to save the checkpoint at the end of training epoch
+                # instead of validation epoch
+                save_on_train_epoch_end=True,
                 save_top_k=-1,
                 # save_top_k=3,
                 save_weights_only=False,
@@ -119,7 +124,9 @@ def config(
                 make_pruning_permanent=True,
                 parameter_names=("weight", "bias"),
                 parameters_to_prune=None,
-                prune_on_train_epoch_end=True,
+                # we need to prune at the end of validation (using False here)
+                # as the checkpoint is saved at the end of training
+                prune_on_train_epoch_end=False,
                 pruning_dim=None,
                 pruning_fn="random_unstructured",
                 pruning_norm=None,
