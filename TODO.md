@@ -42,7 +42,8 @@
     1. #22-1 Follow the registry used in PyTorch Lightning Flash
 23. {#23} Bug with mask dimension error for activations, as the mask also covers the batch size, so it should be enough to remove it from the mask dimensions
     1. {#23-1} This can be further improved using an indexing system to select the correct indices by means of a dict instead of tensor_index, batch_index, time_index and so on. In this way the different injections can select the indices that they need at each specific time, by only knowing how to reach the generic batch/tensor/time positioning via enums. Even bit_index might be added later on, but since it is generic enough to cover all the implementations it might not be necessary.
-24. #24 Use tox for tests automation.
+24. {#24} Use tox for tests automation.
+    1. #24-1 Switch to nox for tests as it looks like it is better
 25. #25 Add caching so that we can skip recomputing the layers up until the fault if the checksum of the input is the same
     1. #25-1 Look at InjectTF2 for solutions on how to do it
 26. {#26} Fix timestamps/runtime for injections
@@ -76,6 +77,11 @@
     1. #45-1 It should be able to inject in the potential before the threshold operation as well
 46. #46 Improve implementation of FPQuantizedOutputPyTorchFault
     1. #46-1 Use a mixin as for DenseSparse
+47. #47 Implement CSV as possible storage solution (using ABC and eventually pandas)
+48. #48 Implement fixed-value constants throughout the code as globally-defined constants, e.g. in ``enpheeph.utils.constants``
+49. #49 Implement sparse plugin to support different sparse backends
+    1. #49-1 Currently we have a Sparse Mixin, however it would be better to use a plugin system with an ABC so that we can implement different backends without modifying the exposed code
+50. #50 Use ``pytest_cases`` to improve ``pytest`` handling for the tests
 
 ## |Duplicates|
 
@@ -102,3 +108,4 @@
 12. {#41} SkipIfError now supports tuples of Exceptions
 13. {#10}, {#10-1} Fixed with setuptools >= 61.0, as they support pyproject.toml as setup configuration. setup.py is still required for editable installs in pip.
 14. {#40}, {#40-1}, {#40-2} The CI has been implemented but it is not easily testable
+15. {#24} tox is used for running the tests, however now nox looks like a better alternative, so we should switch to it
