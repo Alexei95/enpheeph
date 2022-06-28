@@ -19,8 +19,8 @@ import abc
 import datetime
 import typing
 
-import enpheeph.injections.plugins.storage.storagetypings
-import enpheeph.utils.data_classes
+import enpheeph.injections.plugins.storage.utils.storagetypings
+import enpheeph.utils.dataclasses
 
 
 class StoragePluginABC(abc.ABC):
@@ -38,11 +38,11 @@ class StoragePluginABC(abc.ABC):
         total_duration: typing.Optional[datetime.timedelta] = None,
         golden_run_flag: typing.Optional[bool] = None,
         injection_locations: typing.Optional[
-            typing.Sequence[enpheeph.utils.data_classes.InjectionLocationABC]
+            typing.Sequence[enpheeph.utils.dataclasses.InjectionLocationABC]
         ] = None,
         # in the future we will add also model_info
     ) -> typing.List[
-        enpheeph.injections.plugins.storage.storagetypings.ExperimentRunProtocol,
+        enpheeph.injections.plugins.storage.utils.storagetypings.ExperimentRunProtocol,
     ]:
         pass
 
@@ -50,7 +50,7 @@ class StoragePluginABC(abc.ABC):
     def create_experiment(
         self,
         injection_locations: typing.Sequence[
-            enpheeph.utils.data_classes.InjectionLocationABC
+            enpheeph.utils.dataclasses.InjectionLocationABC
         ],
         # in the future also model_info
         running: bool = True,
@@ -98,7 +98,7 @@ class StoragePluginABC(abc.ABC):
     @abc.abstractmethod
     def add_payload(
         self,
-        location: enpheeph.utils.data_classes.InjectionLocationABC,
+        location: enpheeph.utils.dataclasses.InjectionLocationABC,
         payload: typing.Dict[typing.Any, typing.Any],
     ) -> None:
         pass

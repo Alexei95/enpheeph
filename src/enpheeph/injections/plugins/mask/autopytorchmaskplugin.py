@@ -21,6 +21,7 @@ import enpheeph.injections.plugins.mask
 import enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc
 import enpheeph.utils.functions
 import enpheeph.utils.imports
+import enpheeph.utils.typings
 
 if typing.TYPE_CHECKING:
     import torch
@@ -63,39 +64,51 @@ class AutoPyTorchMaskPlugin(
 
     def _get_from_torch_plugin_instance(
         self, tensor: "torch.Tensor"
-    ) -> enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc:
-        return self.FROM_TORCH[tensor.device.type]
+    ) -> enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc.LowLevelTorchMaskPluginABC:
+        plugin_instance = self.FROM_TORCH[tensor.device.type]
+        if plugin_instance is None:
+            raise ValueError(
+                "Check the requirements as the current plugin is " "not available"
+            )
+        return plugin_instance
 
     def _get_to_torch_plugin_instance(
         self,
         array: enpheeph.utils.typings.ArrayType,
-    ) -> enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc:
-        return self.TO_TORCH[
+    ) -> enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc.LowLevelTorchMaskPluginABC:
+        plugin_instance = self.TO_TORCH[
             typing.cast(
                 str,
                 enpheeph.utils.functions.get_object_library(array),
             )
         ]
+        if plugin_instance is None:
+            raise ValueError(
+                "Check the requirements as the current plugin is " "not available"
+            )
+        return plugin_instance
 
     def to_torch(self, array: enpheeph.utils.typings.ArrayType) -> "torch.Tensor":
-        return typing.cast(
-            "torch.Tensor", self._get_to_torch_plugin_instance(array).to_torch(array)
-        )
+        plugin_instance = self._get_to_torch_plugin_instance(array)
+        return typing.cast("torch.Tensor", plugin_instance.to_torch(array))
 
     def from_torch(self, tensor: "torch.Tensor") -> enpheeph.utils.typings.ArrayType:
-        return self._get_from_torch_plugin_instance(tensor).from_torch(tensor)
+        plugin_instance = self._get_from_torch_plugin_instance(tensor)
+        return plugin_instance.from_torch(tensor)
 
     def to_bitwise_type(
         self, array: enpheeph.utils.typings.ArrayType
     ) -> enpheeph.utils.typings.ArrayType:
-        return self._get_to_torch_plugin_instance(array).to_bitwise_type(array)
+        plugin_instance = self._get_to_torch_plugin_instance(array)
+        return plugin_instance.to_bitwise_type(array)
 
     def to_target_type(
         self,
         array: enpheeph.utils.typings.ArrayType,
         target: enpheeph.utils.typings.ArrayType,
     ) -> enpheeph.utils.typings.ArrayType:
-        return self._get_to_torch_plugin_instance(target).to_target_type(array, target)
+        plugin_instance = self._get_to_torch_plugin_instance(array)
+        return plugin_instance.to_target_type(array, target)
 
     def make_mask_array(
         self,

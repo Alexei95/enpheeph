@@ -19,7 +19,7 @@ import abc
 import typing
 
 import enpheeph.utils.classes
-import enpheeph.utils.data_classes
+import enpheeph.utils.dataclasses
 import enpheeph.utils.enums
 import enpheeph.utils.functions
 import enpheeph.utils.imports
@@ -39,7 +39,7 @@ def torch_geometric_mean(tensor: "torch.Tensor", dim: int = -1) -> "torch.Tensor
 
 class PyTorchMonitorPostProcessorMixin(abc.ABC):
     enabled_metrics: enpheeph.utils.enums.MonitorMetric
-    monitor_location: enpheeph.utils.data_classes.MonitorLocation
+    monitor_location: enpheeph.utils.dataclasses.MonitorLocation
 
     def postprocess(self, tensor: "torch.Tensor") -> typing.Dict[str, typing.Any]:
         dict_ = {}

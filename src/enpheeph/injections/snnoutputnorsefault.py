@@ -25,7 +25,7 @@ import norse
 import enpheeph.injections.abc.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmaskmixin
 import enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc
-import enpheeph.utils.data_classes
+import enpheeph.utils.dataclasses
 
 
 class SNNOutputNorseFault(
@@ -34,7 +34,7 @@ class SNNOutputNorseFault(
 ):
     def __init__(
         self,
-        fault_location: enpheeph.utils.data_classes.FaultLocation,
+        fault_location: enpheeph.utils.dataclasses.FaultLocation,
         low_level_torch_plugin: (
             # black has issues with very long names
             # fmt: off

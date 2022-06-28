@@ -21,7 +21,7 @@ import typing
 import enpheeph.injections.plugins.indexing.abc.indexingpluginabc
 import enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc
 import enpheeph.injections.abc.pytorchinjectionabc
-import enpheeph.utils.data_classes
+import enpheeph.utils.dataclasses
 import enpheeph.utils.functions
 import enpheeph.utils.imports
 import enpheeph.utils.typings
@@ -39,7 +39,7 @@ class PyTorchMaskMixin(abc.ABC):
         enpheeph.injections.plugins.indexing.abc.indexingpluginabc.IndexingPluginABC
     )
     # the used variables in the functions, must be initialized properly
-    location: enpheeph.utils.data_classes.FaultLocation
+    location: enpheeph.utils.dataclasses.FaultLocation
     low_level_plugin: (
         # black has issues with long names
         # fmt: off
@@ -106,7 +106,7 @@ class PyTorchMaskMixin(abc.ABC):
             # we create the boolean mask in torch, depending on whether we
             # use 0 or 1 to fill the non-selected values
             bit_mask_info = (
-                enpheeph.utils.data_classes.BitFaultMaskInfo.from_bit_fault_value(
+                enpheeph.utils.dataclasses.BitFaultMaskInfo.from_bit_fault_value(
                     self.location.bit_fault_value
                 )
             )
@@ -200,7 +200,7 @@ class PyTorchMaskMixin(abc.ABC):
             raise RuntimeError("Please call generate_mask before injection")
 
         bit_mask_info = (
-            enpheeph.utils.data_classes.BitFaultMaskInfo.from_bit_fault_value(
+            enpheeph.utils.dataclasses.BitFaultMaskInfo.from_bit_fault_value(
                 self.location.bit_fault_value
             )
         )

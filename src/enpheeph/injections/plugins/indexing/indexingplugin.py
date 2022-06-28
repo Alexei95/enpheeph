@@ -21,7 +21,7 @@ import typing
 
 import enpheeph.injections.plugins.indexing.abc.indexingpluginabc
 import enpheeph.utils.constants
-import enpheeph.utils.data_classes
+import enpheeph.utils.dataclasses
 import enpheeph.utils.enums
 import enpheeph.utils.typings
 

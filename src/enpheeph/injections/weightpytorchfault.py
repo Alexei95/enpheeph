@@ -23,7 +23,7 @@ import enpheeph.injections.abc.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmaskmixin
 import enpheeph.injections.mixins.pytorchtensorobjectvalidatormixin
 import enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc
-import enpheeph.utils.data_classes
+import enpheeph.utils.dataclasses
 
 # we move this import down
 if typing.TYPE_CHECKING:
@@ -47,7 +47,7 @@ class WeightPyTorchFault(
     indexing_plugin: (
         enpheeph.injections.plugins.indexing.abc.indexingpluginabc.IndexingPluginABC
     )
-    location: enpheeph.utils.data_classes.FaultLocation
+    location: enpheeph.utils.dataclasses.FaultLocation
     low_level_plugin: (
         # black has issues with long names
         # fmt: off
@@ -60,7 +60,7 @@ class WeightPyTorchFault(
     def __init__(
         self,
         indexing_plugin: enpheeph.injections.plugins.indexing.abc.indexingpluginabc,
-        location: enpheeph.utils.data_classes.FaultLocation,
+        location: enpheeph.utils.dataclasses.FaultLocation,
         low_level_torch_plugin: (
             # black has issues with long names
             # fmt: off

@@ -15,9 +15,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# for defaultdict
+import collections
+
 # use importlib.metadata to gather the info from the package information
 # these are saved in setup.py until we can use pyproject.toml
-# import importlib.metadata
+import importlib.metadata
 import time
 
 # these two variables will not be imported with import * as they start with _
@@ -26,3 +29,20 @@ _start_year = "2020"
 
 # version, to be accessed by setuptools
 __version__ = "0.0.1a1"
+
+# metadata taken from the package through importlib.metadata.metadata
+try:
+    _metadata = importlib.metadata.metadata("enpheeph")
+    _get_all_metadata = _metadata.get_all
+except importlib.metadata.PackageNotFoundError:
+    # using defaultdict with None, we can use the same object to return
+    # the None value for all the attributes
+    _metadata = collections.defaultdict(lambda: None)
+    _get_all_metadata = lambda x: []
+
+# here are all the values of the attributes from the package info
+name = _metadata["Name"]
+version = _metadata["Version"]
+classifiers = _get_all_metadata("Classifier")
+authors = _get_all_metadata("Author")
+author_emails = _get_all_metadata("Author-email")

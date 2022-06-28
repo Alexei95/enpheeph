@@ -19,7 +19,7 @@ import abc
 import typing
 
 import enpheeph.utils.constants
-import enpheeph.utils.data_classes
+import enpheeph.utils.dataclasses
 import enpheeph.utils.enums
 import enpheeph.utils.typings
 

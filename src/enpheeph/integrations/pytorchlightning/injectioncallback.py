@@ -22,6 +22,7 @@ import typing
 import warnings
 
 import pytorch_lightning
+import pytorch_lightning.callbacks
 
 import enpheeph.handlers.injectionhandler
 import enpheeph.injections.plugins.storage.abc.storagepluginabc
@@ -145,7 +146,7 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         trainer: pytorch_lightning.Trainer,
         pl_module: pytorch_lightning.LightningModule,
     ) -> None:
-        self.save_metrics()
+        self.save_metrics(trainer, test_epoch=-1, batch_idx=-1)
 
         self.test_epoch = 0
 
@@ -176,7 +177,7 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         trainer: pytorch_lightning.Trainer,
         pl_module: pytorch_lightning.LightningModule,
     ) -> None:
-        self.save_metrics()
+        self.save_metrics(trainer, test_epoch=self.test_epoch, batch_idx=-1)
 
         self.test_epoch += 1
 
@@ -189,20 +190,39 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
         batch_idx: int,
         dataloader_idx: int,
     ) -> None:
-        self.metrics[self.test_epoch][batch_idx] = copy.deepcopy(
-            # mypy has issues with nested defaultdict
-            trainer.callback_metrics
-        )
-
         if (
             self.metrics_save_frequency is not None
             and not batch_idx % self.metrics_save_frequency
         ):
-            self.save_metrics()
+            self.save_metrics(trainer, test_epoch=self.test_epoch, batch_idx=batch_idx)
 
-    def save_metrics(self) -> None:
+    def save_metrics(
+        self,
+        trainer: pytorch_lightning.Trainer,
+        # we use -1 for the final result, can be substituted by globally
+        # defined constant
+        test_epoch: int,
+        # we use -1 for the complete results at the end of the test
+        # it could be substituted by a fixed constant in the future
+        batch_idx: int,
+    ) -> None:
         # if the storage_plugin is None, we skip all the computations
         if self.storage_plugin is not None:
+            # we save the metrics only if the storage is available
+            self.metrics[test_epoch][batch_idx] = copy.deepcopy(
+                # mypy has issues with nested defaultdict
+                # we need to save all the metrics, with progress bar < callback < logged
+                {
+                    **trainer.progress_bar_metrics,
+                    **trainer.callback_metrics,
+                    **trainer.logged_metrics,
+                }
+            )
+
+            self.metrics[test_epoch][batch_idx] = {
+                k: v.item() for k, v in self.metrics[test_epoch][batch_idx].items()
+            }
+
             # we copy the metrics, so we can change the defaultdict behaviour without
             # changing the original
             metrics = copy.deepcopy(self.metrics)

@@ -22,7 +22,7 @@ import enpheeph.injections.plugins.indexing.abc.indexingpluginabc
 import enpheeph.injections.abc.pytorchinjectionabc
 import enpheeph.injections.mixins.pytorchmonitorpostprocessormixin
 import enpheeph.injections.plugins.storage.abc.storagepluginabc
-import enpheeph.utils.data_classes
+import enpheeph.utils.dataclasses
 import enpheeph.utils.enums
 
 # so flake does not complain about the imports being not at the top after the if
@@ -46,7 +46,7 @@ class OutputPyTorchMonitor(
     indexing_plugin: (
         enpheeph.injections.plugins.indexing.abc.indexingpluginabc.IndexingPluginABC
     )
-    location: enpheeph.utils.data_classes.MonitorLocation
+    location: enpheeph.utils.dataclasses.MonitorLocation
     move_to_first: bool
     storage_plugin: (
         enpheeph.injections.plugins.storage.abc.storagepluginabc.StoragePluginABC
@@ -57,7 +57,7 @@ class OutputPyTorchMonitor(
         indexing_plugin: (
             enpheeph.injections.plugins.indexing.abc.indexingpluginabc.IndexingPluginABC
         ),
-        location: enpheeph.utils.data_classes.MonitorLocation,
+        location: enpheeph.utils.dataclasses.MonitorLocation,
         enabled_metrics: enpheeph.utils.enums.MonitorMetric,
         storage_plugin: (
             enpheeph.injections.plugins.storage.abc.storagepluginabc.StoragePluginABC

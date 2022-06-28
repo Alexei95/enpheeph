@@ -21,12 +21,14 @@ import typing
 import enpheeph.injections.plugins.indexing.abc.indexingpluginabc
 import enpheeph.injections.plugins.mask.abc.lowleveltorchmaskpluginabc
 import enpheeph.injections.abc.pytorchinjectionabc
-import enpheeph.utils.data_classes
+import enpheeph.utils.dataclasses
 import enpheeph.utils.functions
 import enpheeph.utils.imports
 import enpheeph.utils.typings
 
 if typing.TYPE_CHECKING:
+    import torch
+elif enpheeph.utils.imports.MODULE_AVAILABILITY[enpheeph.utils.imports.TORCH_NAME]:
     import torch
 
 
@@ -36,14 +38,9 @@ class PyTorchSparseInterfaceMixin(abc.ABC):
         enpheeph.injections.plugins.indexing.abc.indexingpluginabc.IndexingPluginABC
     )
     # the used variables in the functions, must be initialized properly
-    location: enpheeph.utils.data_classes.BaseInjectionLocation
+    location: enpheeph.utils.dataclasses.BaseInjectionLocation
 
-    def get_sparse_injection_parameter(
-        self,
-        tensor: "torch.Tensor",
-    ) -> "torch.Tensor":
-        sparse_output = tensor.to_sparse()
-
+    def _check_sparse_index_flag(self) -> bool:
         # mypy has some issues in recognizing the enum names if taken from a name itself
         # e.g. A.a.a
         # we use separate values to avoid this issue
@@ -56,13 +53,33 @@ class PyTorchSparseInterfaceMixin(abc.ABC):
         sparse_index_flag = (
             self.location.parameter_type.Sparse | self.location.parameter_type.Index
         )
+        return sparse_index_flag in self.location.parameter_type
+
+    def _check_sparse_value_flag(self) -> bool:
+        # mypy has some issues in recognizing the enum names if taken from a name itself
+        # e.g. A.a.a
+        # we use separate values to avoid this issue
+        # however we still require typing from the enum,
+        # which limits the customizability of the interface, as before it could be any
+        # compatible enum but now it must be this specific one
+        # **NOTE**: a possible alternative is using .value at the end to extract the
+        # correct enum, which does nothing
+        # however value returns the integer value, so it is still not a clean trick
         sparse_value_flag = (
             self.location.parameter_type.Sparse | self.location.parameter_type.Value
         )
-        if sparse_index_flag in self.location.parameter_type:
-            target = sparse_output.indices()
-        elif sparse_value_flag in self.location.parameter_type:
-            target = sparse_output.values()
+        return sparse_value_flag in self.location.parameter_type
+
+    def get_sparse_injection_parameter(
+        self,
+        tensor: "torch.Tensor",
+    ) -> "torch.Tensor":
+        sparse_target = tensor.to_sparse()
+
+        if self._check_sparse_index_flag():
+            target = sparse_target.indices()
+        elif self._check_sparse_value_flag():
+            target = sparse_target.values()
         else:
             raise ValueError("This operation is not supported with sparse tensors")
 
@@ -73,34 +90,17 @@ class PyTorchSparseInterfaceMixin(abc.ABC):
         target: "torch.Tensor",
         new_value: "torch.Tensor",
     ) -> "torch.Tensor":
-        import torch
+        sparse_target = target.to_sparse()
 
-        sparse_output = target.to_sparse()
-
-        # mypy has some issues in recognizing the enum names if taken from a name itself
-        # e.g. A.a.a
-        # we use separate values to avoid this issue
-        # however we still require typing from the enum,
-        # which limits the customizability of the interface, as before it could be any
-        # compatible enum but now it must be this specific one
-        # **NOTE**: a possible alternative is using .value at the end to extract the
-        # correct enum, which does nothing
-        # however value returns the integer value, so it is still not a clean trick
-        sparse_index_flag = (
-            self.location.parameter_type.Sparse | self.location.parameter_type.Index
-        )
-        sparse_value_flag = (
-            self.location.parameter_type.Sparse | self.location.parameter_type.Value
-        )
-        if sparse_index_flag in self.location.parameter_type:
-            other_target_value = sparse_output.values()
+        if self._check_sparse_index_flag():
+            other_sparse_element = sparse_target.values()
             new_target = torch.sparse_coo_tensor(
-                indices=new_value, values=other_target_value
+                indices=new_value, values=other_sparse_element
             )
-        elif sparse_value_flag in self.location.parameter_type:
-            other_target_value = sparse_output.indices()
+        elif self._check_sparse_value_flag():
+            other_sparse_element = sparse_target.indices()
             new_target = torch.sparse_coo_tensor(
-                indices=other_target_value, values=new_value
+                indices=other_sparse_element, values=new_value
             )
         else:
             raise ValueError("This operation is not supported with sparse tensors")

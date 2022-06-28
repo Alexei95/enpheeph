@@ -19,7 +19,7 @@ import abc
 import typing
 
 import enpheeph.injections.abc.pytorchinjectionabc
-import enpheeph.utils.data_classes
+import enpheeph.utils.dataclasses
 import enpheeph.utils.functions
 import enpheeph.utils.imports
 import enpheeph.utils.typings

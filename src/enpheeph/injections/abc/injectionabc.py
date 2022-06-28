@@ -17,12 +17,12 @@
 
 import abc
 
-import enpheeph.utils.data_classes
+import enpheeph.utils.dataclasses
 import enpheeph.utils.typings
 
 
 class InjectionABC(abc.ABC):
-    location: enpheeph.utils.data_classes.InjectionLocationABC
+    location: enpheeph.utils.dataclasses.InjectionLocationABC
 
     @abc.abstractmethod
     def setup(

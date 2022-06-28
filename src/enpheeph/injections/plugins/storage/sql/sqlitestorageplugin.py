@@ -25,12 +25,12 @@ import sqlalchemy.sql.expression
 import sqlalchemy.types
 
 import enpheeph.injections.plugins.storage.sql.abc.sqlstoragepluginabc
-import enpheeph.injections.plugins.storage.sql.sqlutils
+import enpheeph.injections.plugins.storage.sql.utils.sqlutils
 import enpheeph.injections.plugins.storage.abc.storagepluginabc
-import enpheeph.utils.data_classes
+import enpheeph.utils.dataclasses
 import enpheeph.utils.typings
 
-import enpheeph.injections.plugins.storage.sql.sqldataclasses as sqldataclasses
+import enpheeph.injections.plugins.storage.sql.utils.sqldataclasses as sqldataclasses
 
 
 class SQLiteStoragePlugin(

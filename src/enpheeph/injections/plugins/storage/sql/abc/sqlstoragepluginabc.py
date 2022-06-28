@@ -25,13 +25,13 @@ import sqlalchemy.ext.compiler
 import sqlalchemy.sql.expression
 import sqlalchemy.types
 
-import enpheeph.injections.plugins.storage.sql.sqlutils
+import enpheeph.injections.plugins.storage.sql.utils.sqlutils
 import enpheeph.injections.plugins.storage.abc.storagepluginabc
-import enpheeph.injections.plugins.storage.storagetypings
-import enpheeph.utils.data_classes
+import enpheeph.injections.plugins.storage.utils.storagetypings
+import enpheeph.utils.dataclasses
 import enpheeph.utils.typings
 
-from enpheeph.injections.plugins.storage.sql import sql_data_classes
+import enpheeph.injections.plugins.storage.sql.utils.sqldataclasses as sql_data_classes
 
 
 class SQLStoragePluginABC(
@@ -57,11 +57,11 @@ class SQLStoragePluginABC(
         total_duration: typing.Optional[datetime.timedelta] = None,
         golden_run_flag: typing.Optional[bool] = None,
         injection_locations: typing.Optional[
-            typing.Sequence[enpheeph.utils.data_classes.InjectionLocationABC]
+            typing.Sequence[enpheeph.utils.dataclasses.InjectionLocationABC]
         ] = None,
         # in the future we will add also model_info
     ) -> typing.List[
-        enpheeph.injections.plugins.storage.storagetypings.ExperimentRunProtocol,
+        enpheeph.injections.plugins.storage.utils.storagetypings.ExperimentRunProtocol,
     ]:
         # first we open the querying session on our engine
         with sqlalchemy.orm.Session(self.engine) as session:
@@ -126,7 +126,7 @@ class SQLStoragePluginABC(
     def create_experiment(
         self,
         injection_locations: typing.Sequence[
-            enpheeph.utils.data_classes.InjectionLocationABC
+            enpheeph.utils.dataclasses.InjectionLocationABC
         ],
         # in the future also model_info
         running: bool = True,
@@ -166,11 +166,11 @@ class SQLStoragePluginABC(
             # we insert all the injection locations
             # depending on the class instance we create different objects
             for inj_loc in injection_locations:
-                if isinstance(inj_loc, enpheeph.utils.data_classes.FaultLocation):
+                if isinstance(inj_loc, enpheeph.utils.dataclasses.FaultLocation):
                     sql_inj_loc = sql_data_classes.Fault(
                         location=inj_loc, internal_id=inj_loc.unique_instance_id
                     )
-                elif isinstance(inj_loc, enpheeph.utils.data_classes.MonitorLocation):
+                elif isinstance(inj_loc, enpheeph.utils.dataclasses.MonitorLocation):
                     sql_inj_loc = sql_data_classes.Monitor(
                         location=inj_loc, internal_id=inj_loc.unique_instance_id
                     )
@@ -337,7 +337,7 @@ class SQLStoragePluginABC(
 
     def add_payload(
         self,
-        location: enpheeph.utils.data_classes.InjectionLocationABC,
+        location: enpheeph.utils.dataclasses.InjectionLocationABC,
         payload: typing.Dict[typing.Any, typing.Any],
     ) -> None:
         # we create a new session on the engine
