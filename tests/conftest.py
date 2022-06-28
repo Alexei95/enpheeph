@@ -17,6 +17,9 @@
 
 import collections
 
+import pytorch_lightning
+import torchvision
+
 import pytest
 
 
@@ -48,6 +51,27 @@ def mock_object_with_library(monkeypatch, request):
         monkeypatch.delattr(obj.__class__, "__module__")
 
     return TestWithTarget(test_input=obj, target=expected_library_name)
+
+
+# move everything to pytest_cases https://smarie.github.io/python-pytest-cases/
+@pytest.fixture(
+    scope="class",
+)
+def trained_model_1epoch():
+    pass
+
+
+@pytest.fixture(
+    scope="session",
+    params=[
+        [torchvision.datasets.CIFAR10],
+    ],
+    ids=[
+        "CIFAR10",
+    ],
+)
+def datamodule(tmp_path, request):
+    dataset_class = request.param[0]
 
 
 TestWithTarget = collections.namedtuple("TestWithTarget", "test_input target")

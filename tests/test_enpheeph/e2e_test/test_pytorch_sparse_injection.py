@@ -16,8 +16,5 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-# import enpheeph.utils.dataclasses
-
-
-class Test(object):
+class TestPyTorchSparseInjection(object):
     pass
