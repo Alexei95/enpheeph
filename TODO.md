@@ -44,6 +44,7 @@
     1. {#23-1} This can be further improved using an indexing system to select the correct indices by means of a dict instead of tensor_index, batch_index, time_index and so on. In this way the different injections can select the indices that they need at each specific time, by only knowing how to reach the generic batch/tensor/time positioning via enums. Even bit_index might be added later on, but since it is generic enough to cover all the implementations it might not be necessary.
 24. {#24} Use tox for tests automation.
     1. #24-1 Switch to nox for tests as it looks like it is better
+       1. #24-1-1 nox is still not ready to be used like tox, as there are conflicts when trying to specify an execution sequence but it does not execute over the whole set of Python versions. Additionally it does not provide a ``envsitepackagesdir``, as done by tox, making it difficult to setup ``coverage``
 25. #25 Add caching so that we can skip recomputing the layers up until the fault if the checksum of the input is the same
     1. #25-1 Look at InjectTF2 for solutions on how to do it
 26. {#26} Fix timestamps/runtime for injections
@@ -82,6 +83,7 @@
 49. #49 Implement sparse plugin to support different sparse backends
     1. #49-1 Currently we have a Sparse Mixin, however it would be better to use a plugin system with an ABC so that we can implement different backends without modifying the exposed code
 50. #50 Use ``pytest_cases`` to improve ``pytest`` handling for the tests
+51. #51 Implement a wrapper layer for providing summaries of neural networks, e.g. as in ``torchinfo``, providing info of the current network and allowing easy access to the different layers for injection
 
 ## |Duplicates|
 

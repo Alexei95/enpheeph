@@ -93,6 +93,9 @@
     mypy = [
         "mypy",
     ]
+    nox = [
+        "nox >= 2022.1.7",
+    ]
     pre-commit = [
         "pre-commit",
     ]
@@ -101,6 +104,9 @@
     ]
     pytest = [
         "pytest >= 6.2.5",  # 6.2.5 for Python 3.10+
+    ]
+    pytest-cases = [
+        "pytest-cases >= 3.6.13",  # still missing Python 3.10 support
     ]
     pytest-cov = [
         "pytest-cov",
@@ -124,6 +130,7 @@
     # higher level development dependencies
     pytest-full = [
         "enpheeph[pytest]",
+        "enpheeph[pytest-cases]",
         "enpheeph[pytest-cov]",
         "enpheeph[pytest-xdist]",
     ]
@@ -136,9 +143,9 @@
     # these dependencies should become a single dependency line per package as
     # for functionalities
     dev-test = [
-        # we need the complete enpheeph to test all the integrations
-        "enpheeph[full]",
         "enpheeph[coverage]",
+        # still not ready, check TODO#24-1-1 for more detailed explanation
+        # "enpheeph[nox]",
         "enpheeph[pytest-full]",
         "enpheeph[pytorch-lightning]",
         "enpheeph[torchvision]",
@@ -160,17 +167,25 @@
     ]
 
     # COMPLETE DEPENDENCIES
-    full = [
+    full-cpu = [
+        "enpheeph[integrations-pytorch-lightning]",
+        "enpheeph[norse-cpu]",
+        "enpheeph[sqlalchemy]",
+        "enpheeph[torch-cpu]",
+    ]
+    full-gpu = [
         "enpheeph[integrations-pytorch-lightning]",
         "enpheeph[norse-gpu]",
         "enpheeph[sqlalchemy]",
         "enpheeph[torch-gpu]",
     ]
 
-    # this is identical to dev since we have
-    # enpheeph[full] as dependency
-    full-dev = [
-        "enpheeph[full]",
+    full-dev-cpu = [
+        "enpheeph[full-cpu]",
+        "enpheeph[dev]",
+    ]
+    full-dev-gpu = [
+        "enpheeph[full-gpu]",
         "enpheeph[dev]",
     ]
 
@@ -234,6 +249,8 @@
     # source to define where to look for packages
     source = [
         "src/",
+        # also the package name should work
+        "enpheeph",
     ]
 
 
@@ -318,7 +335,7 @@
     # -rA shows summary for everything
     # -n auto is for pytest-xdist to distribute tests
     # the cov config is in pyproject.toml, while cov is for the path to coverage
-    addopts = "-rA -n auto --cov-config=pyproject.toml -vvv --durations=0 --full-trace"
+    addopts = "-rA -n auto --cov-config=pyproject.toml --cov-append --cov-report=term-missing -vvv --durations=0 --full-trace"
     # do not show progress bar
     console_output_style = "classic"
     # minimum pytest version
@@ -382,7 +399,6 @@
 # py310 does not work on Windows yet, at least on GitHub Actions
 # isolated_build is required otherwise it would not work when building the package
 # with pyproject.toml
-# -rA in pytest shows a summary at the end, including the passed tests
 legacy_tox_ini = """
 [tox]
 envlist = clean,py38,py39,py310,report
@@ -393,10 +409,7 @@ isolated_build = true
 envlogdir = .logs/
 commands =
     python -m pytest \
-        -vv -rA \
         --cov={envsitepackagesdir}/enpheeph \
-        --cov-append \
-        --cov-report=term-missing \
         --junitxml={envlogdir}/tools/pytest/junit-{envname}.xml \
         {posargs}
 extras = dev

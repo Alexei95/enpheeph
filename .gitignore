@@ -85,6 +85,7 @@ scripts/configs/results
 mkinit-*.log
 
 ### TEST FILES ###
+.nox/*
 .tox/*
 .logs/*
 enpheeph-*/
