@@ -45,6 +45,7 @@ class PrunedDenseToSparseWeightPyTorchFault(
         # fmt: on
     ),
 ):
+    backup: typing.Optional["torch.Tensor"]
     # we need the index plugin to simplify the handling of the indices
     indexing_plugin: (
         enpheeph.injections.plugins.indexing.abc.indexingpluginabc.IndexingPluginABC
@@ -83,6 +84,7 @@ class PrunedDenseToSparseWeightPyTorchFault(
         self.location = location
         self.low_level_plugin = low_level_torch_plugin
 
+        self.backup = None
         self.handle = None
         self.mask = None
 
@@ -135,7 +137,7 @@ class PrunedDenseToSparseWeightPyTorchFault(
         )
         # we update the weight with the new sparse element, using the sparse mixin
         masked_weight = self.set_sparse_injection_parameter(
-            target_sparse_element, masked_sparse_element
+            weight, masked_sparse_element
         )
 
         # we need to convert the masked weight to the proper class
