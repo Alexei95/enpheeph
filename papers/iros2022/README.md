@@ -71,9 +71,11 @@ The idea is to compare the performance in terms of latency, memory and developer
 
 Check ```configs/experiments``` for different configuration scripts.
 
-**NOTE**: ```deterministic=True``` does not work in Trainer configuration for pruned image classifiers, it requires the update to PyTorch 1.11 as [it is fixed in master](https://github.com/pytorch/pytorch/issues/68525)
+**NOTE**: ```deterministic=True``` does not work in Trainer configuration for pruned image classifiers, it requires the update to PyTorch 1.11 as [it is fixed in master](https://github.com/pytorch/pytorch/issues/68525**
 
 ## Installation
+
+**NOTE**: ``pytorch_lightning<1.6.0`` is vulnerable to code injection, hence be careful when using it, or wait for a new set of scripts to be released on ``enpheeph`` which will use a more recent version.
 
 To reproduce the results
 
