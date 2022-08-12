@@ -18,30 +18,37 @@
 import collections
 
 import pytest
+import pytest_cases
 
 import enpheeph.utils.functions
 
 
+class CasesCamelCaseToSnakeCaseFunction(object):
+    def case_CamelSnake(self):
+        return ("CamelSnake", "camel_snake")
+
+    def case_camelSnake(self):
+        return ("camelSnake", "camel_snake")
+
+    def case_camel_snake(self):
+        return ("camel_snake", "camel_snake")
+
+
+class CasesGetObjectLibraryFunction(object):
+    def case_int_from_builtins(self):
+        return (1, "builtins")
+
+    def case_pluggy_from_pytest(self):
+        return (pytest.hookspec, "pluggy")
+
+    def case_defaultdict_from_collections(self):
+        return (collections.defaultdict(), "collections")
+
+
 class TestCamelCaseToSnakeCaseFunction(object):
-    @pytest.mark.parametrize(
+    @pytest_cases.parametrize_with_cases(
         argnames=("camel", "snake"),
-        argvalues=[
-            pytest.param(
-                "CamelSnake",
-                "camel_snake",
-                id="CamelSnake",
-            ),
-            pytest.param(
-                "camelSnake",
-                "camel_snake",
-                id="camelSnake",
-            ),
-            pytest.param(
-                "camel_snake",
-                "camel_snake",
-                id="camel_snake",
-            ),
-        ],
+        cases=CasesCamelCaseToSnakeCaseFunction,
     )
     def test_camel_to_snake(self, camel, snake):
         assert enpheeph.utils.functions.camel_to_snake(camel) == snake
@@ -58,25 +65,9 @@ class TestGetObjectLibraryFunction(object):
         obj, library_name = mock_object_with_library
         assert enpheeph.utils.functions.get_object_library(obj) == library_name
 
-    @pytest.mark.parametrize(
-        argnames=("obj", "library_name"),
-        argvalues=[
-            pytest.param(
-                1,
-                "builtins",
-                id="builtins",
-            ),
-            pytest.param(
-                pytest.hookspec,
-                "pluggy",
-                id="pluggy_from_pytest",
-            ),
-            pytest.param(
-                collections.defaultdict(),
-                "collections",
-                id="collections",
-            ),
-        ],
+    @pytest_cases.parametrize_with_cases(
+        argnames="obj,library_name",
+        cases=CasesGetObjectLibraryFunction,
     )
     def test_get_object_library_with_real_objs(self, obj, library_name):
         assert enpheeph.utils.functions.get_object_library(obj) == library_name
