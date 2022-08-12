@@ -65,6 +65,8 @@ ENPHEEPH_REQUIREMENTS: typing.Tuple[packaging.requirements.Requirement, ...] = t
 CUPY_NAME: str = "cupy"
 NUMPY_NAME: str = "numpy"
 NORSE_NAME: str = "norse"
+PYTORCH_LIGHTNING_NAME: str = "pytorch_lightning"
+SQLALCHEMY_NAME: str = "sqlalchemy"
 TORCH_NAME: str = "torch"
 
 # here we have the list of the modules which need to be checked for availability
@@ -73,6 +75,8 @@ MODULE_AVAILABILITY_TO_CHECK: typing.Tuple[str, ...] = (
     CUPY_NAME,
     NUMPY_NAME,
     NORSE_NAME,
+    PYTORCH_LIGHTNING_NAME,
+    SQLALCHEMY_NAME,
     TORCH_NAME,
 )
 MODULE_AVAILABILITY: typing.Dict[str, bool] = {}
