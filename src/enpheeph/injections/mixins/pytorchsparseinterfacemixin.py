@@ -105,4 +105,7 @@ class PyTorchSparseInterfaceMixin(abc.ABC):
         else:
             raise ValueError("This operation is not supported with sparse tensors")
 
-        return new_target
+        # FIXME: how should we approach the sparse-to-dense conversion? maybe with a
+        # plugin? so that we can support different sparse representations without
+        # having to write code in the main code base
+        return new_target.to_dense()
