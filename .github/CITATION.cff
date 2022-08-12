@@ -1,0 +1,51 @@
+authors:
+- affiliation: >-
+    Institute of Computer Engineering, Technische
+    Universitaet Wien, Vienna, Austria
+  family-names: Colucci
+  given-names: Alessio
+  email: enpheeph.github.agresti@aleeas.com
+  orcid: 'https://orcid.org/0000-0003-1805-750X'
+cff-version: 1.2.0
+date-released: 2022-07-31
+# doi:
+license: AGPL-3.0-or-later
+message: >-
+  Please cite this software using the metadata from
+  'preferred-citation'.
+title: "enpheeph: Neural Fault Injection Framework"
+version: 0.0.1
+url: "https://github.com/Alexei95/enpheeph"
+preferred-citation:
+  authors:
+  - affiliation: >-
+      Institute of Computer Engineering, Technische
+      Universitaet Wien, Vienna, Austria
+    email: enpheeph.github.agresti@aleeas.com
+    family-names: Colucci
+    given-names: Alessio
+    orcid: 'https://orcid.org/0000-0003-1805-750X'
+  - affiliation: >-
+      Institute of Computer Engineering, Technische
+      Universitaet Wien, Vienna, Austria
+    email: andreas.steininger@tuwien.ac.at
+    family-names: Steininger
+    given-names: Andreas
+    orcid: 'https://orcid.org/0000-0002-3847-1647'
+  - affiliation: >-
+      eBrain Lab, Division of Engineering, New York
+      University Abu Dhabi, UAE
+    email: muhammad.shafique@nyu.edu
+    family-names: Shafique
+    given-names: Muhammad
+    orcid: 'https://orcid.org/0000-0002-2607-8135'
+  doi: "https://doi.org/10.48550/arXiv.2208.00328"
+  journal: "arXiV preprint arXiv:2208.00328"
+  type: misc
+  # month: 9
+  # start: 1 # First page number
+  # end: 10 # Last page number
+  title: "enpheeph: A Fault Injection Framework for Spiking and Compressed Deep Neural Networks"
+  # issue: 1
+  # volume: 1
+  year: 2022
