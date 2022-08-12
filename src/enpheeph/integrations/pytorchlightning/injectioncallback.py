@@ -21,11 +21,18 @@ import datetime
 import typing
 import warnings
 
-import pytorch_lightning
-import pytorch_lightning.callbacks
-
 import enpheeph.handlers.injectionhandler
 import enpheeph.injections.plugins.storage.abc.storagepluginabc
+import enpheeph.utils.imports
+
+if (
+    enpheeph.utils.imports.MODULE_AVAILABILITY[
+        enpheeph.utils.imports.PYTORCH_LIGHTNING_NAME
+    ]
+    or typing.TYPE_CHECKING
+):
+    import pytorch_lightning
+    import pytorch_lightning.callbacks
 
 # to suppress all warnings
 warnings.filterwarnings("ignore")
