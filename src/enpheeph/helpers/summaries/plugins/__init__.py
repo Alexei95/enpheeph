@@ -17,6 +17,7 @@
 
 
 
+
 def lazy_import(module_name, submodules, submod_attrs):
     import importlib
     import os
@@ -62,7 +63,9 @@ __getattr__ = lazy_import(
     },
     submod_attrs={
         'sensitivityanalysis': [
+            'CaptumSensitivityAnalysis',
             'abc',
+            'captumsensitivityanalysis',
         ],
     },
 )
@@ -71,4 +74,5 @@ __getattr__ = lazy_import(
 def __dir__():
     return __all__
 
-__all__ = ['abc', 'sensitivityanalysis']
+__all__ = ['CaptumSensitivityAnalysis', 'abc', 'captumsensitivityanalysis',
+           'sensitivityanalysis']

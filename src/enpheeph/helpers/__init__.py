@@ -17,6 +17,7 @@
 
 
 
+
 def lazy_import(module_name, submodules, submod_attrs):
     import importlib
     import os
@@ -64,15 +65,20 @@ __getattr__ = lazy_import(
     submod_attrs={
         'faultmodels': [
             'FaultModelABC',
+            'ImportanceSampling',
             'abc',
             'faultmodel',
             'faultmodelabc',
         ],
         'summaries': [
+            'CaptumSensitivityAnalysis',
+            'LayerSummaryTorchinfo',
             'ModelSummaryABC',
             'ModelSummaryTorchinfo',
             'abc',
+            'captumsensitivityanalysis',
             'layersummaryabc',
+            'layersummarytorchinfo',
             'modelsummaryabc',
             'modelsummarytorchinfo',
             'plugins',
@@ -85,7 +91,9 @@ __getattr__ = lazy_import(
 def __dir__():
     return __all__
 
-__all__ = ['FaultModelABC', 'ModelSummaryABC', 'ModelSummaryTorchinfo', 'abc',
-           'faultmodel', 'faultmodelabc', 'faultmodels', 'layersummaryabc',
+__all__ = ['CaptumSensitivityAnalysis', 'FaultModelABC', 'ImportanceSampling',
+           'LayerSummaryTorchinfo', 'ModelSummaryABC', 'ModelSummaryTorchinfo',
+           'abc', 'captumsensitivityanalysis', 'faultmodel', 'faultmodelabc',
+           'faultmodels', 'layersummaryabc', 'layersummarytorchinfo',
            'modelsummaryabc', 'modelsummarytorchinfo', 'plugins',
            'sensitivityanalysis', 'summaries']
