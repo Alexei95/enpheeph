@@ -16,7 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import abc
+import typing
 
 
 class ModelSummaryABC(abc.ABC):
-    pass
+    summary: typing.Any = None

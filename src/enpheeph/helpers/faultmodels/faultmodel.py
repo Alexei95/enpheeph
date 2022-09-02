@@ -14,3 +14,26 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import random
+
+import enpheeph.helpers.faultmodels.abc.faultmodelabc
+
+
+# for now we support only activations, so layer outputs
+class ImportanceSampling(enpheeph.helpers.faultmodels.abc.faultmodelabc.FaultModelABC):
+    def __init__(self, model_summary, random_ratio=0.1, seed=42):
+        self.model_summary = model_summary
+        self.generator = random.Random(seed)
+        self.random_ratio = random_ratio
+
+    def get_new_sample(self):
+        random_number = self.generator.random()
+        if random_number > self.random_ratio:
+            return self._get_sensitivity_sample()
+        else:
+            return self._get_random_sample()
+
+    def _get_random_sample(self):
+       layer = self.generator.sample(self.model_summary.layers, 1)[0]
+       output_size = layer.output_size

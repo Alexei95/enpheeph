@@ -15,8 +15,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import abc
+import enpheeph.helpers.summaries.abc.layersummaryabc
 
 
-class FaultModelABC(abc.ABC):
-    pass
+class LayerSummaryTorchinfo(
+    enpheeph.helpers.summaries.abc.layersummaryabc.LayerSummaryABC
+):
+    def __init__(self, input_size, weight_size, output_size, module):
+        self.input_size = input_size
+        self.weight_size = weight_size
+        self.output_size = output_size
+        self.module = module
+
+    def set_input_layer(self, input_layer):
+        self.input_layer = input_layer
+
+    def set_output_layer(self, output_layer):
+        self.output_layer = output_layer
+
+    def set_sensitivity_analysis_result(self, result):
+        self.sensitivity_analysis_result = result

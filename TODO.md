@@ -21,6 +21,7 @@
 9. {#9} Fix requirements.txt and dependencies in setup.py
 10. {#10} Check for project metadata to be saved in pyproject.toml
     1. {#10-1} Reformat requirements.txt to use '.' and install all the required dependencies
+    i52.52. #52 Modify all the ABCs to have a common plugin interface, e.g. a dict with containing the plugin -names (taken from a standard attribute in the clasplugin class) associatied to the instances, and the plugin intABC interface is implementation shared common across all the ABCs.f
 11. #11 Use bumpversion or any alternative to automatically bump the version of the repository and create a tag
 12. {#12} Fix all modules using extra dependencies, dependency must be installed when importing the module for everything to work properly
     1. {#12-1} For now we were going through the safe route of checking for imports and raising errors at runtime, but it is not safe
@@ -84,6 +85,7 @@
     1. #49-1 Currently we have a Sparse Mixin, however it would be better to use a plugin system with an ABC so that we can implement different backends without modifying the exposed code
 50. #50 Use ``pytest_cases`` to improve ``pytest`` handling for the tests
 51. #51 Implement a wrapper layer for providing summaries of neural networks, e.g. as in ``torchinfo``, providing info of the current network and allowing easy access to the different layers for injection
+52. #52 Modify all the ABCs to have a common plugin interface, e.g. a dict containing the plugin-names (taken from a standard attribute in the plugin class) associated to the instances, and the plugin ABC interface implementation is common across all the ABCs.
 
 ## |Duplicates|
 
