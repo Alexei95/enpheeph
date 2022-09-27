@@ -27,7 +27,7 @@ import enpheeph.utils.imports
 
 if (
     enpheeph.utils.imports.MODULE_AVAILABILITY[
-        enpheeph.utils.imports.PYTORCH_LIGHTNING_NAME
+        enpheeph.utils.imports.PYTORCH_LIGHTNING_PACKAGE_NAME
     ]
     or typing.TYPE_CHECKING
 ):

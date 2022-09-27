@@ -65,27 +65,31 @@ ENPHEEPH_REQUIREMENTS: typing.Tuple[packaging.requirements.Requirement, ...] = t
 CUPY_NAME: str = "cupy"
 NUMPY_NAME: str = "numpy"
 NORSE_NAME: str = "norse"
-PYTORCH_LIGHTNING_NAME: str = "pytorch_lightning"
+# NOTE: the name of the module must the the pip name, as we parse the requirements,
+# and not the in-Python import name
+PYTORCH_LIGHTNING_PACKAGE_NAME: str = "pytorch-lightning"
+PYTORCH_LIGHTNING_IMPORT_STRING: str = "pytorch_lightning"
 SQLALCHEMY_NAME: str = "sqlalchemy"
 TORCH_NAME: str = "torch"
 
 # here we have the list of the modules which need to be checked for availability
 # custom checks can be done on other values/requirements as well if needed
+# NOTE: we need to use requirement name and import name separately
 MODULE_AVAILABILITY_TO_CHECK: typing.Tuple[str, ...] = (
-    CUPY_NAME,
-    NUMPY_NAME,
-    NORSE_NAME,
-    PYTORCH_LIGHTNING_NAME,
-    SQLALCHEMY_NAME,
-    TORCH_NAME,
+    (CUPY_NAME, CUPY_NAME),
+    (NUMPY_NAME, NUMPY_NAME),
+    (NORSE_NAME, NORSE_NAME),
+    (PYTORCH_LIGHTNING_PACKAGE_NAME, PYTORCH_LIGHTNING_IMPORT_STRING),
+    (SQLALCHEMY_NAME, SQLALCHEMY_NAME),
+    (TORCH_NAME, TORCH_NAME),
 )
 MODULE_AVAILABILITY: typing.Dict[str, bool] = {}
-for _mod_name in MODULE_AVAILABILITY_TO_CHECK:
+for _package_name, _import_string in MODULE_AVAILABILITY_TO_CHECK:
     # we use next on filter as filter is a generator so using next we get the first
     # value, which supposedly should also be the only one
     _version_specifier: packaging.specifiers.SpecifierSet = next(
-        filter(lambda x: x.name == _mod_name, ENPHEEPH_REQUIREMENTS)
+        filter(lambda x: x.name == _package_name, ENPHEEPH_REQUIREMENTS)
     ).specifier
-    MODULE_AVAILABILITY[_mod_name] = compare_version(
-        module_name=_mod_name, version_specifier=_version_specifier
+    MODULE_AVAILABILITY[_package_name] = compare_version(
+        module_name=_import_string, version_specifier=_version_specifier
     )

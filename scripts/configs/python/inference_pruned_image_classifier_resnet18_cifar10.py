@@ -79,7 +79,7 @@ def config(
         train_dataset=train_dataset,
         test_dataset=test_dataset,
         batch_size=32,
-        num_workers=64,
+        num_workers=4,
         transform_kwargs={
             "image_size": (32, 32),
             # "mean": (0.485, 0.456, 0.406),

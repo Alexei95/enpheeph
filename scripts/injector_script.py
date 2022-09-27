@@ -15,14 +15,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import argparse
+import datetime
 import importlib
 import pathlib
 import sys
 import typing
+import flash
 
 import pytorch_lightning
 
 import enpheeph
+import enpheeph.helpers.importancesampling
 import enpheeph.injections.abc
 import enpheeph.injections.pruneddensetosparseactivationpytorchfault
 
@@ -175,6 +179,39 @@ def get_injection_callback_semantic_segmenter_mobilenetv3_carla() -> (
     return callback
 
 
+def get_generic_injection_callback(result_database) -> (
+    pytorch_lightning.Callback
+):
+    # storage_file = (
+    #     pathlib.Path(__file__).absolute().parent
+    #     / "results/injection_test/database.sqlite"
+    # )
+    # storage_file.parent.mkdir(exist_ok=True, parents=True)
+    result_database = result_database.absolute()
+    result_database.parent.mkdir(exist_ok=True, parents=True)
+
+    pytorch_handler_plugin = enpheeph.handlers.plugins.PyTorchHandlerPlugin()
+    storage_plugin = enpheeph.injections.plugins.storage.SQLiteStoragePlugin(
+        db_url="sqlite:///" + str(result_database)
+    )
+
+    injection_handler = enpheeph.handlers.InjectionHandler(
+        injections=[],
+        library_handler_plugin=pytorch_handler_plugin,
+    )
+
+    # we delay the instantiation of the callback to allow the saving of the
+    # current configuration
+    callback = enpheeph.integrations.pytorchlightning.InjectionCallback(
+        injection_handler=injection_handler,
+        storage_plugin=storage_plugin,
+        # this config used to contain the complete system config: trainer + model +
+        # dataset, including the configuration for injections
+        # extra_session_info=config,
+    )
+    return callback
+
+
 def get_trainer_config(args=sys.argv) -> typing.Dict[str, typing.Any]:
     config = pathlib.Path(args[1]).absolute()
 
@@ -191,9 +228,34 @@ def get_trainer_config(args=sys.argv) -> typing.Dict[str, typing.Any]:
     return config_dict
 
 
-def main():
+def arg_parser():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--python-config", action="store", type=pathlib.Path, required=True)
+    parser.add_argument("--target-csv", action="store", type=pathlib.Path, required=False, default="results/table.csv")
+    parser.add_argument("--seed", action="store", type=int, required=False, default=42)
+    parser.add_argument("--number-iterations", action="store", type=int, required=False, default=1000)
+    parser.add_argument("--result-database", action="store", type=pathlib.Path, required=False, default="results/sqlite.db")
+    parser.add_argument("--load-attribution-file", action="store", type=pathlib.Path, required=False, default=None)
+    parser.add_argument("--save-attribution-file", action="store", type=pathlib.Path, required=False, default=None)
+    parser.add_argument("--random-threshold", action="store", type=float, required=False, default=0)
+    # parser.add_argument("--devices", action="store", type=str, required=False, default="")
+
+    return parser
+
+
+def main(args=None):
     # TODO: improve the config handling
-    config = pathlib.Path(sys.argv[1]).absolute()
+    parser = arg_parser()
+    namespace = parser.parse_args(args)
+    config = namespace.python_config.absolute()
+    target_csv = namespace.target_csv.absolute()
+    seed = namespace.seed
+    iterations = namespace.number_iterations
+    sqlite_db = namespace.result_database.absolute()
+
+    target_csv.parent.mkdir(parents=True, exist_ok=True)
+    sqlite_db.parent.mkdir(parents=True, exist_ok=True)
 
     sys.path.append(str(config.parent))
 
@@ -209,34 +271,106 @@ def main():
     datamodule = config_dict["datamodule"]
     model = config_dict["model"]
 
-    injection_callback = get_injection_callback_semantic_segmenter_mobilenetv3_carla()
+    injection_callback = get_generic_injection_callback(result_database=sqlite_db)
     trainer.callbacks.append(injection_callback)
 
-    injection_callback.injection_handler.activate()
-    injection_callback.injection_handler.deactivate(
-        [
-            inj
-            for inj in injection_callback.injection_handler.injections
-            if isinstance(inj, enpheeph.injections.abc.FaultABC)
-        ]
-    )
-    # print(injection_callback.injection_handler.active_injections)
-    trainer.test(model, datamodule=datamodule)
+    test_batch = next(datamodule.train_dataloader().__iter__())
+    test_input = test_batch[flash.core.data.io.input.DataKeys.INPUT]
+    test_target = test_batch[flash.core.data.io.input.DataKeys.TARGET]
+    sampling_model = enpheeph.helpers.importancesampling.ImportanceSampling(model=model, sensitivity_class="LayerConductance", test_input=test_input, random_threshold=namespace.random_threshold, seed=seed)
+    if namespace.load_attribution_file is not None:
+        sampling_model.load_attributions(namespace.load_attribution_file)
+    else:
+        sampling_model.generate_attributions(test_input=test_input, test_target=test_target)
+        if namespace.save_attribution_file is not None:
+            sampling_model.save_attributions(namespace.save_attribution_file)
 
-    injection_callback.injection_handler.activate()
-    # print(injection_callback.injection_handler.active_injections)
-    trainer.test(model, datamodule=datamodule)
 
-    injection_callback.injection_handler.deactivate(
-        [
-            inj
-            for inj in injection_callback.injection_handler.injections
-            if isinstance(inj, enpheeph.injections.abc.FaultABC)
-        ]
-    )
-    # print(injection_callback.injection_handler.active_injections)
-    trainer.test(model, datamodule=datamodule)
+    pytorch_mask_plugin = enpheeph.injections.plugins.mask.AutoPyTorchMaskPlugin()
+    for i in range(iterations):
+        sample = sampling_model.get_sample()
+        print(f"iteration #{i}", sample)
 
+        layer = sample["layer"]
+        index = sample["index"]
+        bit_index = sample["bit_index"]
+
+        fault = enpheeph.injections.OutputPyTorchFault(
+            location=enpheeph.utils.dataclasses.FaultLocation(
+                module_name=layer,
+                parameter_type=enpheeph.utils.enums.ParameterType.Activation,
+                dimension_index={
+                    enpheeph.utils.enums.DimensionType.Batch: ...,
+                    enpheeph.utils.enums.DimensionType.Tensor: index,
+                },
+                bit_index=bit_index,
+                bit_fault_value=enpheeph.utils.enums.BitFaultValue.BitFlip,
+            ),
+            low_level_torch_plugin=pytorch_mask_plugin,
+            indexing_plugin=enpheeph.injections.plugins.indexing.IndexingPlugin(
+                dimension_dict=enpheeph.utils.constants.PYTORCH_DIMENSION_DICT,
+            ),
+        )
+        monitor = enpheeph.injections.OutputPyTorchMonitor(
+            location=enpheeph.utils.dataclasses.MonitorLocation(
+                module_name=layer,
+                parameter_type=enpheeph.utils.enums.ParameterType.Activation,
+                dimension_index={
+                    enpheeph.utils.enums.DimensionType.Tensor: ...,
+                    enpheeph.utils.enums.DimensionType.Batch: ...,
+                },
+                bit_index=None,
+            ),
+            enabled_metrics=(
+                enpheeph.utils.enums.MonitorMetric.ArithmeticMean
+                | enpheeph.utils.enums.MonitorMetric.StandardDeviation
+            ),
+            storage_plugin=injection_callback.storage_plugin,
+            move_to_first=False,
+            indexing_plugin=enpheeph.injections.plugins.indexing.IndexingPlugin(
+                dimension_dict=enpheeph.utils.constants.PYTORCH_DIMENSION_DICT,
+            ),
+        )
+
+        injection_callback.injection_handler.add_injections([fault, monitor])
+
+        injection_callback.injection_handler.activate()
+        # print(injection_callback.injection_handler.active_injections)
+        result_injected = trainer.test(model, datamodule=datamodule)[0]
+
+        if i == 0:
+            injection_callback.injection_handler.activate()
+            injection_callback.injection_handler.deactivate(
+                [
+                    inj
+                    for inj in injection_callback.injection_handler.injections
+                    if isinstance(inj, enpheeph.injections.abc.FaultABC)
+                ]
+            )
+            # print(injection_callback.injection_handler.active_injections)
+            result_baseline = trainer.test(model, datamodule=datamodule)[0]
+        else:
+            result_baseline = {k: float("NaN") for k in result_injected.keys()}
+
+        if i == 0:
+            injection_callback.injection_handler.activate()
+            injection_callback.injection_handler.deactivate(
+                [
+                    inj
+                    for inj in injection_callback.injection_handler.injections
+                    if isinstance(inj, enpheeph.injections.abc.FaultABC)
+                ]
+            )
+            # print(injection_callback.injection_handler.active_injections)
+            trainer.test(model, datamodule=datamodule)
+
+        # we need to remove all the injections to avoid stacking the faults
+        injection_callback.injection_handler.remove_injections()
+
+        with target_csv.open("a") as csv_file:
+            if i == 0:
+                csv_file.write(f"i,random_seed,random_threshold,timestamp,target_csv,layer_name,index,bit_index,random,{','.join(k + '_baseline' for k in result_baseline.keys())},{','.join(k + '_injected' for k in result_injected.keys())}\n")
+            csv_file.write(f"{i},{namespace.seed},{namespace.random_threshold},{datetime.datetime.now(tz=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')},{str(namespace.target_csv).replace(',', '---')},{sample['layer']},{'-'.join(str(i) for i in sample['index'])},{sample['bit_index']},{sample['random']},{','.join(str(v) for v in result_baseline.values())},{','.join(str(v) for v in result_injected.values())}\n")
 
 if __name__ == "__main__":
     main()
