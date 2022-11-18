@@ -31,162 +31,9 @@ import enpheeph.injections.abc
 import enpheeph.injections.pruneddensetosparseactivationpytorchfault
 
 
-def get_injection_callback_image_classifier_resnet18_cifar10() -> (
-    pytorch_lightning.Callback
-):
-    storage_file = (
-        pathlib.Path(__file__).absolute().parent
-        / "results/injection_test/database.sqlite"
-    )
-    storage_file.parent.mkdir(exist_ok=True, parents=True)
-
-    pytorch_handler_plugin = enpheeph.handlers.plugins.PyTorchHandlerPlugin()
-    storage_plugin = enpheeph.injections.plugins.storage.SQLiteStoragePlugin(
-        db_url="sqlite:///" + str(storage_file)
-    )
-    pytorch_mask_plugin = enpheeph.injections.plugins.mask.AutoPyTorchMaskPlugin()
-
-    fault_1 = enpheeph.injections.PrunedDenseToSparseWeightPyTorchFault(
-        location=enpheeph.utils.dataclasses.FaultLocation(
-            # resnet18
-            module_name="adapter.backbone.layer1.0.conv1",
-            parameter_type=(
-                enpheeph.utils.enums.ParameterType.Weight
-                | enpheeph.utils.enums.ParameterType.Sparse
-                | enpheeph.utils.enums.ParameterType.Value
-            ),
-            parameter_name="weight",
-            dimension_index={
-                enpheeph.utils.enums.DimensionType.Tensor: (0,),
-            },
-            bit_index=...,
-            bit_fault_value=enpheeph.utils.enums.BitFaultValue.StuckAtOne,
-        ),
-        low_level_torch_plugin=pytorch_mask_plugin,
-        indexing_plugin=enpheeph.injections.plugins.indexing.IndexingPlugin(
-            dimension_dict=enpheeph.utils.constants.PYTORCH_DIMENSION_DICT,
-        ),
-    )
-    monitor_1 = enpheeph.injections.OutputPyTorchMonitor(
-        location=enpheeph.utils.dataclasses.MonitorLocation(
-            module_name="adapter.head",
-            parameter_type=enpheeph.utils.enums.ParameterType.Activation,
-            dimension_index={
-                enpheeph.utils.enums.DimensionType.Tensor: ...,
-                enpheeph.utils.enums.DimensionType.Batch: ...,
-            },
-            bit_index=None,
-        ),
-        enabled_metrics=(
-            enpheeph.utils.enums.MonitorMetric.ArithmeticMean
-            | enpheeph.utils.enums.MonitorMetric.StandardDeviation
-        ),
-        storage_plugin=storage_plugin,
-        move_to_first=False,
-        indexing_plugin=enpheeph.injections.plugins.indexing.IndexingPlugin(
-            dimension_dict=enpheeph.utils.constants.PYTORCH_DIMENSION_DICT,
-        ),
-    )
-
-    injection_handler = enpheeph.handlers.InjectionHandler(
-        injections=[fault_1, monitor_1],
-        library_handler_plugin=pytorch_handler_plugin,
-    )
-
-    # we delay the instantiation of the callback to allow the saving of the
-    # current configuration
-    callback = enpheeph.integrations.pytorchlightning.InjectionCallback(
-        injection_handler=injection_handler,
-        storage_plugin=storage_plugin,
-        # this config used to contain the complete system config: trainer + model +
-        # dataset, including the configuration for injections
-        # extra_session_info=config,
-    )
-    return callback
-
-
-def get_injection_callback_semantic_segmenter_mobilenetv3_carla() -> (
-    pytorch_lightning.Callback
-):
-    storage_file = (
-        pathlib.Path(__file__).absolute().parent
-        / "results/injection_test/database.sqlite"
-    )
-    storage_file.parent.mkdir(exist_ok=True, parents=True)
-
-    pytorch_handler_plugin = enpheeph.handlers.plugins.PyTorchHandlerPlugin()
-    storage_plugin = enpheeph.injections.plugins.storage.SQLiteStoragePlugin(
-        db_url="sqlite:///" + str(storage_file)
-    )
-    pytorch_mask_plugin = enpheeph.injections.plugins.mask.AutoPyTorchMaskPlugin()
-
-    fault_1 = enpheeph.injections.PrunedDenseToSparseWeightPyTorchFault(
-        location=enpheeph.utils.dataclasses.FaultLocation(
-            # mobilenetv3
-            module_name="backbone.model.blocks.3.0.conv_pw",
-            parameter_type=(
-                enpheeph.utils.enums.ParameterType.Weight
-                | enpheeph.utils.enums.ParameterType.Sparse
-                | enpheeph.utils.enums.ParameterType.Value
-            ),
-            parameter_name="weight",
-            dimension_index={
-                enpheeph.utils.enums.DimensionType.Tensor: (0,),
-            },
-            bit_index=...,
-            bit_fault_value=enpheeph.utils.enums.BitFaultValue.StuckAtOne,
-        ),
-        low_level_torch_plugin=pytorch_mask_plugin,
-        indexing_plugin=enpheeph.injections.plugins.indexing.IndexingPlugin(
-            dimension_dict=enpheeph.utils.constants.PYTORCH_DIMENSION_DICT,
-        ),
-    )
-    monitor_1 = enpheeph.injections.OutputPyTorchMonitor(
-        location=enpheeph.utils.dataclasses.MonitorLocation(
-            module_name="head",
-            parameter_type=enpheeph.utils.enums.ParameterType.Activation,
-            dimension_index={
-                enpheeph.utils.enums.DimensionType.Tensor: ...,
-                enpheeph.utils.enums.DimensionType.Batch: ...,
-            },
-            bit_index=None,
-        ),
-        enabled_metrics=(
-            enpheeph.utils.enums.MonitorMetric.ArithmeticMean
-            | enpheeph.utils.enums.MonitorMetric.StandardDeviation
-        ),
-        storage_plugin=storage_plugin,
-        move_to_first=False,
-        indexing_plugin=enpheeph.injections.plugins.indexing.IndexingPlugin(
-            dimension_dict=enpheeph.utils.constants.PYTORCH_DIMENSION_DICT,
-        ),
-    )
-
-    injection_handler = enpheeph.handlers.InjectionHandler(
-        injections=[fault_1, monitor_1],
-        library_handler_plugin=pytorch_handler_plugin,
-    )
-
-    # we delay the instantiation of the callback to allow the saving of the
-    # current configuration
-    callback = enpheeph.integrations.pytorchlightning.InjectionCallback(
-        injection_handler=injection_handler,
-        storage_plugin=storage_plugin,
-        # this config used to contain the complete system config: trainer + model +
-        # dataset, including the configuration for injections
-        # extra_session_info=config,
-    )
-    return callback
-
-
 def get_generic_injection_callback(result_database) -> (
     pytorch_lightning.Callback
 ):
-    # storage_file = (
-    #     pathlib.Path(__file__).absolute().parent
-    #     / "results/injection_test/database.sqlite"
-    # )
-    # storage_file.parent.mkdir(exist_ok=True, parents=True)
     result_database = result_database.absolute()
     result_database.parent.mkdir(exist_ok=True, parents=True)
 
@@ -239,6 +86,8 @@ def arg_parser():
     parser.add_argument("--load-attribution-file", action="store", type=pathlib.Path, required=False, default=None)
     parser.add_argument("--save-attribution-file", action="store", type=pathlib.Path, required=False, default=None)
     parser.add_argument("--random-threshold", action="store", type=float, required=False, default=0)
+    parser.add_argument("--injection-type", action="store", type=str, choices=("activation", "weight"), required=True, default="activation")
+    parser.add_argument("--sparse-target", action="store", type=str, choices=("index", "value"), required=False)
     # parser.add_argument("--devices", action="store", type=str, required=False, default="")
 
     return parser
@@ -277,14 +126,17 @@ def main(args=None):
     test_batch = next(datamodule.train_dataloader().__iter__())
     test_input = test_batch[flash.core.data.io.input.DataKeys.INPUT]
     test_target = test_batch[flash.core.data.io.input.DataKeys.TARGET]
-    sampling_model = enpheeph.helpers.importancesampling.ImportanceSampling(model=model, sensitivity_class="LayerConductance", test_input=test_input, random_threshold=namespace.random_threshold, seed=seed)
+    if namespace.sparse_target is not None:
+        extra_injection_info = {"sparse_target": namespace.sparse_target}
+    else:
+        extra_injection_info = None
+    sampling_model = enpheeph.helpers.importancesampling.ImportanceSampling(model=model, injection_type=namespace.injection_type, sensitivity_class="LayerConductance", test_input=test_input, random_threshold=namespace.random_threshold, seed=seed, extra_injection_info=extra_injection_info)
     if namespace.load_attribution_file is not None:
         sampling_model.load_attributions(namespace.load_attribution_file)
     else:
         sampling_model.generate_attributions(test_input=test_input, test_target=test_target)
         if namespace.save_attribution_file is not None:
             sampling_model.save_attributions(namespace.save_attribution_file)
-
 
     pytorch_mask_plugin = enpheeph.injections.plugins.mask.AutoPyTorchMaskPlugin()
     for i in range(iterations):
@@ -369,8 +221,22 @@ def main(args=None):
 
         with target_csv.open("a") as csv_file:
             if i == 0:
-                csv_file.write(f"i,random_seed,random_threshold,timestamp,target_csv,layer_name,index,bit_index,random,{','.join(k + '_baseline' for k in result_baseline.keys())},{','.join(k + '_injected' for k in result_injected.keys())}\n")
-            csv_file.write(f"{i},{namespace.seed},{namespace.random_threshold},{datetime.datetime.now(tz=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')},{str(namespace.target_csv).replace(',', '---')},{sample['layer']},{'-'.join(str(i) for i in sample['index'])},{sample['bit_index']},{sample['random']},{','.join(str(v) for v in result_baseline.values())},{','.join(str(v) for v in result_injected.values())}\n")
+                csv_file.write("i,random_seed,random_threshold,timestamp,target_csv,")
+                csv_file.write("injection_type,extra_injection_info,layer_name,index,bit_index,random,")
+                csv_file.write(f"{','.join(k + '_baseline' for k in result_baseline.keys())},{','.join(k + '_injected' for k in result_injected.keys())}\n")
+            csv_file.write(f"{i},")
+            csv_file.write(f"{namespace.seed},")
+            csv_file.write(f"{namespace.random_threshold},")
+            csv_file.write(f"{datetime.datetime.now(tz=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')},")
+            csv_file.write(f"{str(namespace.target_csv).replace(',', '---')},")
+            csv_file.write(f"{namespace.injection_type},")
+            csv_file.write(f"{tuple(sampling_model.extra_injection_info.items()) if sampling_model.extra_injection_info is not None else str(None)},")
+            csv_file.write(f"{sample['layer']},")
+            csv_file.write(f"{'-'.join(str(i) for i in sample['index'])},")
+            csv_file.write(f"{sample['bit_index']},")
+            csv_file.write(f"{sample['random']},")
+            csv_file.write(f"{','.join(str(v) for v in result_baseline.values())},")
+            csv_file.write(f"{','.join(str(v) for v in result_injected.values())}\n")
 
 if __name__ == "__main__":
     main()
