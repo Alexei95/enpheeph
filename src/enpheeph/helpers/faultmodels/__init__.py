@@ -18,6 +18,7 @@
 
 
 
+
 def lazy_import(module_name, submodules, submod_attrs):
     import importlib
     import os
@@ -60,18 +61,12 @@ __getattr__ = lazy_import(
     __name__,
     submodules={
         'abc',
-        'faultmodel',
     },
-    submod_attrs={
-        'abc': [
-            'FaultModelABC',
-            'faultmodelabc',
-        ],
-    },
+    submod_attrs={},
 )
 
 
 def __dir__():
     return __all__
 
-__all__ = ['FaultModelABC', 'abc', 'faultmodel', 'faultmodelabc']
+__all__ = ['abc']
