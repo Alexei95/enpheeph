@@ -19,6 +19,7 @@
 
 
 
+
 def lazy_import(module_name, submodules, submod_attrs):
     import importlib
     import os
@@ -69,7 +70,11 @@ __getattr__ = lazy_import(
             'abc',
         ],
         'importancesampling': [
+            'BIT_WEIGHTING_CODE_CONVERSION',
+            'EXPERIMENT_CODE_TEMPLATE',
+            'INJECTION_TYPE_CONVERSION',
             'ImportanceSampling',
+            'NEURON_IMPORTANCE_CONVERSION',
         ],
         'summaries': [
             'abc',
@@ -83,5 +88,7 @@ __getattr__ = lazy_import(
 def __dir__():
     return __all__
 
-__all__ = ['ImportanceSampling', 'abc', 'faultmodels', 'importancesampling',
-           'plugins', 'sensitivityanalysis', 'summaries']
+__all__ = ['BIT_WEIGHTING_CODE_CONVERSION', 'EXPERIMENT_CODE_TEMPLATE',
+           'INJECTION_TYPE_CONVERSION', 'ImportanceSampling',
+           'NEURON_IMPORTANCE_CONVERSION', 'abc', 'faultmodels',
+           'importancesampling', 'plugins', 'sensitivityanalysis', 'summaries']
