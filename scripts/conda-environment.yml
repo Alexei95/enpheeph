@@ -1,0 +1,22 @@
+name: enpheeph-scripts-dev
+channels:
+  - defaults
+dependencies:
+  - torchvision==0.12.0
+  - gcc_linux-64
+  - gxx_linux-64
+  - lightning-flash==0.7.5
+  - pytorch-lightning==1.6.4
+  - pytorch==1.11.0
+  - python=3.10
+  - cudatoolkit==11.3.1
+  - cupy==10.5.0
+  - ipython
+  - captum
+  - flask
+  - jinja2==3.0.3
+  - itsdangerous==2.0.1
+  - werkzeug==2.0.3
+  - torchinfo
+  - plotly
+prefix: /home/acolucci/.conda/envs/enpheeph-scripts-dev

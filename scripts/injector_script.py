@@ -20,15 +20,15 @@ import datetime
 import importlib
 import pathlib
 import sys
+import time
 import typing
-import flash
-
-import pytorch_lightning
 
 import enpheeph
 import enpheeph.helpers.importancesampling
 import enpheeph.injections.abc
 import enpheeph.injections.pruneddensetosparseactivationpytorchfault
+import flash
+import pytorch_lightning
 
 
 def get_generic_injection_callback(result_database) -> (
@@ -79,6 +79,7 @@ def arg_parser():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--python-config", action="store", type=pathlib.Path, required=True)
+    parser.add_argument("--checkpoint-file", action="store", type=pathlib.Path, required=False)
     parser.add_argument("--target-csv", action="store", type=pathlib.Path, required=False, default="results/table.csv")
     parser.add_argument("--seed", action="store", type=int, required=False, default=42)
     parser.add_argument("--number-iterations", action="store", type=int, required=False, default=1000)
@@ -87,8 +88,13 @@ def arg_parser():
     parser.add_argument("--save-attribution-file", action="store", type=pathlib.Path, required=False, default=None)
     parser.add_argument("--random-threshold", action="store", type=float, required=False, default=0)
     parser.add_argument("--injection-type", action="store", type=str, choices=("activation", "weight"), required=True, default="activation")
-    parser.add_argument("--sparse-target", action="store", type=str, choices=("index", "value"), required=False)
+    parser.add_argument("--sparse-target", action="store", type=str, choices=("index", "value"), required=False, default=None)
+    parser.add_argument("--timeout", action="store", type=int, default=None, required=False)
+    # parser.add_argument("--bit-random", action="store", type=bool, default=None, required=False)
+    # parser.add_argument("--bit-random", action=argparse.BooleanOptionalAction, default=None)
     # parser.add_argument("--devices", action="store", type=str, required=False, default="")
+    parser.add_argument("--bit-weighting", action="store", type=str, choices=("random", "linear", "exponential", "gradient"), default=None)
+    parser.add_argument("--approximate-activation-gradient-value", action=argparse.BooleanOptionalAction, default=False)
 
     return parser
 
@@ -114,7 +120,10 @@ def main(args=None):
 
     sys.path.pop()
 
-    config_dict = module.config()
+    if namespace.checkpoint_file is not None:
+        config_dict = module.config(checkpoint_file=namespace.checkpoint_file.absolute())
+    else:
+        config_dict = module.config()
 
     trainer = config_dict["trainer"]
     datamodule = config_dict["datamodule"]
@@ -126,19 +135,26 @@ def main(args=None):
     test_batch = next(datamodule.train_dataloader().__iter__())
     test_input = test_batch[flash.core.data.io.input.DataKeys.INPUT]
     test_target = test_batch[flash.core.data.io.input.DataKeys.TARGET]
+    extra_injection_info = {}
     if namespace.sparse_target is not None:
-        extra_injection_info = {"sparse_target": namespace.sparse_target}
-    else:
-        extra_injection_info = None
+        extra_injection_info["sparse_target"] = namespace.sparse_target
+    # if namespace.bit_random is not None:
+        # extra_injection_info["bit_random"] = namespace.bit_random
+    if namespace.bit_weighting is not None:
+        extra_injection_info["bit_weighting"] = namespace.bit_weighting
+    if namespace.approximate_activation_gradient_value is not None:
+        extra_injection_info["approximate_activation_gradient_value"] = namespace.approximate_activation_gradient_value
+
     sampling_model = enpheeph.helpers.importancesampling.ImportanceSampling(model=model, injection_type=namespace.injection_type, sensitivity_class="LayerConductance", test_input=test_input, random_threshold=namespace.random_threshold, seed=seed, extra_injection_info=extra_injection_info)
     if namespace.load_attribution_file is not None:
-        sampling_model.load_attributions(namespace.load_attribution_file)
+        sampling_model.load_attributions(namespace.load_attribution_file, override_settings=False)
     else:
         sampling_model.generate_attributions(test_input=test_input, test_target=test_target)
         if namespace.save_attribution_file is not None:
             sampling_model.save_attributions(namespace.save_attribution_file)
 
     pytorch_mask_plugin = enpheeph.injections.plugins.mask.AutoPyTorchMaskPlugin()
+    initial_time = time.time()
     for i in range(iterations):
         sample = sampling_model.get_sample()
         print(f"iteration #{i}", sample)
@@ -147,10 +163,21 @@ def main(args=None):
         index = sample["index"]
         bit_index = sample["bit_index"]
 
-        fault = enpheeph.injections.OutputPyTorchFault(
+        if namespace.injection_type == "activation":
+            fault_class = enpheeph.injections.OutputPyTorchFault
+            parameter_type = enpheeph.utils.enums.ParameterType.Activation
+            parameter_name = None
+        elif namespace.injection_type == "weight":
+            fault_class = enpheeph.injections.WeightPyTorchFault
+            parameter_type = enpheeph.utils.enums.ParameterType.Weight
+            parameter_name = "weight"
+        else:
+            raise ValueError("invalid configuration")
+        fault = fault_class(
             location=enpheeph.utils.dataclasses.FaultLocation(
                 module_name=layer,
-                parameter_type=enpheeph.utils.enums.ParameterType.Activation,
+                parameter_type=parameter_type,
+                parameter_name=parameter_name,
                 dimension_index={
                     enpheeph.utils.enums.DimensionType.Batch: ...,
                     enpheeph.utils.enums.DimensionType.Tensor: index,
@@ -221,22 +248,32 @@ def main(args=None):
 
         with target_csv.open("a") as csv_file:
             if i == 0:
-                csv_file.write("i,random_seed,random_threshold,timestamp,target_csv,")
-                csv_file.write("injection_type,extra_injection_info,layer_name,index,bit_index,random,")
+                csv_file.write("i,random_seed,random_threshold,config_file,checkpoint_file,timestamp,target_csv,approximate_activation_gradient_value,")
+                csv_file.write("injection_type,extra_injection_info,layer_name,index,bit_index,bit_weighting,random_neuron,experiment_code,")
                 csv_file.write(f"{','.join(k + '_baseline' for k in result_baseline.keys())},{','.join(k + '_injected' for k in result_injected.keys())}\n")
             csv_file.write(f"{i},")
             csv_file.write(f"{namespace.seed},")
-            csv_file.write(f"{namespace.random_threshold},")
+            csv_file.write(f"{namespace.random_threshold},{namespace.python_config.absolute()},{namespace.checkpoint_file.absolute()},")
             csv_file.write(f"{datetime.datetime.now(tz=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')},")
             csv_file.write(f"{str(namespace.target_csv).replace(',', '---')},")
+            csv_file.write(f"{namespace.approximate_activation_gradient_value},")
             csv_file.write(f"{namespace.injection_type},")
-            csv_file.write(f"{tuple(sampling_model.extra_injection_info.items()) if sampling_model.extra_injection_info is not None else str(None)},")
+            csv_file.write(f"{'|'.join(['+'.join([str(k), str(v)]) for k, v in sampling_model.extra_injection_info.items()]) if sampling_model.extra_injection_info is not None else str()},")
             csv_file.write(f"{sample['layer']},")
             csv_file.write(f"{'-'.join(str(i) for i in sample['index'])},")
             csv_file.write(f"{sample['bit_index']},")
-            csv_file.write(f"{sample['random']},")
+            csv_file.write(f"{sample['bit_weighting']},")
+            csv_file.write(f"{sample['random_neuron']},")
+            csv_file.write(f"{sample['experiment_code']},")
             csv_file.write(f"{','.join(str(v) for v in result_baseline.values())},")
             csv_file.write(f"{','.join(str(v) for v in result_injected.values())}\n")
+
+        if namespace.timeout is not None:
+            current_time = time.time()
+            if current_time - initial_time > namespace.timeout:
+                print(f"above timeout of {namespace.timeout}, breaking execution")
+                break
+
 
 if __name__ == "__main__":
     main()

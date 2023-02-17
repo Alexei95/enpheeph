@@ -15,14 +15,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pathlib
 import os
+import pathlib
 import typing
 
 import flash
 import flash.image
 import pytorch_lightning
-
 
 DEFAULT_RESULT_DIRECTORY = (
     "results/inference_pruned_semantic_segmenter_mobilenetv3_carla"
@@ -39,7 +38,7 @@ DEFAULT_RESULT_DIRECTORY = (
 # )
 # val acc 0.711 val loss 0.837 pruning 71.9%
 DEFAULT_MODEL_CHECKPOINT = (
-    "results/pruned_semantic_segmenter_mobilenetv3_carla/default/"
+    "results/pruned_semantic_segmenter_mobilenetv3_carla_new/default/"
     "version_0/checkpoints/epoch=16-step=850.ckpt"
 )
 
@@ -48,6 +47,7 @@ def config(
     *,
     dataset_directory: os.PathLike = "/shared/ml/datasets/vision/",
     result_directory: os.PathLike = DEFAULT_RESULT_DIRECTORY,
+    checkpoint_file: os.PathLike = DEFAULT_MODEL_CHECKPOINT,
     **kwargs: typing.Any,
 ) -> typing.Dict[str, typing.Any]:
     pytorch_lightning.seed_everything(seed=42, workers=True)
@@ -74,14 +74,15 @@ def config(
         val_split=0.2,
     )
 
-    model = flash.image.SemanticSegmentation(
-        backbone="mobilenetv3_large_100",
-        head="fpn",
-        learning_rate=0.001,
-        num_classes=101,
-        optimizer="Adam",
-        pretrained=True,
-    )
+    # model = flash.image.SemanticSegmentation(
+    #     backbone="mobilenetv3_large_100",
+    #     head="fpn",
+    #     learning_rate=0.001,
+    #     num_classes=101,
+    #     optimizer="Adam",
+    #     pretrained=True,
+    # )
+    model = flash.image.SemanticSegmentation.load_from_checkpoint(checkpoint_file)
 
     trainer = flash.Trainer(
         accelerator="auto",

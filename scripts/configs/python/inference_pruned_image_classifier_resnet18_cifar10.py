@@ -15,15 +15,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pathlib
 import os
+import pathlib
 import typing
 
 import flash
 import flash.image
 import pytorch_lightning
 import torchvision
-
 
 DEFAULT_RESULT_DIRECTORY = "results/inference_pruned_image_classifier_resnet18_cifar10"
 
@@ -38,7 +37,7 @@ DEFAULT_RESULT_DIRECTORY = "results/inference_pruned_image_classifier_resnet18_c
 # )
 # val acc 0.711 val loss 0.837 pruning 71.9%
 DEFAULT_MODEL_CHECKPOINT = (
-    "results/pruned_image_classifier_resnet18_cifar10/default/"
+    "results/pruned_image_classifier_resnet18_cifar10_new/default/"
     "version_11/checkpoints/epoch=62-step=78750.ckpt"
 )
 
@@ -57,6 +56,7 @@ def config(
     *,
     dataset_directory: os.PathLike = "/shared/ml/datasets/vision/",
     result_directory: os.PathLike = DEFAULT_RESULT_DIRECTORY,
+    checkpoint_file: os.PathLike = DEFAULT_MODEL_CHECKPOINT,
     **kwargs: typing.Any,
 ) -> typing.Dict[str, typing.Any]:
     pytorch_lightning.seed_everything(seed=42, workers=True)
@@ -88,7 +88,7 @@ def config(
         val_split=0.2,
     )
 
-    model = flash.image.ImageClassifier.load_from_checkpoint(DEFAULT_MODEL_CHECKPOINT)
+    model = flash.image.ImageClassifier.load_from_checkpoint(checkpoint_file)
 
     trainer = flash.Trainer(
         accelerator="auto",
