@@ -3,7 +3,7 @@ name: Update copyright year(s) in COPYRIGHT files and sources
 on:
   schedule:
     - cron: "0 3 1 1 *"
-  workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   update-license-year:
