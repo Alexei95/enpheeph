@@ -16,7 +16,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-
 def lazy_import(module_name, submodules, submod_attrs):
     import importlib
     import os
