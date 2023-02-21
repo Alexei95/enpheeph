@@ -42,7 +42,7 @@ jobs:
           gpgPrivateKey: ${{ secrets.gpgPrivateKey }}
           gpgPassphrase: ${{ secrets.gpgPassphrase }}
           path: |
-            COPYRIGHT
+            **/*.py
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Merge pull request
         env:
