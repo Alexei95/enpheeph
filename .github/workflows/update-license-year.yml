@@ -1,8 +1,9 @@
-name: Update copyright year(s) in LICENSE/COPYRIGHT files and sources
+name: Update copyright year(s) in COPYRIGHT files and sources
 
 on:
   schedule:
     - cron: "0 3 1 1 *"
+  workflow_dispatch
 
 jobs:
   update-license-year:
@@ -18,7 +19,6 @@ jobs:
           gpgPassphrase: ${{ secrets.gpgPassphrase }}
           path: |
             COPYRIGHT
-            LICENSE
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Merge pull request
         env:
