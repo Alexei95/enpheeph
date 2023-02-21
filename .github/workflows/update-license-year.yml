@@ -43,7 +43,6 @@ jobs:
           gpgPassphrase: ${{ secrets.gpgPassphrase }}
           path: |
             COPYRIGHT
-            LICENSE
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Merge pull request
         env:
