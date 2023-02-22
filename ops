@@ -1,0 +1,1 @@
+{"author":{"id":"2971f857bf2d680007b57780dd438e1439d21b46a5776b3dbbfa98eb820ea62a"},"ops":[{"type":1,"timestamp":1677024789,"nonce":"u2B9NuaDEw/SdEOyPA1cfbIeR1E=","title":"Check tools usage","message":"Different tools are used for linting, testing and ci, however we want to check everything again to see if it still makes sense with new tooling and similar.","files":null}]}
