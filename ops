@@ -1,0 +1,1 @@
+{"author":{"id":"2971f857bf2d680007b57780dd438e1439d21b46a5776b3dbbfa98eb820ea62a"},"ops":[{"type":1,"timestamp":1677024613,"nonce":"2e/VMSH33owewpJ0shoCh6a6y+0=","title":"Use poetry instead of conda/pip","message":"poetry looks more stable for pyproject.toml usage compared to conda/pip, however it might take a while to test and transition completely.","files":null}]}
