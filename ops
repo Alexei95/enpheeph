@@ -1,0 +1,1 @@
+{"author":{"id":"2971f857bf2d680007b57780dd438e1439d21b46a5776b3dbbfa98eb820ea62a"},"ops":[{"type":1,"timestamp":1677024679,"nonce":"BiDCWm8Y2LNFxYuIhrYhGaxfv/k=","title":"Write docs","message":"Write the docs for the whole structure and implementation, so that it is easy to extend it on other libraries, e.g., TensorFlow.","files":null}]}
