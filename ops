@@ -1,1 +1,1 @@
-{"author":{"id":"2971f857bf2d680007b57780dd438e1439d21b46a5776b3dbbfa98eb820ea62a"},"ops":[{"type":1,"timestamp":1677537452,"nonce":"cy6k9LOV/ooN3n+GvkTQP7GKsTY=","title":"Improve README.","message":"The README should be improved to reflect the published papers and provide some insights on how to use the tool.","files":null}]}
+{"author":{"id":"2971f857bf2d680007b57780dd438e1439d21b46a5776b3dbbfa98eb820ea62a"},"ops":[{"type":5,"timestamp":1677537473,"nonce":"VV0OPOu9+gkUpvg/5+9Q5UUIh4w=","added":["docs"],"removed":null}]}
