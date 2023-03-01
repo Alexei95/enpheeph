@@ -1,9 +1,0 @@
-{
-    "recommendations": [
-        "ms-python.python",
-        "eamodio.gitlens",
-        "ms-toolsai.jupyter",
-        "bungcip.better-toml",
-        "sebbia.jsonnetng"
-    ]
-}
