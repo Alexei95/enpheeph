@@ -3,7 +3,7 @@
 # build is only required for building the distribution
 # it is not strictly required for creating the package
 [build-system]
-    requires = ["setuptools >= 61.0"]
+    requires = ["setuptools >= 67.4.0"]
     build-backend = "setuptools.build_meta"
 
 # this is still not supported by setuptools
@@ -13,12 +13,12 @@
     keywords = ["faultinjection", "neuralnetworks"]
     license = {text = "GNU Affero General Public License v3 or later (AGPLv3+)"}
     dynamic = ["classifiers", "readme", "version"]
-    requires-python = ">=3.8"
+    requires-python = ">=3.10"
     dependencies = [
         # for pkg_resources, to parse version info from optional requirements
         # not required anymore as we switched to importlib.metadata.version
         # "setuptools >= 58.0",
-        "packaging >= 20.0",
+        "packaging >= 23.0",
     ]
     authors = [
         {name = "Alessio 'Alexei95' Colucci", email = "enpheeph@alexei95.aleeas.com"},
@@ -34,22 +34,22 @@
 
     # PACKAGE DEPENDENCIES
     cupy = [
-        "cupy >= 9.0.0",
+        "cupy >= 11.5.0",
     ]
     norse = [
-        "norse >= 0.0.7",
+        "norse >= 1.0.0",
     ]
     numpy = [
-        "numpy >= 1.19",
+        "numpy >= 1.23",
     ]
     pytorch-lightning = [
-        "pytorch-lightning >= 1.5",
+        "pytorch-lightning >= 1.9.3",
     ]
     sqlalchemy = [
-        "sqlalchemy >= 1.4.20",
+        "sqlalchemy >= 2.0.4",
     ]
     torch = [
-        "torch >= 1.8",
+        "torch >= 1.13.1",
     ]
 
     # FUNCTIONALITIES DEPENDENCIES
@@ -78,53 +78,53 @@
 
     # DEVELOPMENT PACKAGES
     black = [
-        "black",
+        "black >= 23.1.0",
     ]
     coverage = [
         # for using pyproject.toml as configuration in pytest-coverage
-        "coverage[toml]",
+        "coverage[toml] >= 7.2.1 ",
     ]
     flake8 = [
-        "flake8",
+        "flake8 >= 6.0.0",
     ]
     mkinit = [
-        "mkinit >= 0.3.3",
+        "mkinit >= 1.0.0",
     ]
     mypy = [
-        "mypy",
+        "mypy >= 1.0",
     ]
     nox = [
-        "nox >= 2022.1.7",
+        "nox >= 2022.11.21",
     ]
     pre-commit = [
-        "pre-commit",
+        "pre-commit >= 3.1.1",
     ]
     pyright = [
-        "pyright",
+        "pyright >= 1.1.296",
     ]
     pytest = [
-        "pytest >= 6.2.5",  # 6.2.5 for Python 3.10+
+        "pytest >= 7.2.1",
     ]
     pytest-cases = [
-        "pytest-cases >= 3.6.13",  # still missing Python 3.10 support
+        "pytest-cases >= 3.6.14",
     ]
     pytest-cov = [
-        "pytest-cov",
+        "pytest-cov >= 4.0.0",
     ]
     pytest-xdist = [
-        "pytest-xdist",
+        "pytest-xdist >= 3.2.0",
     ]
     tox = [
-        "tox >= 3.20.0",
+        "tox >= 4.4.6",
     ]
     tox-conda = [
-        "tox-conda >= 0.8.0",
+        "tox-conda >= 0.10.2",
     ]
     torchaudio = [
-        "torchaudio >= 0.8.0"
+        "torchaudio >= 0.13.1",
     ]
     torchvision = [
-        "torchvision >= 0.9.0"
+        "torchvision >= 0.14.1",
     ]
 
     # higher level development dependencies
@@ -144,12 +144,10 @@
     # for functionalities
     dev-test = [
         "enpheeph[coverage]",
-        # still not ready, check TODO#24-1-1 for more detailed explanation
-        # "enpheeph[nox]",
+        "enpheeph[nox]",
         "enpheeph[pytest-full]",
         "enpheeph[pytorch-lightning]",
         "enpheeph[torchvision]",
-        "enpheeph[tox-full]",
     ]
 
     dev-tools = [
@@ -339,7 +337,7 @@
     # do not show progress bar
     console_output_style = "classic"
     # minimum pytest version
-    minversion = "6.2"
+    minversion = "7.2.1"
     # the paths to be searched for tests
     testpaths = [
         "tests",
@@ -355,86 +353,3 @@
     classifiers = {file = "CLASSIFIERS"}
     readme = {file = ["README.md",]}
     version = {attr = "enpheeph.__about__.__version__"}
-
-
-# both of them do not work for setuptools 61.2
-# it creates a namespace package for src, so for enpheeph it would be src.enpheeph
-# the automatic discovery with no packages works well, it gets the src-layout without
-# tests
-# [tool.setuptools.packages.find]
-#     where = ["src"]  # ["."] by default
-#     # we need to append the star to include all the files in the directory tree
-#     # they work as glob patterns, and each submodule is independent
-#     include = ["enpheeph*"]  # ["*"] by default
-#     # namespace means that the folder is importable as namespace,
-#     # even without __init__.py
-#     # but since enpheeph is inside src, we do not want this to happen also to src
-#     # and not to enpheeph
-#     namespaces = false  # true by default
-# [tool.setuptools.package-dir]
-#     enpheeph = "src/enpheeph"
-
-# tox is a tool for multiple local test environments
-[tool.tox]
-# isolated_build is to use pyproject.toml when building
-# isolated_build = True
-# tox-conda enables using conda for installing extra dependencies
-# it additionally auto-installs the required python versions if not present
-# requires = tox-conda
-# py310 does not work as norse and torch have issues
-# we use the pytest --cov command to ensure proper coverage data collection
-# otherwise coverage does not have access to the proper source code if referred to
-# the local directory
-# https://github.com/pytest-dev/pytest-cov/issues/98#issuecomment-382583824
-# pytest --cov={envsitepackagesdir}/enpheeph
-# additional pytest options and depends in [testenv] are used for coverage report
-# when using tox https://pytest-cov.readthedocs.io/en/latest/tox.html
-# cov-append appends the report
-# depends create the execution order, where clean must be executed before the tests
-# and report only afterwards
-# [gh] is the section for GitHub Actions, taken from tox-gh on GitHub
-# {posargs} add additional positional arguments taken from cli or env
-# envtmpdir can be used as temporary log, but it is cleared with every testenv
-# use envlogdir which is in common, but with custom sub-paths
-# py310 does not work on Windows yet, at least on GitHub Actions
-# isolated_build is required otherwise it would not work when building the package
-# with pyproject.toml
-legacy_tox_ini = """
-[tox]
-envlist = clean,py38,py39,py310,report
-requires = tox-conda
-isolated_build = true
-
-[testenv]
-envlogdir = .logs/
-commands =
-    python -m pytest \
-        --cov={envsitepackagesdir}/enpheeph \
-        --junitxml={envlogdir}/tools/pytest/junit-{envname}.xml \
-        {posargs}
-extras = dev
-depends =
-    {py38,py39,py310}: clean
-    report: py38,py39,py310
-
-[testenv:report]
-envlogdir = .logs/
-deps = coverage[toml]
-skip_install = true
-commands =
-    python -m coverage report
-    python -m coverage xml -o {envlogdir}/tools/coverage/coverage.xml
-
-[testenv:clean]
-envlogdir = .logs/
-deps = coverage[toml]
-skip_install = true
-commands =
-    python -m coverage erase
-
-[gh]
-python =
-    3.8 = py38
-    3.9 = py39, report, clean
-    3.10 = py310
-"""

@@ -17,7 +17,6 @@
 
 # for defaultdict
 import collections
-
 # use importlib.metadata to gather the info from the package information
 # these are saved in setup.py until we can use pyproject.toml
 import importlib.metadata
@@ -28,7 +27,7 @@ _this_year = time.strftime("%Y")
 _start_year = "2020"
 
 # version, to be accessed by setuptools
-__version__ = "0.0.1a1"
+__version__ = "0.1.0a1"
 
 # metadata taken from the package through importlib.metadata.metadata
 try:
