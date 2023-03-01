@@ -1,1 +1,1 @@
-{"author":{"id":"2971f857bf2d680007b57780dd438e1439d21b46a5776b3dbbfa98eb820ea62a"},"ops":[{"type":3,"timestamp":1677690204,"nonce":"Nbo4qHGAo3rErI6zdolmJ7Z72PI=","message":"So for now we will be staying with pip and conda, however in the future I will try switching to poetry, as it looks like a much saner option.","files":null}]}
+{"author":{"id":"2971f857bf2d680007b57780dd438e1439d21b46a5776b3dbbfa98eb820ea62a"},"ops":[{"type":4,"timestamp":1677690242,"nonce":"6NQkkjHOdQBARC8o79VJqbwPnSI=","status":2}]}
