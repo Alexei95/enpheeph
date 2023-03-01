@@ -34,39 +34,21 @@ nox.options.reuse_existing_virtualenvs = False
 nox.options.stop_on_first_error = True
 
 
-# we do not need any virtualenv for this env wrapper
-@nox.session(
-    python=False,
-    venv_backend=None,
+@nox.session
+@nox.parametrize(
+    "python", ["3.10"],
 )
 def test(session):
-    session.notify("_test_clean_coverage_before")
-    session.notify("_test_pytest")
-    session.notify("_test_report_coverage")
-
-
-@nox.session
-@nox.parametrize(
-    "python", ["3.10"],
-)
-def _test_clean_coverage_before(session):
-    session.install("coverage[toml]")
-    session.run("python", "-m", "coverage", "erase")
-
-
-@nox.session
-@nox.parametrize(
-    "python", ["3.10"],
-)
-def _test_pytest(session):
-    # session.conda_install(
-    #     "--only-deps", ".[dev]", "-c", "pytorch", "-c", "conda-forge"
-    # )
     if not session.interactive or CI_RUN:
         cache_dir = pathlib.Path(".logs")
     else:
         cache_dir = session.cache_dir
     session.install("-e", ".[full-dev-cpu]")
+
+    # clean previous coverage
+    session.run("python", "-m", "coverage", "erase")
+
+    # run pytest with Jenkins and coverage output
     session.run(
         "python",
         "-m",
@@ -77,17 +59,8 @@ def _test_pytest(session):
         *session.posargs,
     )
 
-
-@nox.session
-@nox.parametrize(
-    "python", ["3.10"],
-)
-def _test_report_coverage(session):
-    if not session.interactive or CI_RUN:
-        cache_dir = pathlib.Path(".logs")
-    else:
-        cache_dir = session.cache_dir
-    session.install("coverage[toml]")
+    # combine and report the coverage, to generate output file
+    session.run("python", "-m", "coverage", "combine")
     session.run("python", "-m", "coverage", "report")
     session.run(
         "python",
@@ -97,3 +70,6 @@ def _test_report_coverage(session):
         "-o",
         f"{str(cache_dir)}/tools/coverage/coverage.xml",
     )
+
+    # clean the coverage afterwards
+    session.run("python", "-m", "coverage", "erase")
