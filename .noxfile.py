@@ -34,19 +34,26 @@ nox.options.reuse_existing_virtualenvs = False
 nox.options.stop_on_first_error = True
 
 
+def _select_cache_dir(session):
+    if not session.interactive or CI_RUN:
+        cache_dir = pathlib.Path(".logs")
+    else:
+        cache_dir = session.cache_dir
+    return cache_dir
+
+
 @nox.session
 @nox.parametrize(
     "python", ["3.10"],
 )
 def test(session):
-    if not session.interactive or CI_RUN:
-        cache_dir = pathlib.Path(".logs")
-    else:
-        cache_dir = session.cache_dir
+    cache_dir = _select_cache_dir(session)
+
     session.install("-e", ".[full-dev-cpu]")
 
     # clean previous coverage
-    session.run("python", "-m", "coverage", "erase")
+    # if run here it would clear the other ones
+    # session.run("python", "-m", "coverage", "erase")
 
     # run pytest with Jenkins and coverage output
     session.run(
@@ -57,7 +64,18 @@ def test(session):
         "--cov-config=pyproject.toml",
         f"--junitxml={str(cache_dir)}/tools/pytest/junit-{session.name}-{session.python}.xml",
         *session.posargs,
+        env={"COVERAGE_FILE": f".coverage.{session.name}"},
     )
+    session.notify("coverage")
+
+@nox.session
+@nox.parametrize(
+    "python", ["3.10"],
+)
+def coverage(session):
+    cache_dir = _select_cache_dir(session)
+
+    session.install("-e", ".[coverage]")
 
     # combine and report the coverage, to generate output file
     session.run("python", "-m", "coverage", "combine")
