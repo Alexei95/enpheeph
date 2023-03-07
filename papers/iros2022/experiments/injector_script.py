@@ -1,5 +1,21 @@
 # -*- coding: utf-8 -*-
 # enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2023 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# enpheeph - Neural Fault Injection Framework
 # Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
 #
 # This program is free software: you can redistribute it and/or modify
@@ -39,7 +55,6 @@ import enpheeph.injections.monitorabc
 # for pickle to avoid explosion
 if str(pathlib.Path(__file__).parent / "results/configs/snn_training") not in sys.path:
     sys.path.append(str(pathlib.Path(__file__).parent / "results/configs/snn_training"))
-    import dvs128gesturesnnmodule
 
     sys.path.pop()
 
@@ -330,7 +345,6 @@ def setup_argument_parser():
 
 
 def main(args=None):
-
     parser = setup_argument_parser()
 
     namespace = parser.parse_args(args=args)
@@ -417,7 +431,10 @@ def main(args=None):
     print("\n\nNo injections at all\n\n")
     config["injection_handler"].deactivate()
     time = datetime.datetime.utcnow()
-    res = trainer.test(model, dataloaders=datamodule.test_dataloader(),)[
+    res = trainer.test(
+        model,
+        dataloaders=datamodule.test_dataloader(),
+    )[
         0
     ]  # we have only one test dataloader
     execution_time = datetime.datetime.utcnow() - time
@@ -441,7 +458,10 @@ def main(args=None):
         ):
             print("\n\nOnly monitors\n\n")
             time = datetime.datetime.utcnow()
-            res = trainer.test(model, dataloaders=datamodule.test_dataloader(),)[
+            res = trainer.test(
+                model,
+                dataloaders=datamodule.test_dataloader(),
+            )[
                 0
             ]  # we have only one test dataloader
             execution_time = datetime.datetime.utcnow() - time
@@ -453,7 +473,10 @@ def main(args=None):
         print("\n\nAll injections\n\n")
         config["injection_handler"].activate()
         time = datetime.datetime.utcnow()
-        res = trainer.test(model, dataloaders=datamodule.test_dataloader(),)[
+        res = trainer.test(
+            model,
+            dataloaders=datamodule.test_dataloader(),
+        )[
             0
         ]  # we have only one test dataloader
         execution_time = datetime.datetime.utcnow() - time
@@ -532,7 +555,10 @@ def main(args=None):
     print("\n\nAgain no injections at all\n\n")
     config["injection_handler"].deactivate()
     time = datetime.datetime.utcnow()
-    res = trainer.test(model, dataloaders=datamodule.test_dataloader(),)[
+    res = trainer.test(
+        model,
+        dataloaders=datamodule.test_dataloader(),
+    )[
         0
     ]  # we have only one test dataloader
     execution_time = datetime.datetime.utcnow() - time

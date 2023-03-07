@@ -86,6 +86,7 @@ mkinit-*.log
 
 ### TEST FILES ###
 .nox/*
+.nox.pre-commit/*
 .tox/*
 .logs/*
 enpheeph-*/

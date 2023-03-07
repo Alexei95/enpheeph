@@ -1,5 +1,21 @@
 # -*- coding: utf-8 -*-
 # enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2023 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# enpheeph - Neural Fault Injection Framework
 # Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,8 +34,6 @@
 import torch
 import torch.nn as nn
 import torchvision
-import torchvision.datasets as datasets
-import torchvision.models as models
 import torchvision.transforms as transforms
 from pytorchfi.core import fault_injection as pfi_core
 
@@ -120,13 +134,13 @@ def main(reps=100):
     model = alexnet(num_classes=10)
 
     golden_times = []
-    for i in range(reps):
+    for _i in range(reps):
         model.eval().cuda()
         golden_outputs = []
         time_now = datetime.datetime.utcnow()
 
         with torch.no_grad():
-            for imgs, label in iter(val_loader):
+            for imgs, _label in iter(val_loader):
                 imgs = imgs.cuda()
                 golden_outputs.append(model(imgs))
 
@@ -151,12 +165,12 @@ def main(reps=100):
     )
 
     corrupt_times = []
-    for i in range(reps):
+    for _i in range(reps):
         corrupt_outputs = []
         time_now = datetime.datetime.utcnow()
 
         with torch.no_grad():
-            for imgs, label in iter(val_loader):
+            for imgs, _label in iter(val_loader):
                 corrupt_model = inj.declare_neuron_fi(
                     batch=batch_i,
                     layer_num=layer_i,
