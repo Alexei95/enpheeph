@@ -72,6 +72,7 @@ papers/*/configs/**/*.json
 # DSE results
 /*.csv
 /results
+notebooks/dsn2023_doctoralforum/results
 scripts/results
 scripts/configs/results
 # Test Models
