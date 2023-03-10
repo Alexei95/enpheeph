@@ -80,7 +80,7 @@ def test(session):
         "--cov-config=pyproject.toml",
         f"--junitxml={str(cache_dir)}/tools/pytest/junit-{session.name}-{session.python}.xml",
         *session.posargs,
-        env={"COVERAGE_FILE": f".coverage.{session.name}"},
+        env={"COVERAGE_FILE": f".coverage.{session.name}.{session.python}"},
     )
     session.notify("coverage")
 

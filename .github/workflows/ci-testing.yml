@@ -15,8 +15,6 @@ jobs:
   # we removed pre-commit action as we can use pre-commit.ci being
   # the project open source
 
-  # this job runs the tests with tox-conda using pytest and coverage
-  # it must run after the init update
   # name of the job
   nox-test:
     # to run after the job from the same workflow
@@ -84,28 +82,87 @@ jobs:
 
     # run nox testing using selected python version
     # session is passed by env.NOXSESSION above
-    - name: Run Nox
+    - name: Run Nox to run the different tests
       run: |
         nox --force-color --python=${{ matrix.python-version }} --non-interactive --error-on-missing-interpreter
 
-    # # this is required for sharing data with other jobs, as each job has a
-    # # different runner
-    # - name: Upload tox log if failed
-    #   uses: actions/upload-artifact@v2.3.1
-    #   with:
-    #     name: tox-${{ matrix.os }}
-    #     path: .logs/tools/tox/tox.log
-    #   if: failure()
+    # if we are running 'tests' session then upload coverage data
+    # this ensures that the coverage reports per runner are stored
+    # so that the next job (coverage) can grab them and combine them
+    # so we run coverage tests per matrix build
+    # but combine them to form one coverage report
+    - name: Upload coverage data
+      if: always() && matrix.session == 'tests'
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: nox-tests-coverage-data
+        path: ".coverage.*"
+
+  # name of the job
+  nox-coverage:
+    # to run after the job from the same workflow
+    # if on different workflows, see https://stackoverflow.com/a/65698892
+    # needs: mkinit-init-attribute-update
+    # we start this job only if we are on the main branch, otherwise it takes up
+    # too many resources
+    # github.base_ref is defined only in a pull request
+    # additionally we check if we are in release mode
+    if: ${{ github.event_name == 'release' }} || ${{ github.ref == 'refs/heads/main' }} || ${{ github.base_ref == 'main' }}
+    # define the name of a specific job
+    name: coverage-python3.11-ubuntu-latest
+    # the system to run on
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    # Timeout: https://stackoverflow.com/a/59076067/4521646
+    timeout-minutes: 40
+
+    # configure --session for nox to only run a specifc subset of test
+    # this is equiv to running e.g. nox --session mypy
+    # sessions are specified above in the matrix spec
+    env:
+      NOXSESSION: coverage
+
+    steps:
+    # we check out the repository
+    - name: Repository check-out
+      uses: actions/checkout@v3.3.0
+
+    # we set up the Python environment
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4.5.0
+      with:
+        python-version: 3.11
+        check-latest: true
+
+    - name: Install nox
+      run: |
+        python --version
+        python -m pip --version
+        python -m pip install nox==2022.11.21
+        python -m pip list
+
+    # download the coverage artifact produced by tests job, session=tests
+    - name: Download coverage data
+      uses: actions/download-artifact@v3.0.2
+      with:
+        name: nox-tests-coverage-data
+
+    # run nox testing using selected python version
+    # session is passed by env.NOXSESSION above
+    - name: Run Nox to generate complete coverage report
+      run: |
+        nox --force-color --non-interactive --error-on-missing-interpreter
 
     # for uploading coverage to codecov
-    # - name: Upload coverage to Codecov
-    #   uses: codecov/codecov-action@v1
-    #   if: always()
-    #   # see: https://github.com/actions/toolkit/issues/399
-    #   continue-on-error: true
-    #   with:
-    #     token: ${{ secrets.CODECOV_TOKEN }}
-    #     file: coverage.xml
-    #     flags: cpu,pytest,python${{ matrix.python-version }}
-    #     name: CPU-coverage
-    #     fail_ci_if_error: false
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: .logs/tools/coverage/coverage.xml
+        # flags: unittests,python${{ matrix.python-version }},${{ matrix.os }}
+        flags: unittests
+        name: coverage-CPU-GHA
+        fail_ci_if_error: true
+        verbose: true
