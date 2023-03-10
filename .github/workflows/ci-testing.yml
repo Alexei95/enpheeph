@@ -2,17 +2,14 @@ name: ci-testing
 
 # events that trigger the workflow
 on:
-  workflow_run:
-    workflows:
-      - ci-push-jobs
-    types:
-      - completed
+  push:
   # **BE CAREFUL NOT TO LEAK COMMIT PERSMISSIONS TO PR**
   pull_request:
     branches:
       - main
   # we also run the tests on release
   release:
+
 
 jobs:
   # we removed pre-commit action as we can use pre-commit.ci being
@@ -21,7 +18,7 @@ jobs:
   # this job runs the tests with tox-conda using pytest and coverage
   # it must run after the init update
   # name of the job
-  tox-conda-pytest-coverage:
+  nox-test:
     # to run after the job from the same workflow
     # if on different workflows, see https://stackoverflow.com/a/65698892
     # needs: mkinit-init-attribute-update
@@ -30,109 +27,75 @@ jobs:
     # github.base_ref is defined only in a pull request
     # additionally we check if we are in release mode
     if: ${{ github.event_name == 'release' }} || ${{ github.ref == 'refs/heads/main' }} || ${{ github.base_ref == 'main' }}
+    # define the name of a specific job
+    name: ${{ matrix.nox-session }}-${{ matrix.python-version }}-${{ matrix.os }}
     # the system to run on
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        # for now a small grid is more than enough
         os:
-          # - ubuntu-18.04
-          # - ubuntu-20.04
+          - ubuntu-18.04
+          - ubuntu-20.04
           - ubuntu-latest
 
-          # - macos-10.15
-          # - macos-11
-          # - macos-latest
+          - macos-10.15
+          - macos-11
+          - macos-latest
 
-          # - windows-2019
-          # - windows-2022
-          # - windows-latest
-        # when running tox sequentially we don't need a python matrix, as we use
-        # only 3.9 manually
-        # python-version:
-          # - 3.8
-          # - 3.9
+          - windows-2019
+          - windows-2022
+          - windows-latest
+        python-version:
+          - 3.8
+          - 3.9
+          - 3.10
+          - 3.11
+        nox-session:
+          - test
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 40
 
+    # configure --session for nox to only run a specifc subset of test
+    # this is equiv to running e.g. nox --session mypy
+    # sessions are specified above in the matrix spec
+    env:
+      NOXSESSION: ${{ matrix.session }}
+
     steps:
     # we check out the repository
     - name: Repository check-out
-      uses: actions/checkout@v3
+      uses: actions/checkout@v3.3.0
 
     # we set up the Python environment
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v2.3.1
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4.5.0
       with:
-        python-version: 3.9
+        python-version: 3.11
+        check-latest: true
 
-    # we run all the tests in sequence, as the parallel version does not work with
-    # tox-gh and tox-conda as of 2022/01/24
-    # the bug is pytest is not found when initializing the environment
-    # to use tox-gh and tox-conda, hopefully there will be a fix, and the changes
-    # are simply tox-gh instead of tox in pip and tox4 instead of tox in commands
-    - name: Install tox
+    - name: Install nox
       run: |
         python --version
         python -m pip --version
-        python -m pip install tox
+        python -m pip install nox==2022.11.21
         python -m pip list
 
-    # we use os.makedirs instead of pathlib.Path as it does not work with older
-    # Python version running in the GitHub Actions runners
-    - name: Create log directories
+    # run nox testing using selected python version
+    # session is passed by env.NOXSESSION above
+    - name: Run Nox
       run: |
-        import pathlib
-        pathlib.Path(".logs/tools/tox").mkdir(parents=True, exist_ok=True)
-      shell: python
+        nox --force-color --python=${{ matrix.python-version }} --non-interactive --error-on-missing-interpreter
 
-    - name: Setup conda
-      uses: conda-incubator/setup-miniconda@v2.1.1
-      # https://github.com/tox-dev/tox-conda/blob/
-      # 9bd14a47e7a9f4d1258d64fc0e562b33aefa6288/.github/workflows/check.yml
-      # taken from tox-conda CI workflow
-      with:
-        miniconda-version: "latest"
-        python-version: 3.9
-
-    # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
-    # set environment variable https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable
-    # we skip py310 on Windows
-    # these variables are accessible at yml level using ${{ env.variable_name }}
-    # otherwise they are used as environment for the commands
-    - name: Set the environment variable TOX_SKIP_ENV=py310 if on Windows
-      run: |
-        echo "TOX_SKIP_ENV=py310" >> $env:GITHUB_ENV
-      if: ${{ runner.os == 'Windows' }}
-
-    - name: tox test suite full CI run
-      run: |
-        tox -vvv > .logs/tools/tox/tox.log
-      # for using/running conda, we need -l {0} to run as login shell and have conda
-      # enabled
-      # shell: bash -l {0}
-      env:
-        CI_RUN: "yes"
-
-    # this is required for sharing data with other jobs, as each job has a
-    # different runner
-    - name: Upload tox results
-      uses: actions/upload-artifact@v2.3.1
-      with:
-        # longer name ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-${{ matrix.release }}
-        name: tox-${{ matrix.os }}
-        path: .logs/tools/
-
-    # this is required for sharing data with other jobs, as each job has a
-    # different runner
-    - name: Upload tox log if failed
-      uses: actions/upload-artifact@v2.3.1
-      with:
-        name: tox-${{ matrix.os }}
-        path: .logs/tools/tox/tox.log
-      if: failure()
+    # # this is required for sharing data with other jobs, as each job has a
+    # # different runner
+    # - name: Upload tox log if failed
+    #   uses: actions/upload-artifact@v2.3.1
+    #   with:
+    #     name: tox-${{ matrix.os }}
+    #     path: .logs/tools/tox/tox.log
+    #   if: failure()
 
     # for uploading coverage to codecov
     # - name: Upload coverage to Codecov
