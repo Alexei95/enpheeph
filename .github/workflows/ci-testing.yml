@@ -55,28 +55,7 @@ jobs:
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 40
 
-    # configure --session for nox to only run a specifc subset of test
-    # this is equiv to running e.g. nox --session mypy
-    # sessions are specified above in the matrix spec
-    env:
-      NOXSESSION: ${{ matrix.session }}
-
-    steps:
-    # we check out the repository
-    - name: Repository check-out
-      uses: actions/checkout@v3.3.0
-
-    # we set up the Python environment
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v4.5.0
-      with:
-        python-version: 3.11
-        check-latest: true
-
-    - name: Install nox
-      run: |
-        python --version
-        python -m pip --version
+    # configure --session n
         python -m pip install nox==2022.11.21
         python -m pip list
 
@@ -84,7 +63,7 @@ jobs:
     # session is passed by env.NOXSESSION above
     - name: Run Nox to run the different tests
       run: |
-        nox --force-color --python=${{ matrix.python-version }} --non-interactive --error-on-missing-interpreter
+        nox --noxfile=.noxfile.py --force-color --python=${{ matrix.python-version }} --non-interactive --error-on-missing-interpreter
 
     # if we are running 'tests' session then upload coverage data
     # this ensures that the coverage reports per runner are stored
@@ -153,7 +132,7 @@ jobs:
     # session is passed by env.NOXSESSION above
     - name: Run Nox to generate complete coverage report
       run: |
-        nox --force-color --non-interactive --error-on-missing-interpreter
+        nox --noxfile=.noxfile.py --force-color --non-interactive --error-on-missing-interpreter
 
     # for uploading coverage to codecov
     - name: Upload coverage to Codecov
