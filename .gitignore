@@ -31,6 +31,9 @@ build/
 !.vscode/extensions.json
 *.code-workspace
 
+# dolphin folder settings
+.directory
+
 # Local History for Visual Studio Code
 .history/
 

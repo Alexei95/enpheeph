@@ -1,5 +1,21 @@
 # -*- coding: utf-8 -*-
 # enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2023 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# enpheeph - Neural Fault Injection Framework
 # Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
 #
 # This program is free software: you can redistribute it and/or modify
@@ -65,9 +81,7 @@ class IndexingPlugin(
         # we filter the Ellipsis to avoid mypy errors
         # **NOTE**: improve the typing here
         no_ellipsis_dimension_dict_values: typing.List[int] = typing.cast(
-            typing.List[
-                int,
-            ],
+            typing.List[int,],
             [x for x in self.dimension_dict.values() if x != Ellipsis],
         )
         longest_positive_range: int = max(

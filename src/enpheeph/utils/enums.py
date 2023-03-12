@@ -36,7 +36,7 @@ import operator
 
 
 class BitFaultValue(enum.Enum):
-    # Random = enum.auto()
+    Random = enum.auto()
     StuckAtZero = enum.auto()
     StuckAtOne = enum.auto()
     BitFlip = enum.auto()
@@ -93,6 +93,15 @@ class FaultMaskValue(enum.IntEnum):
 class HandlerStatus(enum.Enum):
     Running = enum.auto()
     Idle = enum.auto()
+
+
+class ImportName(enum.Enum):
+    Cupy = "cupy"
+    Norse = "norse"
+    Numpy = "numpy"
+    PyTorch = "torch"
+    PyTorchLightning = "pytorch_lightning"
+    SQLAlchemy = "sqlalchemy"
 
 
 # we use flag so that different metrics can be composed together
