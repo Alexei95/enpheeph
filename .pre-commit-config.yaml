@@ -17,11 +17,12 @@ repos:
     - id: check-added-large-files
       args: [
           '--maxkb=350',
-          '--enforce-all',
+          # this is ok, but since in papers we have some large files, we just considered
+          # the staged one
+          # '--enforce-all',
       ]
     - id: check-ast
     - id: check-builtin-literals
-    - id: check-byte-order-marker
     - id: check-case-conflict
     - id: check-docstring-first
     - id: check-executables-have-shebangs
@@ -71,7 +72,7 @@ repos:
     - id: text-unicode-replacement-char
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.1.11
+    rev: v1.4.2
     hooks:
     - id: forbid-crlf
     - id: remove-crlf
@@ -81,7 +82,7 @@ repos:
         - --whitespaces-count
         - "4"  # defaults to: 4
     - id: insert-license
-      files: .py
+      files: \.py$
       args:
         - --license-filepath
         # defaults to: LICENSE.txt
@@ -89,6 +90,7 @@ repos:
         - --comment-style
         # defaults to: #
         - "#"
+        - --use-current-year
 
   - repo: local
     hooks:
@@ -130,13 +132,13 @@ repos:
     hooks:
     - id: black
 
-  # - repo: https://github.com/pre-commit/mirrors-mypy
-  #   rev: "v1.0.1"  # Use the sha / tag you want to point at
-  #   hooks:
-  #   - id: mypy
-  #     # args: [--ignore-missing-imports, src/enpheeph]
-  #     # args: [--ignore-missing-imports, --config-file=pyproject.toml, src/enpheeph]
-  #     pass_filenames: true
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: "v1.0.1"  # Use the sha / tag you want to point at
+    hooks:
+    - id: mypy
+      # args: [--ignore-missing-imports, src/enpheeph]
+      # args: [--ignore-missing-imports, --config-file=pyproject.toml, src/enpheeph]
+      pass_filenames: true
 
 # continuous integration configuration for pre-commit.ci
 # freely available to open-source repositories

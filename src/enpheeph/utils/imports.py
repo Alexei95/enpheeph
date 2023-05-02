@@ -1,5 +1,21 @@
 # -*- coding: utf-8 -*-
 # enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2023 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# enpheeph - Neural Fault Injection Framework
 # Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
 #
 # This program is free software: you can redistribute it and/or modify
@@ -21,11 +37,12 @@
 # pkg_resources, or even importlib.metadata.version
 import importlib.metadata
 import importlib.util
-import typing
 
 import packaging.requirements
 import packaging.specifiers
 import packaging.version
+
+import enpheeph.utils.enums
 
 
 # we use the spec from importlib to check the availability of a library
@@ -55,37 +72,20 @@ def compare_version(
 # for extra flags it is as easy as parsing a custom requirements and
 # getting the specifier
 _enpheeph_raw_requirements = importlib.metadata.requires("enpheeph")
-ENPHEEPH_REQUIREMENTS: typing.Tuple[packaging.requirements.Requirement, ...] = tuple(
+ENPHEEPH_REQUIREMENTS: tuple[packaging.requirements.Requirement, ...] = tuple(
     packaging.requirements.Requirement(_req)
     for _req in (
         _enpheeph_raw_requirements if _enpheeph_raw_requirements is not None else ()
     )
 )
 
-CUPY_NAME: str = "cupy"
-NUMPY_NAME: str = "numpy"
-NORSE_NAME: str = "norse"
-PYTORCH_LIGHTNING_NAME: str = "pytorch_lightning"
-SQLALCHEMY_NAME: str = "sqlalchemy"
-TORCH_NAME: str = "torch"
-
-# here we have the list of the modules which need to be checked for availability
-# custom checks can be done on other values/requirements as well if needed
-MODULE_AVAILABILITY_TO_CHECK: typing.Tuple[str, ...] = (
-    CUPY_NAME,
-    NUMPY_NAME,
-    NORSE_NAME,
-    PYTORCH_LIGHTNING_NAME,
-    SQLALCHEMY_NAME,
-    TORCH_NAME,
-)
-MODULE_AVAILABILITY: typing.Dict[str, bool] = {}
-for _mod_name in MODULE_AVAILABILITY_TO_CHECK:
+MODULE_AVAILABILITY: dict[enpheeph.utils.enums.ImportName, bool] = {}
+for _mod_enum in enpheeph.utils.enums.ImportName.__members__.values():
     # we use next on filter as filter is a generator so using next we get the first
     # value, which supposedly should also be the only one
     _version_specifier: packaging.specifiers.SpecifierSet = next(
-        filter(lambda x: x.name == _mod_name, ENPHEEPH_REQUIREMENTS)
+        filter(lambda x: x.name == _mod_enum.value, ENPHEEPH_REQUIREMENTS)
     ).specifier
-    MODULE_AVAILABILITY[_mod_name] = compare_version(
-        module_name=_mod_name, version_specifier=_version_specifier
+    MODULE_AVAILABILITY[_mod_enum] = compare_version(
+        module_name=_mod_enum.value, version_specifier=_version_specifier
     )

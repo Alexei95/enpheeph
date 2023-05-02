@@ -1,5 +1,21 @@
 # -*- coding: utf-8 -*-
 # enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2023 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# enpheeph - Neural Fault Injection Framework
 # Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
 #
 # This program is free software: you can redistribute it and/or modify
@@ -128,12 +144,12 @@ class SessionBaseMixin(object):
 # don't need other __magic__ methods from dataclass
 @dataclasses.dataclass(init=True, repr=True, eq=True)
 class Session(SessionBaseMixin, CustomBase):
-    EXPERIMENT_RUN_CLASS_ID_LAMBDA: typing.ClassVar[
-        typing.Callable[..., sqlalchemy.Column[sqlalchemy.Integer]]
-    ] = lambda: ExperimentRun.id_
-    EXPERIMENT_RUN_CLASS_LAMBDA: typing.ClassVar[
-        typing.Callable[..., typing.Type["CustomBaseClass"]]
-    ] = lambda: ExperimentRun
+    def EXPERIMENT_RUN_CLASS_ID_LAMBDA():
+        return ExperimentRun.id_
+
+    def EXPERIMENT_RUN_CLASS_LAMBDA():
+        return ExperimentRun
+
     # we use backref to since it is a one-to-many from Session to ExperimentRun
     EXPERIMENT_RUN_BACKREF_NAME: typing.ClassVar[str] = "session"
 
@@ -234,17 +250,16 @@ class ExperimentRun(ExperimentRunBaseMixin, PolymorphicMixin, CustomBase):
     # FIXME: add support for ModelInfo, which might be a one-to-many from the ModelInfo
     # side
 
-    INJECTION_CLASS_LAMBDA: typing.ClassVar[
-        typing.Callable[..., typing.Type["CustomBaseClass"]]
-    ] = lambda: Injection
-    INJECTION_FOREIGN_KEY_LAMBDA: typing.ClassVar[
-        typing.Callable[..., sqlalchemy.Column[sqlalchemy.Integer]]
-    ] = lambda: Injection.experiment_run_id
+    def INJECTION_CLASS_LAMBDA():
+        return Injection
+
+    def INJECTION_FOREIGN_KEY_LAMBDA():
+        return Injection.experiment_run_id
+
     INJECTION_BACKPOPULATES_NAME: typing.ClassVar[str] = "experiment_run"
 
-    SESSION_CLASS_ID_LAMBDA: typing.ClassVar[
-        typing.Callable[..., sqlalchemy.Column[sqlalchemy.Integer]]
-    ] = lambda: Session.id_
+    def SESSION_CLASS_ID_LAMBDA():
+        return Session.id_
 
     # relationship for having a list of InjectedRun subjected to this GoldenRun
     # we also create golden_run as referral back to the golden run
@@ -285,12 +300,12 @@ class ExperimentRun(ExperimentRunBaseMixin, PolymorphicMixin, CustomBase):
 # don't need other __magic__ methods from dataclass
 @dataclasses.dataclass(init=True, repr=True, eq=True)
 class Injection(PolymorphicMixin, CustomBase):
-    EXPERIMENT_RUN_CLASS_ID_LAMBDA: typing.ClassVar[
-        typing.Callable[..., sqlalchemy.Column[sqlalchemy.Integer]]
-    ] = lambda: ExperimentRun.id_
-    EXPERIMENT_RUN_CLASS_LAMBDA: typing.ClassVar[
-        typing.Callable[..., typing.Type["CustomBaseClass"]]
-    ] = lambda: ExperimentRun
+    def EXPERIMENT_RUN_CLASS_ID_LAMBDA():
+        return ExperimentRun.id_
+
+    def EXPERIMENT_RUN_CLASS_LAMBDA():
+        return ExperimentRun
+
     EXPERIMENT_RUN_BACKPOPULATES_NAME: typing.ClassVar[str] = "injections"
 
     # NOTE: cascading does not work if it's not a mixin or an abstract class

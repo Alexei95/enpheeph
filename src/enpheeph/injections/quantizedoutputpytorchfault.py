@@ -1,5 +1,21 @@
 # -*- coding: utf-8 -*-
 # enpheeph - Neural Fault Injection Framework
+# Copyright (C) 2020-2023 Alessio "Alexei95" Colucci
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# enpheeph - Neural Fault Injection Framework
 # Copyright (C) 2020-2022 Alessio "Alexei95" Colucci
 #
 # This program is free software: you can redistribute it and/or modify
@@ -90,7 +106,7 @@ class QuantizedOutputPyTorchFault(
         # in our case we use torch.int32, and we multiply by 2 ** 24 as to have a
         # dynamic range of [-128, 127] in fp32 while having
         # 2 ** -24 as precision in int32,~6e-08 which should be more than enough
-        shift_factor = 2 ** 24
+        shift_factor = 2**24
         target_dtype = torch.int32
         original_dtype = output.dtype
         target = output * shift_factor
