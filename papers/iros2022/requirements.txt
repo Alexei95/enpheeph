@@ -14,8 +14,13 @@
 # if unsure just install them
 # NOTE: cudatoolkit-dev=10.2 DOES NOT EXIST
 
+# conda install python=3.9.7 cudatoolkit=10.2
+# pip install -r papers/iros2022/requirements.txt
+# conda install jupyter pandas plotly
+# the following is required as jupyter misses this dependency and it crashes
+# pip install chardet captum
 
--e .[full]
+-e .
 # to upgrade packages only if needed to match the dependencies
 # must be used as command-line options
 # --upgrade --upgrade-strategy only-if-needed
@@ -23,9 +28,9 @@
 # for PyTorch 1.9.1
 -f https://download.pytorch.org/whl/torch/
 
-lightning-flash[all]==0.5.2
+lightning-flash[image]==0.5.2
 norse==0.0.7.post1
-pytorch-lightning[extra]==1.5.2
+pytorch-lightning==1.5.2
 tonic==1.0.13
 torch==1.9.1+cu102
 torchaudio==0.9.1
