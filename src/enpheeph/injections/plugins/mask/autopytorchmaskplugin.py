@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # enpheeph - Neural Fault Injection Framework
-# Copyright (C) 2020-2023 Alessio "Alexei95" Colucci
+# Copyright (C) 2020-2025 Alessio "Alexei95" Colucci
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -66,12 +66,20 @@ class AutoPyTorchMaskPlugin(
     GPU_TORCH_DEVICE = "cuda"
 
     FROM_TORCH = {
-        CPU_TORCH_DEVICE: enpheeph.injections.plugins.mask.NumPyPyTorchMaskPlugin()
-        if enpheeph.utils.imports.MODULE_AVAILABILITY[enpheeph.utils.imports.NUMPY_NAME]
-        else None,
-        GPU_TORCH_DEVICE: enpheeph.injections.plugins.mask.CuPyPyTorchMaskPlugin()
-        if enpheeph.utils.imports.MODULE_AVAILABILITY[enpheeph.utils.imports.CUPY_NAME]
-        else None,
+        CPU_TORCH_DEVICE: (
+            enpheeph.injections.plugins.mask.NumPyPyTorchMaskPlugin()
+            if enpheeph.utils.imports.MODULE_AVAILABILITY[
+                enpheeph.utils.imports.NUMPY_NAME
+            ]
+            else None
+        ),
+        GPU_TORCH_DEVICE: (
+            enpheeph.injections.plugins.mask.CuPyPyTorchMaskPlugin()
+            if enpheeph.utils.imports.MODULE_AVAILABILITY[
+                enpheeph.utils.imports.CUPY_NAME
+            ]
+            else None
+        ),
     }
     TO_TORCH = {
         enpheeph.utils.imports.CUPY_NAME: FROM_TORCH[GPU_TORCH_DEVICE],
