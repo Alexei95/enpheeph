@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # enpheeph - Neural Fault Injection Framework
-# Copyright (C) 2020-2023 Alessio "Alexei95" Colucci
+# Copyright (C) 2020-2025 Alessio "Alexei95" Colucci
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -63,12 +63,14 @@ class AlexNetLightningModule(pytorch_lightning.LightningModule):
             # we generate the current model state dict
             model_state_dict = self.model.state_dict()
             filtered_state_dict = {
-                k: v_new
-                # we select the new value if the dimension is the same as with the old
-                # one
-                if v_new.size() == v_old.size()
-                # otherwise we use the initialized one from the model
-                else v_old
+                k: (
+                    v_new
+                    # we select the new value if the dimension is the same as with the old
+                    # one
+                    if v_new.size() == v_old.size()
+                    # otherwise we use the initialized one from the model
+                    else v_old
+                )
                 for (k, v_old), v_new in zip(
                     model_state_dict.items(),
                     state_dict.values(),

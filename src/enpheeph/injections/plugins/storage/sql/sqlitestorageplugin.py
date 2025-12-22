@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # enpheeph - Neural Fault Injection Framework
-# Copyright (C) 2020-2023 Alessio "Alexei95" Colucci
+# Copyright (C) 2020-2025 Alessio "Alexei95" Colucci
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -91,9 +91,9 @@ class SQLiteStoragePlugin(
 
         # we implement the fix if we are using pysqlite
         # to check, we get the dialect class from the url
-        dialect: typing.Type[
-            sqlalchemy.engine.Dialect
-        ] = sqlalchemy.engine.url.make_url(db_url).get_dialect()
+        dialect: typing.Type[sqlalchemy.engine.Dialect] = (
+            sqlalchemy.engine.url.make_url(db_url).get_dialect()
+        )
         # if pysqlite is in the dialect class name, we fix the engine for pysqlite
         if "pysqlite" in dialect.__qualname__:
             sqldataclasses.fix_pysqlite(engine)

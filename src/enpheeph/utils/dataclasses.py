@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # enpheeph - Neural Fault Injection Framework
-# Copyright (C) 2020-2023 Alessio "Alexei95" Colucci
+# Copyright (C) 2020-2025 Alessio "Alexei95" Colucci
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -78,9 +78,9 @@ class BitFaultMaskInfo(object):
         cls,
         bit_fault_value: enpheeph.utils.enums.BitFaultValue,
     ) -> typing_extensions.Self:
-        dict_: typing.Dict[
-            str, typing.Any
-        ] = cls.BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS[bit_fault_value]
+        dict_: typing.Dict[str, typing.Any] = (
+            cls.BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS[bit_fault_value]
+        )
         return cls(**dict_)
 
 
