@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # enpheeph - Neural Fault Injection Framework
-# Copyright (C) 2020-2023 Alessio "Alexei95" Colucci
+# Copyright (C) 2020-2026 Alessio "Alexei95" Colucci
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
