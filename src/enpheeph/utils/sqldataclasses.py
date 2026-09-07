@@ -57,7 +57,6 @@ import enpheeph.utils.dataclasses
 import enpheeph.utils.enums
 import enpheeph.utils.functions
 
-
 # this string is used to identify
 # the SQLAlchemy metadata in each field of each dataclass
 SQLALCHEMY_METADATA_KEY: str = "sqlalchemy"

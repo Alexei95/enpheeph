@@ -34,7 +34,6 @@
 import re
 import typing
 
-
 CAMEL_TO_SNAKE_REGEX: re.Pattern[str] = re.compile(
     "((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))"
 )

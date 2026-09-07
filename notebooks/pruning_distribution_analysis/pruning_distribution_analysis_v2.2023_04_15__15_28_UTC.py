@@ -39,7 +39,6 @@ import torchvision
 import torchvision.datasets
 import torchvision.transforms
 
-
 # In[2]:
 
 
