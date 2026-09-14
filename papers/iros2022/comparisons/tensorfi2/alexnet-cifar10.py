@@ -29,7 +29,6 @@ import torchvision
 import enpheeph
 import enpheeph.injections.plugins.indexing.indexingplugin
 
-
 CURRENT_DIR = pathlib.Path(__file__).absolute().parent
 RESULTS_DIRECTORY = CURRENT_DIR / "results" / "alexnet-cifar10"
 WEIGHTS_FILE = RESULTS_DIRECTORY / "weights" / "alexnet-cifar10.pt"
@@ -63,12 +62,14 @@ class AlexNetLightningModule(pytorch_lightning.LightningModule):
             # we generate the current model state dict
             model_state_dict = self.model.state_dict()
             filtered_state_dict = {
-                k: v_new
-                # we select the new value if the dimension is the same as with the old
-                # one
-                if v_new.size() == v_old.size()
-                # otherwise we use the initialized one from the model
-                else v_old
+                k: (
+                    v_new
+                    # we select the new value if the dimension is the same as with the old
+                    # one
+                    if v_new.size() == v_old.size()
+                    # otherwise we use the initialized one from the model
+                    else v_old
+                )
                 for (k, v_old), v_new in zip(
                     model_state_dict.items(),
                     state_dict.values(),
