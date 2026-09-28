@@ -78,9 +78,9 @@ class BitFaultMaskInfo(object):
         cls,
         bit_fault_value: enpheeph.utils.enums.BitFaultValue,
     ) -> typing_extensions.Self:
-        dict_: typing.Dict[
-            str, typing.Any
-        ] = cls.BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS[bit_fault_value]
+        dict_: typing.Dict[str, typing.Any] = (
+            cls.BIT_FAULT_VALUE_TO_BIT_FAULT_MASK_INFO_ARGS[bit_fault_value]
+        )
         return cls(**dict_)
 
 
