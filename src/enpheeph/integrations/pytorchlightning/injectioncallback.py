@@ -69,7 +69,7 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
 
     def __init__(
         self,
-        injection_handler: (enpheeph.handlers.injectionhandler.InjectionHandler),
+        injection_handler: enpheeph.handlers.injectionhandler.InjectionHandler,
         storage_plugin: typing.Optional[
             (enpheeph.injections.plugins.storage.abc.storagepluginabc.StoragePluginABC)
         ] = None,
@@ -148,9 +148,11 @@ class InjectionCallback(pytorch_lightning.callbacks.Callback):
                 # we pass the id if the first_golden_run is an integer for the
                 # experiment id
                 # otherwise None to disable it
-                golden_run_id=self.first_golden_run
-                if isinstance(self.first_golden_run, int)
-                else None,
+                golden_run_id=(
+                    self.first_golden_run
+                    if isinstance(self.first_golden_run, int)
+                    else None
+                ),
                 # we use UTC for dates as it is generic
                 start_time=self.experiment_time_start,
                 extra_experiment_info=self.extra_experiment_info,
