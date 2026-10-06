@@ -35,7 +35,6 @@ import collections.abc
 import types
 import typing
 
-
 IDGeneratorSubclass = typing.TypeVar("IDGeneratorSubclass", bound="IDGenerator")
 
 

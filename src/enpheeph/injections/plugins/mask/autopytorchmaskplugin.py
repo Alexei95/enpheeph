@@ -66,12 +66,20 @@ class AutoPyTorchMaskPlugin(
     GPU_TORCH_DEVICE = "cuda"
 
     FROM_TORCH = {
-        CPU_TORCH_DEVICE: enpheeph.injections.plugins.mask.NumPyPyTorchMaskPlugin()
-        if enpheeph.utils.imports.MODULE_AVAILABILITY[enpheeph.utils.imports.NUMPY_NAME]
-        else None,
-        GPU_TORCH_DEVICE: enpheeph.injections.plugins.mask.CuPyPyTorchMaskPlugin()
-        if enpheeph.utils.imports.MODULE_AVAILABILITY[enpheeph.utils.imports.CUPY_NAME]
-        else None,
+        CPU_TORCH_DEVICE: (
+            enpheeph.injections.plugins.mask.NumPyPyTorchMaskPlugin()
+            if enpheeph.utils.imports.MODULE_AVAILABILITY[
+                enpheeph.utils.imports.NUMPY_NAME
+            ]
+            else None
+        ),
+        GPU_TORCH_DEVICE: (
+            enpheeph.injections.plugins.mask.CuPyPyTorchMaskPlugin()
+            if enpheeph.utils.imports.MODULE_AVAILABILITY[
+                enpheeph.utils.imports.CUPY_NAME
+            ]
+            else None
+        ),
     }
     TO_TORCH = {
         enpheeph.utils.imports.CUPY_NAME: FROM_TORCH[GPU_TORCH_DEVICE],
